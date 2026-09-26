@@ -44,10 +44,10 @@ type Options = {
 /** RFC 5545 escaping for TEXT values. Backslash first, or it doubles up. */
 function escapeText(value: string): string {
   return value
-    .replace(/\/g, '\\')
-    .replace(/;/g, '\;')
-    .replace(/,/g, '\,')
-    .replace(/\r?\n/g, '\n')
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n')
 }
 
 /**
