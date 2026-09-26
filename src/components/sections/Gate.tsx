@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { gsap } from '../../lib/gsap'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { GateDoorLeaf, DoorDefs } from '../svg/GateDoors'
-import { WaxSeal } from '../svg/WaxSeal'
+import { HeartSeal } from '../svg/HeartSeal'
 import { EightStar } from '../svg/Ornaments'
 import { sparkleBurst } from '../../lib/sparkleBus'
 import { wedding } from '../../config/wedding.config'
@@ -12,39 +12,40 @@ type Props = {
   onOpened: () => void
 }
 
+const HEART_COUNT = 4
+
 /**
- * The opening gate: two carved doors closed over the invitation, sealed
- * with the couple's monogram.
+ * The opening gate: carved doors closed over the invitation, held by a
+ * stack of four wax hearts.
  *
- * Tapping cracks the seal, swings the doors open in 3D, floods the gap
- * with light, then hands scrolling back to the page. Under reduced motion
- * the sequence collapses to a fade — the gate still has to be dismissed
- * deliberately, since that is the interaction, but nothing swings.
+ * Each tap releases the front heart, which falls away under gravity with a
+ * little spin and a sideways kick. When the last one goes, the doors swing
+ * open in 3D and light floods through.
+ *
+ * There is no separate button — the hearts are the control. They are real
+ * <button>s, so the whole sequence works from the keyboard too.
  */
 export function Gate({ onOpened }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
   const leftRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
-  const sealRef = useRef<HTMLDivElement>(null)
+  const stackRef = useRef<HTMLDivElement>(null)
   const lightRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
 
-  // A ref, not state: Enter on the focused button fires keydown *and* click
-  // as two separate events, and a state flag would still read false in the
-  // second one before React re-renders — running the timeline twice.
-  const openedRef = useRef(false)
-  const [opening, setOpening] = useState(false)
+  /** Refs, not state: taps can land faster than React re-renders. */
+  const droppedRef = useRef(0)
+  const openingRef = useRef(false)
+  const [dropped, setDropped] = useState(0)
 
   const reduced = useReducedMotion()
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
 
-  const open = useCallback(() => {
-    if (openedRef.current) return
-    openedRef.current = true
-    setOpening(true)
+  const openDoors = useCallback(() => {
+    if (openingRef.current) return
+    openingRef.current = true
 
     const root = rootRef.current
     if (!root) return
@@ -54,61 +55,99 @@ export function Gate({ onOpened }: Props) {
       return
     }
 
-    const seal = sealRef.current
-    const halves = seal?.querySelectorAll('[data-seal-half]')
-    const crack = seal?.querySelector('[data-seal-crack]') ?? null
-
     const tl = gsap.timeline({ onComplete: onOpened })
 
-    // 1. the seal gives: a flinch, the fracture shows, then it breaks
-    tl.to(seal, { scale: 1.06, duration: 0.18, ease: 'power2.out' })
-      .to(crack, { opacity: 1, duration: 0.12 }, '-=0.05')
-      .to(seal, { scale: 1, duration: 0.12, ease: 'power2.in' })
-
-    if (halves && halves.length === 2) {
-      tl.to(
-        halves[0],
-        { xPercent: -16, yPercent: 10, rotation: -14, autoAlpha: 0, duration: 0.7, ease: 'power2.in' },
-        'break',
-      ).to(
-        halves[1],
-        { xPercent: 16, yPercent: 12, rotation: 16, autoAlpha: 0, duration: 0.7, ease: 'power2.in' },
-        'break',
-      )
-    }
-
-    tl.to(copyRef.current, { autoAlpha: 0, y: -10, duration: 0.4 }, 'break')
-
-    // 2. the doors swing, hinged on their outer edges
-    tl.to(leftRef.current, { rotateY: -102, duration: 1.5, ease: 'power3.inOut' }, 'swing')
+    tl.to(copyRef.current, { autoAlpha: 0, y: -12, duration: 0.4 })
+      .to(leftRef.current, { rotateY: -102, duration: 1.5, ease: 'power3.inOut' }, 'swing')
       .to(rightRef.current, { rotateY: 102, duration: 1.5, ease: 'power3.inOut' }, 'swing')
-      // 3. light pours through the widening gap
       .fromTo(
         lightRef.current,
         { autoAlpha: 0, scaleX: 0.1 },
         { autoAlpha: 1, scaleX: 1, duration: 1.1, ease: 'power2.out' },
         'swing+=0.15',
       )
-      .to(lightRef.current, { autoAlpha: 0, duration: 0.6 }, 'swing+=1.1')
-      .to(root, { autoAlpha: 0, duration: 0.5 }, 'swing+=1.0')
-
-    // gold burst as the seal fractures
-    gsap.delayedCall(0.3, () => {
-      const r = seal?.getBoundingClientRect()
-      if (r) {
-        sparkleBurst(r.left + r.width / 2, r.top + r.height / 2, {
-          count: 34,
-          tone: 'gold',
-          power: 220,
-        })
-      }
-    })
+      .to(lightRef.current, { autoAlpha: 0, duration: 0.6 }, 'swing+=1.15')
+      .to(root, { autoAlpha: 0, duration: 0.5 }, 'swing+=1.05')
   }, [reduced, onOpened])
 
-  // Focus the control so the gate is immediately operable by keyboard.
+  const dropHeart = useCallback(() => {
+    const index = droppedRef.current
+    if (index >= HEART_COUNT || openingRef.current) return
+    droppedRef.current = index + 1
+    setDropped(index + 1)
+
+    const stack = stackRef.current
+    const heart = stack?.querySelector<HTMLElement>(`[data-heart="${index}"]`)
+    const last = index + 1 >= HEART_COUNT
+
+    if (!heart || reduced) {
+      if (heart) gsap.set(heart, { autoAlpha: 0 })
+      if (last) openDoors()
+      return
+    }
+
+    const rect = heart.getBoundingClientRect()
+    sparkleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, {
+      count: 18,
+      tone: 'rose',
+      power: 150,
+    })
+
+    // Alternate which way each heart tips, so the pile does not fall as one.
+    const dir = index % 2 === 0 ? 1 : -1
+    const fallDistance = window.innerHeight * 0.8
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        if (last) openDoors()
+      },
+    })
+
+    // A beat of release before gravity takes it...
+    tl.to(heart, {
+      scale: 1.07,
+      yPercent: -12,
+      rotate: dir * -5,
+      duration: 0.16,
+      ease: 'power2.out',
+    })
+      // ...then it drops, accelerating, tumbling and drifting aside.
+      .to(heart, {
+        y: fallDistance,
+        x: dir * gsap.utils.random(26, 54),
+        rotate: dir * gsap.utils.random(38, 70),
+        scale: 0.86,
+        duration: 0.95,
+        ease: 'power2.in',
+      })
+      .to(heart, { autoAlpha: 0, duration: 0.35, ease: 'power1.in' }, '-=0.35')
+
+    // The heart now in front lifts as the weight comes off it.
+    const next = stack?.querySelector<HTMLElement>(`[data-heart="${index + 1}"]`)
+    if (next) {
+      gsap.to(next, {
+        scale: 1,
+        xPercent: 0,
+        yPercent: 0,
+        duration: 0.7,
+        ease: 'expo.out',
+        delay: 0.1,
+      })
+    }
+  }, [reduced, openDoors])
+
+  // Settle the stack in once the gate appears.
   useEffect(() => {
-    buttonRef.current?.focus()
-  }, [])
+    const stack = stackRef.current
+    if (!stack) return
+    gsap.fromTo(
+      stack,
+      { autoAlpha: 0, scale: 0.86 },
+      { autoAlpha: 1, scale: 1, duration: reduced ? 0.3 : 1, ease: 'expo.out', delay: 0.15 },
+    )
+  }, [reduced])
+
+  const remaining = HEART_COUNT - dropped
 
   return (
     <div
@@ -117,8 +156,6 @@ export function Gate({ onOpened }: Props) {
       style={{
         perspective: '1400px',
         perspectiveOrigin: '50% 45%',
-        // Fixed escapes the phone column, so re-centre it there by hand —
-        // otherwise the doors span a whole desktop window.
         maxWidth: 'var(--app-max)',
         marginInline: 'auto',
       }}
@@ -128,7 +165,6 @@ export function Gate({ onOpened }: Props) {
     >
       <DoorDefs />
 
-      {/* Light behind the doors, revealed as they part. */}
       <div
         ref={lightRef}
         aria-hidden="true"
@@ -140,8 +176,6 @@ export function Gate({ onOpened }: Props) {
         }}
       />
 
-      {/* Doors. No backface-visibility:hidden — the leaves pass 90 degrees,
-          and hiding the reverse would pop them out of existence mid-swing. */}
       <div className="absolute inset-0 flex" style={{ transformStyle: 'preserve-3d' }}>
         <div
           ref={leftRef}
@@ -159,26 +193,52 @@ export function Gate({ onOpened }: Props) {
         </div>
       </div>
 
-      {/* Tap anywhere. A div, so it adds no second control for screen
-          readers — the real button below is the accessible affordance. */}
-      <div
-        aria-hidden="true"
-        onClick={open}
-        className="absolute inset-0 cursor-pointer"
-      />
-
-      {/* Seal and invitation. The pad is a percentage, which resolves
-          against WIDTH — the same basis as the arch head's height — so the
-          seal lands on the springline at any screen size. */}
+      {/* Hearts and invitation, sitting on the springline. */}
       <div
         className="pointer-events-none absolute inset-0 flex flex-col items-center px-8"
-        style={{ paddingTop: 'calc(75% - 3.25rem)' }}
+        style={{ paddingTop: 'calc(75% - 3.5rem)' }}
       >
-        <div ref={sealRef} className="w-28 drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)]">
-          <WaxSeal initials={wedding.monogram} />
+        <div ref={stackRef} className="relative size-28">
+          {Array.from({ length: HEART_COUNT }, (_, i) => {
+            // depth 0 is the front heart and the next one to be released.
+            const depth = HEART_COUNT - 1 - i
+            const isTop = depth === dropped
+            return (
+              <button
+                key={depth}
+                data-heart={depth}
+                type="button"
+                onClick={dropHeart}
+                disabled={!isTop}
+                aria-label={
+                  isTop
+                    ? `Release heart ${depth + 1} of ${HEART_COUNT} to open the invitation`
+                    : undefined
+                }
+                aria-hidden={isTop ? undefined : true}
+                tabIndex={isTop ? 0 : -1}
+                className="absolute inset-0 origin-center transition-transform duration-300 disabled:cursor-default"
+                style={{
+                  // Each heart behind the front one sits back and a little lower.
+                  transform: `translate(${depth * -5}px, ${depth * 7}px) scale(${1 - depth * 0.06})`,
+                  zIndex: HEART_COUNT - depth,
+                  pointerEvents: isTop ? 'auto' : 'none',
+                  filter: `drop-shadow(0 ${6 + depth * 2}px ${10 + depth * 4}px rgba(0,0,0,0.42))`,
+                }}
+              >
+                <HeartSeal
+                  depth={depth - dropped}
+                  // The monogram rides whichever heart is currently in
+                  // front, so it never disappears with the first drop.
+                  initials={isTop ? wedding.monogram : undefined}
+                  className="size-full"
+                />
+              </button>
+            )
+          })}
         </div>
 
-        <div ref={copyRef} className="mt-7 text-center">
+        <div ref={copyRef} className="mt-9 text-center">
           <p
             className={`text-2xs tracking-[0.45em] text-gold-light/90 ${ur ? 'font-urdu' : 'uppercase'}`}
             lang={t.lang}
@@ -193,15 +253,25 @@ export function Gate({ onOpened }: Props) {
             <span className="h-px w-8 bg-gold/50" />
           </span>
 
-          <button
-            ref={buttonRef}
-            type="button"
-            onClick={open}
-            disabled={opening}
-            className="pointer-events-auto rounded-full border border-gold/50 px-7 text-2xs tracking-[0.3em] text-gold-light uppercase transition-transform duration-300 active:scale-[0.97] disabled:opacity-60"
-          >
-            {ur ? wedding.urdu.tapToOpen : wedding.texts.tapToOpen}
-          </button>
+          {/* Hearts remaining, as dots rather than an instruction. */}
+          <div className="flex items-center justify-center gap-2" aria-hidden="true">
+            {Array.from({ length: HEART_COUNT }, (_, i) => (
+              <span
+                key={i}
+                className="size-1.5 rounded-full transition-all duration-500"
+                style={{
+                  background: i < remaining ? 'var(--color-gold)' : 'transparent',
+                  border: i < remaining ? 'none' : '1px solid rgba(212,175,55,0.35)',
+                }}
+              />
+            ))}
+          </div>
+
+          <p className="sr-only" role="status" aria-live="polite">
+            {remaining > 0
+              ? `${remaining} of ${HEART_COUNT} hearts remaining`
+              : 'Opening the invitation'}
+          </p>
         </div>
       </div>
     </div>

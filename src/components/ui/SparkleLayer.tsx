@@ -17,7 +17,7 @@ type Particle = {
   spin: number
   spinSpeed: number
   rgb: string
-  star: boolean
+  shape: 'star' | 'dot' | 'heart'
 }
 
 const TONES = {
@@ -27,11 +27,14 @@ const TONES = {
   mixed: ['255,255,255', '245,225,164', '244,184,198'],
 } as const
 
+/** The trail is pink: small glittering hearts with sparkles between them. */
+const TRAIL_TONE = ['244,184,198', '249,217,225', '227,164,180', '252,228,234']
+
 /** Cap so a frantic pointer or stacked bursts cannot melt a phone. */
 const MAX_PARTICLES = 320
 /** Trail particles are emitted per this many px travelled, not per frame,
  *  so spacing stays even whether the pointer creeps or flies. */
-const TRAIL_SPACING = 18
+const TRAIL_SPACING = 15
 
 /**
  * One fixed, full-screen canvas serving both sparkle effects:
@@ -65,19 +68,21 @@ export function SparkleLayer() {
     }
 
     const spawnTrail = (x: number, y: number) => {
-      const rgb = TONES.white[Math.floor(Math.random() * TONES.white.length)]
+      const roll = Math.random()
+      // Mostly hearts, with sparkles and motes between them for glitter.
+      const shape = roll < 0.55 ? 'heart' : roll < 0.8 ? 'star' : 'dot'
       add({
         x: x + rand(-3, 3),
         y: y + rand(-3, 3),
         vx: rand(-14, 14),
-        vy: rand(-6, 22), // drifts down a touch, like settling dust
+        vy: rand(-8, 20), // drifts down a touch, like settling dust
         life: 0,
-        maxLife: rand(0.35, 0.7),
-        size: rand(1.4, 3.6),
-        spin: rand(0, Math.PI),
-        spinSpeed: rand(-3, 3),
-        rgb,
-        star: Math.random() < 0.3,
+        maxLife: rand(0.45, 0.85),
+        size: shape === 'heart' ? rand(3.4, 7) : rand(1.4, 3.4),
+        spin: rand(-0.4, 0.4),
+        spinSpeed: rand(-2.2, 2.2),
+        rgb: TRAIL_TONE[Math.floor(Math.random() * TRAIL_TONE.length)],
+        shape,
       })
     }
 
@@ -101,7 +106,14 @@ export function SparkleLayer() {
           spin: rand(0, Math.PI),
           spinSpeed: rand(-5, 5),
           rgb: tone[Math.floor(Math.random() * tone.length)],
-          star: Math.random() < 0.62,
+          shape:
+            o.tone === 'rose'
+              ? Math.random() < 0.6
+                ? 'heart'
+                : 'star'
+              : Math.random() < 0.62
+                ? 'star'
+                : 'dot',
         })
       }
     }
@@ -121,6 +133,15 @@ export function SparkleLayer() {
     }
 
     const unsubscribe = onSparkleBurst((x, y, o) => spawnBurst(x, y, o))
+
+    const drawHeart = (ctx: CanvasRenderingContext2D, s: number) => {
+      // Two lobes meeting at a point, sized about the particle's radius.
+      ctx.beginPath()
+      ctx.moveTo(0, s * 0.72)
+      ctx.bezierCurveTo(-s * 1.25, -s * 0.2, -s * 0.55, -s * 1.05, 0, -s * 0.38)
+      ctx.bezierCurveTo(s * 0.55, -s * 1.05, s * 1.25, -s * 0.2, 0, s * 0.72)
+      ctx.fill()
+    }
 
     const drawStar = (
       ctx: CanvasRenderingContext2D,
@@ -189,7 +210,9 @@ export function SparkleLayer() {
           ctx.fillStyle = `rgb(${p.rgb})`
           ctx.shadowBlur = 8
           ctx.shadowColor = `rgba(${p.rgb},0.85)`
-          if (p.star) {
+          if (p.shape === 'heart') {
+            drawHeart(ctx, size)
+          } else if (p.shape === 'star') {
             drawStar(ctx, size)
           } else {
             ctx.beginPath()

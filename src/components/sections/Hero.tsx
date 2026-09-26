@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { gsap, SplitText } from '../../lib/gsap'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import { useGlyphSupport } from '../../hooks/useGlyphSupport'
+import { useFitText } from '../../hooks/useFitText'
 import { useLang, langAttrs } from '../../hooks/useLang'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
@@ -18,9 +18,15 @@ import { ScrollHint } from '../ui/ScrollHint'
 import { wedding } from '../../config/wedding.config'
 import { formatFullDate } from '../../lib/date'
 
-/** U+FDFD — the whole Bismillah as a single ligature. Amiri carries it. */
-const BISMILLAH_LIGATURE = '﷽'
-const BISMILLAH_SPELLED = 'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ'
+/**
+ * Spelled out rather than the U+FDFD ligature.
+ *
+ * Amiri does carry the ligature, but it draws as one very wide glyph with a
+ * long connecting stroke that reads as a gap — and at any size large enough
+ * to be legible it dominates a phone screen. The spelled-out form sets
+ * properly, matches how the ayah is rendered further down, and scales.
+ */
+const BISMILLAH = 'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ'
 
 type Props = {
   /** True once the gate has opened, so the hero animates on reveal. */
@@ -28,8 +34,8 @@ type Props = {
 }
 
 /** Must match `background-size` / `background-position` on `.foil-text`. */
-const FOIL_SCALE = 2.6
-const FOIL_OFFSET = 0.2
+const FOIL_SCALE = 1.4
+const FOIL_OFFSET = 0.5
 
 /**
  * Re-applies the gold foil to individual letters after a split.
@@ -78,7 +84,7 @@ export function Hero({ active }: Props) {
   const t = langAttrs(lang)
   const ur = lang === 'ur'
 
-  const hasLigature = useGlyphSupport(BISMILLAH_LIGATURE, 'Amiri')
+  const fit = useFitText<HTMLDivElement>()
 
   useEffect(() => {
     if (!active) return
@@ -175,25 +181,29 @@ export function Hero({ active }: Props) {
 
       <div className="relative z-10 w-full text-center">
         {/* Bismillah */}
-        <div data-hero-item data-bismillah>
-          {hasLigature === null ? (
-            // Hold the line's height until measured, so nothing shifts.
-            <span className="block h-[3.5rem]" aria-hidden="true" />
-          ) : (
+        <div
+          data-hero-item
+          data-bismillah
+          ref={fit.containerRef}
+          className="flex w-full justify-center"
+        >
+          <div
+            ref={fit.contentRef}
+            className="w-max shrink-0"
+            // Scaled to the column rather than guessing a font size that
+            // happens to fit — the Arabic's width varies with the face.
+            style={{ transform: `scale(${fit.scale})`, transformOrigin: 'center' }}
+          >
             <GoldGlitterText
               block
               lang="ar"
               dir="rtl"
-              className={
-                hasLigature
-                  ? 'font-arabic text-[2.75rem] leading-[1.3]'
-                  : 'font-arabic text-fluid-lg leading-[2]'
-              }
+              className="font-arabic text-[1.75rem] leading-[1.9] whitespace-nowrap"
               specks={10}
             >
-              {hasLigature ? BISMILLAH_LIGATURE : BISMILLAH_SPELLED}
+              {BISMILLAH}
             </GoldGlitterText>
-          )}
+          </div>
         </div>
 
         <span
@@ -204,7 +214,7 @@ export function Hero({ active }: Props) {
         />
 
         <span data-hero-item data-crescent className="mt-8 block">
-          <Crescent className="mx-auto w-9" title="Crescent and star" />
+          <Crescent className="mx-auto w-14" title="Crescent and star" />
         </span>
 
         <p

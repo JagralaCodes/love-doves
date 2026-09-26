@@ -8,14 +8,13 @@ import { SvgDefs } from './components/svg/SvgDefs'
 import { GeometricPattern } from './components/svg/GeometricPattern'
 import { Lantern } from './components/svg/Lantern'
 import { Monogram } from './components/svg/Monogram'
-import { EightStar, FloralVine, DomeIcon } from './components/svg/Ornaments'
+import { FloralVine, DomeIcon, Heart } from './components/svg/Ornaments'
 
 import { GoldGlitterText } from './components/ui/GoldGlitterText'
 import { SparkleField } from './components/ui/SparkleField'
 import { PearlBokeh } from './components/ui/PearlBokeh'
 import { ShimmerDust } from './components/ui/ShimmerDust'
 import { SparkleLayer } from './components/ui/SparkleLayer'
-import { OrnateFrame } from './components/ui/OrnateFrame'
 import { ArchPanel } from './components/ui/ArchPanel'
 import { LanguageToggle } from './components/ui/LanguageToggle'
 import { Gate } from './components/sections/Gate'
@@ -97,43 +96,69 @@ export default function App() {
 
         {/* ═══════════════ EVENTS ═══════════════ */}
         <section className="relative overflow-hidden bg-blush-soft px-[var(--page-gutter)] py-[var(--section-gap)]">
-          <GeometricPattern scale={96} opacity={0.05} />
+          <GeometricPattern scale={96} opacity={0.04} />
 
-          <div ref={eventsRef} className="relative z-10 space-y-9">
+          <div ref={eventsRef} className="relative z-10 space-y-14">
             {wedding.events.map((e) => (
-              <div data-card key={e.name}>
-                <OrnateFrame tone="plain">
-                  <p
-                    className={`text-center text-wine ${ur ? 'font-urdu text-fluid-2xl leading-[2]' : 'font-display text-fluid-2xl'}`}
-                    lang={t.lang}
-                    dir={t.dir}
-                  >
-                    {eventName(e.name)}
-                  </p>
+              <article data-card key={e.name} className="text-center">
+                {/* A single hairline above the name instead of a boxed
+                    frame — the earlier double rule and corner brackets
+                    read as a postage stamp. */}
+                <span
+                  aria-hidden="true"
+                  className="mx-auto mb-6 block h-px w-10"
+                  style={{ background: 'var(--foil-gold)' }}
+                />
 
-                  <span className="my-3 flex items-center justify-center">
-                    <EightStar className="w-3" />
+                <h3
+                  className={`text-wine ${ur ? 'font-urdu text-fluid-2xl leading-[2]' : 'font-display text-fluid-3xl'}`}
+                  lang={t.lang}
+                  dir={t.dir}
+                >
+                  {eventName(e.name)}
+                </h3>
+
+                <p className="nums-lining mt-4 font-display text-fluid-lg text-wine-deep">
+                  {formatFullDate(e.date)}
+                </p>
+                <p className="nums-lining text-2xs mt-1 tracking-[0.35em] text-wine-soft">
+                  {formatTime(e.time)}
+                </p>
+
+                <span className="my-6 flex items-center justify-center gap-3" aria-hidden="true">
+                  <span className="h-px w-8 bg-gold/40" />
+                  <Heart className="w-2.5" />
+                  <span className="h-px w-8 bg-gold/40" />
+                </span>
+
+                <p className="font-display text-fluid-xl text-wine">{e.venue}</p>
+                <p className="text-fluid-sm mx-auto mt-2 max-w-[17rem] leading-relaxed text-wine-soft">
+                  {e.address}
+                </p>
+
+                {/* A quiet text link, not a filled pill. */}
+                <a
+                  href={e.mapsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-2xs mt-5 inline-flex items-center gap-1.5 tracking-[0.25em] text-wine uppercase transition-opacity duration-300 hover:opacity-70"
+                >
+                  <span className="border-b border-gold/50 pb-1">
+                    {wedding.texts.viewOnMap}
                   </span>
-
-                  <p className="nums-lining text-center font-display text-fluid-lg text-wine-deep">
-                    {formatFullDate(e.date)}
-                  </p>
-                  <p className="nums-lining text-2xs text-center tracking-[0.2em] text-wine-soft">
-                    {formatTime(e.time)}
-                  </p>
-
-                  <p className="mt-4 text-center font-display text-fluid-lg text-wine">
-                    {e.venue}
-                  </p>
-
-                  <button
-                    type="button"
-                    className="text-2xs mt-5 w-full rounded-full bg-wine px-6 tracking-[0.2em] text-pearl-white uppercase transition-transform duration-300 active:scale-[0.98]"
-                  >
-                    Open in Maps
-                  </button>
-                </OrnateFrame>
-              </div>
+                  <svg viewBox="0 0 12 12" className="w-2.5" aria-hidden="true">
+                    <path
+                      d="M2 10 L10 2 M4.5 2 L10 2 L10 7.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="sr-only">{` — ${e.venue} (opens in a new tab)`}</span>
+                </a>
+              </article>
             ))}
           </div>
         </section>

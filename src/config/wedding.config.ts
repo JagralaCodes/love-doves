@@ -85,6 +85,7 @@ export const wedding = {
     envelopePrompt: 'Tap to open',
 
     familiesHeading: 'Together with our families',
+    viewOnMap: 'View on map',
     daughterOf: 'Daughter of',
     sonOf: 'Son of',
   },
@@ -108,6 +109,7 @@ export const wedding = {
     saveTheDate: 'تاریخ محفوظ رکھیں',
     venueHeading: 'مقام',
     familiesHeading: 'ہمارے خاندانوں کے ساتھ',
+    viewOnMap: 'نقشہ دیکھیں',
     daughterOf: 'دختر',
     sonOf: 'پسر',
     events: {

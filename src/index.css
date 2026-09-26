@@ -154,8 +154,10 @@
   text-shadow: var(--glow-gold);
   @supports (background-clip: text) or (-webkit-background-clip: text) {
     background-image: var(--foil-gold);
-    background-size: 260% 100%;
-    background-position: 20% 50%;
+    /* 140% centred: the word spans ~14-86% of the gradient, so it opens and
+       closes on the dark stops with the highlight crossing its middle. */
+    background-size: 140% 100%;
+    background-position: 50% 50%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -163,8 +165,10 @@
     /* background-clip:text hides text-shadow, so the halo moves to a
        drop-shadow filter on the element instead. */
     text-shadow: none;
-    filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.22))
-      drop-shadow(0 0 14px rgba(245, 225, 164, 0.15));
+    /* A hairline of depth under the foil. Gold on white is inherently
+       low-contrast; this gives the letterforms an edge to sit on. */
+    filter: drop-shadow(0 1px 0 rgba(109, 79, 18, 0.28))
+      drop-shadow(0 0 6px rgba(212, 175, 55, 0.25));
   }
 }
 

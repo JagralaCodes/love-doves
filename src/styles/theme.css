@@ -143,19 +143,22 @@
 
 :root {
   /* Gold foil — gold-dark -> gold -> gold-light -> gold -> gold-dark */
+  /* Gold foil.
+     Symmetric dark -> bright -> dark, and the highlight stops well short of
+     white: text is clipped to this gradient, so a near-white stop makes that
+     part of a word vanish against the pearl-white page. Both ends are dark
+     so a word always starts and finishes legible. */
   --foil-gold: linear-gradient(
     100deg,
-    #8a6b23 0%,
-    #a67c1f 9%,
-    #c49b2e 23%,
-    #d4af37 37%,
-    #eed898 47%,
-    #fff8e0 51%,
-    #eed898 55%,
-    #d4af37 66%,
-    #b8912c 79%,
-    #8a6b23 91%,
-    #a67c1f 100%
+    #7d5f1c 0%,
+    #a67c1f 12%,
+    #c49b2e 26%,
+    #d9b544 40%,
+    #efd98f 50%,
+    #d9b544 60%,
+    #c49b2e 74%,
+    #a67c1f 88%,
+    #7d5f1c 100%
   );
   --foil-rose: linear-gradient(
     100deg,

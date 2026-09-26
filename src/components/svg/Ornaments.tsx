@@ -15,24 +15,29 @@ export function Crescent({
 }: Base & { fill?: string }) {
   return (
     <svg
-      viewBox="0 0 100 100"
+      viewBox="0 0 120 100"
       className={className}
       role={title ? 'img' : 'presentation'}
       aria-hidden={title ? undefined : 'true'}
       aria-label={title}
     >
       {title ? <title>{title}</title> : null}
-      {/* Crescent as one circle minus an offset circle, via even-odd fill. */}
+      {/* Crescent: one disc with a second, offset disc subtracted via
+          even-odd fill. The offset sets how slender the arc reads. */}
       <path
         fillRule="evenodd"
         fill={fill}
-        d="M50 6 A44 44 0 1 0 50 94 A44 44 0 1 1 50 6 Z
-           M56 14 A36 36 0 1 0 56 86 A44 44 0 0 1 56 14 Z"
+        d="M50 4 A46 46 0 1 0 50 96 A46 46 0 1 1 50 4 Z
+           M58 15 A35 35 0 1 0 58 85 A46 46 0 0 1 58 15 Z"
       />
-      <path
-        d="M78 22 L81.5 30.5 L90 34 L81.5 37.5 L78 46 L74.5 37.5 L66 34 L74.5 30.5 Z"
-        fill={fill}
-      />
+      {/* Five-point star, sized and placed to sit in the crescent's mouth
+          rather than float beside it. */}
+      <g transform="translate(88 42)">
+        <path
+          fill={fill}
+          d="M0 -17 L4.9 -5.5 L17.3 -4.1 L8 4.2 L10.6 16.4 L0 10.2 L-10.6 16.4 L-8 4.2 L-17.3 -4.1 L-4.9 -5.5 Z"
+        />
+      </g>
     </svg>
   )
 }
