@@ -1,0 +1,357 @@
+@import 'tailwindcss';
+@import './styles/theme.css';
+
+/* ─────────────────────────────────────────────────────────────
+   BASE
+   ───────────────────────────────────────────────────────────── */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Lenis drives scrolling; never let the browser also smooth it. */
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Stop pull-to-refresh fighting the gate and the scratch card. */
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    background-color: var(--color-pearl-white);
+    color: var(--color-wine-deep);
+    font-family: var(--font-body);
+    font-size: var(--text-fluid-base);
+    font-weight: 350;
+    line-height: 1.65;
+    letter-spacing: 0.01em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+    /* No grey flash on tap — we provide our own press feedback. */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── The invitation is one phone-width column. ─────────────────
+     Mobile is the design target; on anything wider the column simply
+     centres on a blush backdrop so it reads as a card being held,
+     rather than a stretched page. */
+  #root {
+    position: relative;
+    width: 100%;
+    max-width: var(--app-max);
+    margin-inline: auto;
+    min-height: 100svh;
+    background-color: var(--color-pearl-white);
+    overflow-x: clip;
+    /* Notch and home-indicator breathing room. */
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  @media (min-width: 33rem) {
+    body {
+      background-color: var(--color-blush-soft);
+    }
+    #root {
+      box-shadow: 0 0 0 1px rgba(155, 44, 74, 0.06),
+        0 30px 80px -30px rgba(94, 18, 39, 0.28);
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-wine);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: 0.005em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* Arabic always gets the Arabic face and a roomier line box. */
+  [lang='ar'] {
+    font-family: var(--font-arabic);
+    line-height: 2.05;
+    letter-spacing: 0;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    /* Kills the 300ms tap delay without disabling pinch-zoom. */
+    touch-action: manipulation;
+  }
+
+  /* Every control is at least a comfortable thumb target. */
+  button,
+  a[role='button'],
+  [role='tab'] {
+    min-height: var(--tap-min);
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+    /* iOS zooms the page when a focused field is under 16px. */
+    font-size: max(16px, var(--text-fluid-base));
+    border-radius: 0; /* iOS adds its own otherwise */
+  }
+
+  svg {
+    display: block;
+  }
+
+  ::selection {
+    background: var(--color-rose-pink);
+    color: var(--color-wine-deep);
+  }
+
+  /* One consistent, visible focus ring for keyboard users. */
+  :focus-visible {
+    outline: 2px solid var(--color-wine);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Lenis needs this while it is driving the scroll. */
+  html.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  html.lenis-stopped {
+    overflow: hidden;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   UTILITIES
+   ───────────────────────────────────────────────────────────── */
+
+@utility foil-text {
+  /* Gold-foil lettering with a soft halo. Flat gold where unsupported. */
+  color: var(--color-gold);
+  text-shadow: var(--glow-gold);
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    background-image: var(--foil-gold);
+    background-size: 260% 100%;
+    background-position: 20% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    /* background-clip:text hides text-shadow, so the halo moves to a
+       drop-shadow filter on the element instead. */
+    text-shadow: none;
+    filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.22))
+      drop-shadow(0 0 14px rgba(245, 225, 164, 0.15));
+  }
+}
+
+@utility foil-shimmer {
+  /* The slow shine sweep across gold lettering. */
+  animation: foil-sweep var(--dur-shine) var(--ease-in-out-slow) infinite;
+}
+
+@utility rose-foil-text {
+  color: var(--color-wine);
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    background-image: var(--foil-rose);
+    background-size: 240% 100%;
+    background-position: 20% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+@utility word-reveal {
+  /* Tunables the hook reads/overrides per instance. */
+  --word-hidden-opacity: 0.16;
+  --word-blur: 5px;
+  --word-rise: 0.16em;
+}
+
+@utility nums-lining {
+  /* Cormorant defaults to old-style figures — lovely in prose, wrong for
+     a big date or a countdown, where digits must stand full cap height. */
+  font-variant-numeric: lining-nums;
+  font-feature-settings: 'lnum' 1;
+}
+
+@utility nums-tabular {
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+
+@utility section-shell {
+  position: relative;
+  padding-inline: var(--page-gutter);
+  padding-block: var(--section-gap);
+}
+
+@utility measure {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   KEYFRAMES — transform/opacity/background-position only
+   ───────────────────────────────────────────────────────────── */
+
+/* One word of a scroll-scrubbed passage. The visible end state is
+   identical to normal type — only the hidden state differs. */
+.reveal-word {
+  display: inline-block;
+  opacity: calc(
+    var(--word-hidden-opacity, 0.16) +
+      (1 - var(--word-hidden-opacity, 0.16)) * var(--word-progress, 1)
+  );
+  transform: translateY(calc((1 - var(--word-progress, 1)) * var(--word-rise, 0.16em)));
+  filter: blur(calc((1 - var(--word-progress, 1)) * var(--word-blur, 5px)));
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-word {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes foil-sweep {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pattern-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-120px, -120px, 0);
+  }
+}
+
+@keyframes lantern-sway {
+  0%,
+  100% {
+    transform: rotate(-2.2deg);
+  }
+  50% {
+    transform: rotate(2.2deg);
+  }
+}
+
+/* 4-point star: pops in, twinkles, fades out. */
+@keyframes sparkle-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1) rotate(35deg);
+  }
+  60% {
+    opacity: 0.65;
+    transform: scale(0.82) rotate(55deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.15) rotate(90deg);
+  }
+}
+
+/* Gold specks sitting on top of glitter text. */
+@keyframes speck-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Pearl bokeh drift — long, lazy, never repeating obviously. */
+@keyframes bokeh-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(28px, -38px, 0) scale(1.09);
+  }
+  66% {
+    transform: translate3d(-22px, -18px, 0) scale(0.95);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REDUCED MOTION — content stays, movement goes
+   ───────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
