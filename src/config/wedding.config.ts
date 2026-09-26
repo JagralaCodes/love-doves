@@ -28,13 +28,13 @@ export const wedding = {
    * The ONE main event the single site-wide countdown targets.
    * ISO 8601 with an explicit offset so it is correct in every timezone.
    */
-  countdownTarget: '2026-12-12T11:00:00+05:30',
+  countdownTarget: '2026-11-13T11:00:00+05:30',
 
   events: [
     {
       name: 'Nikah',
       /** YYYY-MM-DD — formatted for display by lib/date.ts */
-      date: '2026-12-12',
+      date: '2026-11-13',
       /** HH:mm in 24h — formatted for display by lib/date.ts */
       time: '11:00',
       /** Optional end time, used for the .ics calendar file. */
@@ -47,7 +47,7 @@ export const wedding = {
     },
     {
       name: 'Walima',
-      date: '2026-12-13',
+      date: '2026-11-14',
       time: '19:00',
       endTime: '22:30',
       venue: 'The Emerald Hall',

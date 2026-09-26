@@ -177,16 +177,32 @@
   animation: foil-sweep var(--dur-shine) var(--ease-in-out-slow) infinite;
 }
 
-@utility rose-foil-text {
-  color: var(--color-wine);
+@utility foil-text-bright {
+  /* Gold foil for wine/dark sections — pairs with `foil-text`. */
+  color: var(--color-gold-light);
   @supports (background-clip: text) or (-webkit-background-clip: text) {
-    background-image: var(--foil-rose);
-    background-size: 240% 100%;
-    background-position: 20% 50%;
+    background-image: var(--foil-gold-bright);
+    background-size: 140% 100%;
+    background-position: 50% 50%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.3));
+  }
+}
+
+@utility rose-foil-text {
+  color: var(--color-wine);
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    background-image: var(--foil-rose);
+    background-size: 140% 100%;
+    background-position: 50% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 1px 0 rgba(94, 18, 39, 0.18));
   }
 }
 

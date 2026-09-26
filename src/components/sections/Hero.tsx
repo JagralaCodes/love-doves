@@ -33,7 +33,7 @@ type Props = {
   active: boolean
 }
 
-/** Must match `background-size` / `background-position` on `.foil-text`. */
+/** Must match `background-size` / `background-position` on the foil utilities. */
 const FOIL_SCALE = 1.4
 const FOIL_OFFSET = 0.5
 
@@ -49,7 +49,7 @@ const FOIL_OFFSET = 0.5
  * word and offset by that letter's position, so the seam is invisible and
  * the word still reads as one continuous piece of foil.
  */
-function reFoilChars(chars: HTMLElement[]) {
+function reFoilChars(chars: HTMLElement[], foilVar = '--foil-gold') {
   if (chars.length === 0) return
 
   // Measure the word from the letters themselves. SplitText may hoist them
@@ -66,7 +66,7 @@ function reFoilChars(chars: HTMLElement[]) {
 
   chars.forEach((char, i) => {
     const offset = rects[i].left - left
-    char.style.backgroundImage = 'var(--foil-gold)'
+    char.style.backgroundImage = `var(${foilVar})`
     char.style.backgroundSize = `${bgWidth}px 100%`
     char.style.backgroundPosition = `${originX - offset}px 50%`
     char.style.backgroundClip = 'text'
@@ -124,7 +124,7 @@ export function Hero({ active }: Props) {
       gsap.utils.toArray<HTMLElement>('[data-name]').forEach((el, i) => {
         const split = new SplitText(el, { type: 'chars' })
         splits.push(split)
-        reFoilChars(split.chars as HTMLElement[])
+        reFoilChars(split.chars as HTMLElement[], '--foil-rose')
         tl.fromTo(
           split.chars,
           { autoAlpha: 0, yPercent: 40, rotate: 3 },
@@ -236,6 +236,7 @@ export function Hero({ active }: Props) {
           <span data-hero-item data-name className="block">
             <GoldGlitterText
               block
+              tone="rose"
               className="font-script text-fluid-5xl leading-[1.1]"
               specks={16}
             >
@@ -252,6 +253,7 @@ export function Hero({ active }: Props) {
           <span data-hero-item data-name className="block">
             <GoldGlitterText
               block
+              tone="rose"
               className="font-script text-fluid-5xl leading-[1.1]"
               specks={16}
             >

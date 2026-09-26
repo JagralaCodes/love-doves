@@ -78,6 +78,7 @@ function FamilyCard({ initial, name, relation, parents, side, rtl, lang }: CardP
           <GoldGlitterText
             block
             as="h3"
+            tone="rose"
             className="font-script text-fluid-2xl leading-tight"
             specks={8}
           >

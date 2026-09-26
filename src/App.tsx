@@ -233,6 +233,7 @@ export default function App() {
             <GoldGlitterText
               block
               as="p"
+              tone="dark"
               className={`mt-9 ${ur ? 'font-urdu text-fluid-xl leading-[2.4]' : 'font-display text-fluid-2xl'}`}
               specks={12}
             >

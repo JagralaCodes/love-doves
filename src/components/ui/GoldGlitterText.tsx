@@ -13,6 +13,11 @@ type Props = {
   /** Turn the shine sweep off for small static labels. */
   shine?: boolean
   /**
+   * Which background this sits on. 'dark' uses the brighter foil; on light
+   * backgrounds the deep foil is what keeps thin strokes legible.
+   */
+  tone?: 'light' | 'dark' | 'rose'
+  /**
    * Lay the text out as its own block. Default is inline-block so it can
    * sit inside a sentence; pass `block` for standalone headings and lines.
    */
@@ -43,6 +48,7 @@ export function GoldGlitterText({
   className = '',
   specks = 12,
   shine = true,
+  tone = 'light',
   block = false,
   lang,
   dir,
@@ -76,7 +82,13 @@ export function GoldGlitterText({
       dir={dir}
     >
       <span
-        className={`foil-text ${shine && !reduced ? 'foil-shimmer' : ''}`}
+        className={`${
+          tone === 'dark'
+            ? 'foil-text-bright'
+            : tone === 'rose'
+              ? 'rose-foil-text'
+              : 'foil-text'
+        } ${shine && !reduced ? 'foil-shimmer' : ''}`}
         // The gradient must paint over the glyphs, so the text itself
         // stays in normal flow and the specks layer on top of it.
       >

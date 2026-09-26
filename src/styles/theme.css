@@ -143,30 +143,54 @@
 
 :root {
   /* Gold foil — gold-dark -> gold -> gold-light -> gold -> gold-dark */
-  /* Gold foil.
-     Symmetric dark -> bright -> dark, and the highlight stops well short of
-     white: text is clipped to this gradient, so a near-white stop makes that
-     part of a word vanish against the pearl-white page. Both ends are dark
-     so a word always starts and finishes legible. */
+  /* Gold foil, for LIGHT backgrounds.
+     Deliberately dark. Pinyon Script is a hairline face, and a bright gold
+     at ~2:1 against white loses those thin strokes entirely — letters look
+     half-missing. This antique range keeps them readable. */
   --foil-gold: linear-gradient(
     100deg,
-    #7d5f1c 0%,
-    #a67c1f 12%,
-    #c49b2e 26%,
-    #d9b544 40%,
-    #efd98f 50%,
-    #d9b544 60%,
-    #c49b2e 74%,
-    #a67c1f 88%,
-    #7d5f1c 100%
+    #6b5016 0%,
+    #8a6b23 14%,
+    #a67c1f 30%,
+    #c49b2e 44%,
+    #d4af37 50%,
+    #c49b2e 56%,
+    #a67c1f 70%,
+    #8a6b23 86%,
+    #6b5016 100%
   );
+
+  /* The same foil for DARK backgrounds, where it can run bright without
+     losing anything. */
+  --foil-gold-bright: linear-gradient(
+    100deg,
+    #a67c1f 0%,
+    #c49b2e 16%,
+    #d9b544 32%,
+    #f0dca0 46%,
+    #fdf3d8 50%,
+    #f0dca0 54%,
+    #d9b544 68%,
+    #c49b2e 84%,
+    #a67c1f 100%
+  );
+  /* Wine-rose foil — what the couple's names are set in.
+     Gold is beautiful on the dark sections but cannot hold Pinyon Script's
+     hairline strokes against white: the thin parts of a 'j' or a swash drop
+     below the contrast floor and letters look half-drawn. Wine keeps the
+     metallic sweep and stays readable, and the palette assigns wine to
+     names anyway. */
   --foil-rose: linear-gradient(
     100deg,
-    #9b2c4a 0%,
-    #c56a85 30%,
-    #f9d9e1 50%,
-    #c56a85 70%,
-    #9b2c4a 100%
+    #5e1227 0%,
+    #7a2038 14%,
+    #9b2c4a 32%,
+    #b8536d 46%,
+    #c9647f 50%,
+    #b8536d 54%,
+    #9b2c4a 68%,
+    #7a2038 86%,
+    #5e1227 100%
   );
 
   /* Soft gold halo behind glitter text — a glow, not a neon. */
