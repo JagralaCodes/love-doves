@@ -92,12 +92,17 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 - [x] Hearts fall among the petals; pointer/touch nudges them aside
 - [x] Blur on hidden words limited to high-tier devices
 
-## Phase 5 — Save the Date (scratch card)
-- [ ] `ui/ScratchCard.tsx` — canvas foil drawn procedurally (gold gradient + noise + girih)
-- [ ] `destination-out` scratching, pointer events, `touch-action: none`
-- [ ] 55% cleared -> foil fades, date reveals, gold star/petal burst
-- [ ] "Tap to reveal" fallback button; auto-revealed under reduced motion
-- [ ] Handles resize + DPR without wiping progress
+## Phase 5 — Save the Date (scratch card)  ✅ DONE
+- [x] `ui/ScratchCard` — foil drawn procedurally: raking gradient, brushed grain, girih lattice
+- [x] `destination-out` scratching, segment-interpolated so fast drags leave no gaps
+- [x] `touch-action: none` so a scratch does not scroll the page
+- [x] Coverage sampled on release, not per frame — getImageData stalls the pipeline
+- [x] 55% cleared -> foil fades, gold/rose burst, petals and hearts fall
+- [x] "Or tap to reveal" fallback; auto-revealed under reduced motion
+- [x] sr-only live region reports scratch progress
+- [x] DPR capped at 2; repaints whole on resize
+- [x] `setPointerCapture` guarded — it throws on an unknown pointer id
+- [x] `sections/SaveTheDate` — foil inside the ogee arch panel
 
 ## Phase 6 — Event swipe cards
 - [ ] `sections/Events.tsx` — deck of cards from `wedding.events`

@@ -15,15 +15,15 @@ import { SparkleField } from './components/ui/SparkleField'
 import { PearlBokeh } from './components/ui/PearlBokeh'
 import { ShimmerDust } from './components/ui/ShimmerDust'
 import { SparkleLayer } from './components/ui/SparkleLayer'
-import { ArchPanel } from './components/ui/ArchPanel'
 import { LanguageToggle } from './components/ui/LanguageToggle'
 import { Gate } from './components/sections/Gate'
 import { Hero } from './components/sections/Hero'
 import { QuranVerse } from './components/sections/QuranVerse'
 import { Families } from './components/sections/Families'
+import { SaveTheDate } from './components/sections/SaveTheDate'
 
 import { wedding } from './config/wedding.config'
-import { formatFullDate, formatTime, splitDate } from './lib/date'
+import { formatFullDate, formatTime } from './lib/date'
 
 export default function App() {
   const lenisRef = useSmoothScroll()
@@ -35,7 +35,6 @@ export default function App() {
   const t = langAttrs(lang)
   const ur = lang === 'ur'
 
-  const dateRef = useReveal<HTMLDivElement>({ variant: 'scale-in' })
   const eventsRef = useReveal<HTMLDivElement>({
     variant: 'stagger-up',
     children: '[data-card]',
@@ -43,7 +42,6 @@ export default function App() {
   })
   const venueRef = useReveal<HTMLDivElement>({ variant: 'slide-left' })
 
-  const main = splitDate(wedding.events[0].date)
   const eventName = (n: string) => (ur ? (wedding.urdu.events[n] ?? n) : n)
 
   return (
@@ -62,37 +60,7 @@ export default function App() {
 
         <Families />
 
-        {/* ═══════════════ SAVE THE DATE ═══════════════ */}
-        <section className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]">
-          <GeometricPattern scale={104} opacity={0.05} />
-          <SparkleField count={8} tone="gold" />
-
-          <div ref={dateRef} className="relative z-10 mx-auto max-w-[17rem]">
-            <ArchPanel variant="ogee">
-              <p
-                className={`text-2xs tracking-[0.35em] text-wine-soft ${ur ? 'font-urdu' : 'uppercase'}`}
-                lang={t.lang}
-                dir={t.dir}
-              >
-                {ur ? wedding.urdu.saveTheDate : wedding.texts.saveTheDate}
-              </p>
-              <GoldGlitterText
-                block
-                as="p"
-                className="nums-lining mt-2 font-display text-fluid-5xl leading-none"
-                specks={12}
-              >
-                {main.day}
-              </GoldGlitterText>
-              <p className="font-display text-fluid-lg tracking-[0.2em] text-wine uppercase">
-                {main.month}
-              </p>
-              <p className="nums-lining text-2xs mt-1 tracking-[0.2em] text-wine-soft">
-                {main.weekday} · {main.year}
-              </p>
-            </ArchPanel>
-          </div>
-        </section>
+        <SaveTheDate />
 
         {/* ═══════════════ EVENTS ═══════════════ */}
         <section className="relative overflow-hidden bg-blush-soft px-[var(--page-gutter)] py-[var(--section-gap)]">

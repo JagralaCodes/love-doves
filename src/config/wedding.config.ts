@@ -78,6 +78,7 @@ export const wedding = {
     thankYou: 'Jazakallahu Khairan',
 
     scratchPrompt: 'Scratch to reveal our special day',
+    tapToReveal: 'Or tap to reveal',
     saveTheDate: 'Save the date',
     countdownHeading: 'Counting the days',
     dayIsHere: 'Alhamdulillah, the day is here',
@@ -107,6 +108,8 @@ export const wedding = {
     presenceLine: 'آپ کی شرکت اور دعائیں ہمارے لیے سب کچھ ہیں',
     thankYou: 'جزاک اللہ خیراً',
     saveTheDate: 'تاریخ محفوظ رکھیں',
+    scratchPrompt: 'ہمارا خاص دن دیکھنے کے لیے کھرچیں',
+    tapToReveal: 'یا چھو کر دیکھیں',
     venueHeading: 'مقام',
     familiesHeading: 'ہمارے خاندانوں کے ساتھ',
     viewOnMap: 'نقشہ دیکھیں',
