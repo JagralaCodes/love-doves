@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { animate, motion, useMotionValue, useTransform } from 'motion/react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { sparkleBurst } from '../../lib/sparkleBus'
+import { resolveThrow } from '../../lib/deckThrow'
 
 type Props<T> = {
   items: readonly T[]
@@ -18,17 +19,6 @@ type Props<T> = {
   onFirstDrag?: () => void
 }
 
-/**
- * How far a drag must travel before the card is thrown rather than returned,
- * as a fraction of the CARD's width — not the viewport's. The invitation is a
- * fixed ~480px column at every screen size, so a viewport-derived threshold
- * would demand a 478px drag on a desktop window, further than the card is
- * wide, and the deck could never be swiped at all.
- */
-const THROW_RATIO = 0.28
-const THROW_MIN = 72
-/** A fast flick counts even when it barely moved. */
-const FLICK_VELOCITY = 460
 /** Cards drawn behind the top one. More than two is never visible. */
 const PEEK = 2
 
@@ -104,10 +94,11 @@ export function EventDeck<T>({
 
   const onDragEnd = useCallback(
     (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
-      const threshold = Math.max(THROW_MIN, cardWidth() * THROW_RATIO)
-      const thrown =
-        Math.abs(info.offset.x) > threshold ||
-        Math.abs(info.velocity.x) > FLICK_VELOCITY
+      const { thrown, forward } = resolveThrow(
+        info.offset.x,
+        info.velocity.x,
+        cardWidth(),
+      )
 
       if (!thrown || total < 2) {
         // Too short a pull: the card falls back into the stack.
@@ -115,7 +106,6 @@ export function EventDeck<T>({
         return
       }
 
-      const forward = info.offset.x < 0
       // Sparkles come off the card itself, wherever it was let go.
       const r = cardRef.current?.getBoundingClientRect()
       if (r) {
@@ -130,6 +120,22 @@ export function EventDeck<T>({
     [cardWidth, go, index, reduced, total, x],
   )
 
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (total < 2) return
+      // Home/End jump the deck's ends; the arrows step and wrap.
+      if (e.key === 'ArrowRight') next()
+      else if (e.key === 'ArrowLeft') prev()
+      else if (e.key === 'Home') go(0, 1)
+      else if (e.key === 'End') go(total - 1, -1)
+      else return
+      // Only swallow the keys we actually handled, so Tab and the rest
+      // still behave normally inside the card.
+      e.preventDefault()
+    },
+    [go, next, prev, total],
+  )
+
   const onDragStart = useCallback(() => {
     if (draggedRef.current) return
     draggedRef.current = true
@@ -142,10 +148,15 @@ export function EventDeck<T>({
   return (
     <div className={`relative ${className}`}>
       <div
-        className="relative"
+        className="relative rounded-[1.35rem]"
         role="group"
         aria-roledescription="carousel"
         aria-label={label(items[index], index, total)}
+        // Focusable so the deck answers the arrow keys directly, the way a
+        // carousel is expected to. The arrows and dots below remain the
+        // explicit controls; this is the shortcut, not the only route.
+        tabIndex={total > 1 ? 0 : -1}
+        onKeyDown={onKeyDown}
       >
         {/* Bare frames behind the top card: depth without duplicate content. */}
         {Array.from({ length: shells }, (_, i) => {

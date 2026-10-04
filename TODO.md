@@ -104,12 +104,37 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 - [x] `setPointerCapture` guarded — it throws on an unknown pointer id
 - [x] `sections/SaveTheDate` — foil inside the ogee arch panel
 
-## Phase 6 — Event swipe cards
-- [ ] `sections/Events.tsx` — deck of cards from `wedding.events`
-- [ ] Motion drag, tilt while dragging, throw past threshold, snap back if short
-- [ ] Dots + prev/next arrow buttons, keyboard arrows
-- [ ] `lib/ics.ts` — client-side .ics generation + download
-- [ ] "Open in Maps" + "Add to Calendar" per card
+## Phase 6 — Event swipe cards ✅ DONE
+- [x] `sections/Events.tsx` — deck of cards from `wedding.events`
+- [x] `ui/EventDeck.tsx` — generic deck; only the top card holds content, the
+      ones behind are bare frames (no duplicate text, no hidden tab stops)
+- [x] Motion drag, tilt while dragging, throw past threshold, snap back if short
+- [x] `lib/deckThrow.ts` — the throw rule, extracted and unit tested (14 cases)
+- [x] Dots + prev/next arrow buttons, arrow/Home/End keys, wraps both ways
+- [x] `lib/ics.ts` — client-side .ics generation + download (27 assertions)
+- [x] "View on map" + "Add to calendar" per card, as hairline text links
+- [x] Swipe hint that retires itself on first drag
+
+### Carried forward, deliberately
+The brief asked for "Open in Maps" / "Add to Calendar" **buttons**. They are
+hairline text links instead — the filled, bordered treatment is exactly what
+made the earlier card look like a postage stamp. Same two actions, same
+tap targets, quieter.
+
+### Verified
+- .ics: structure, floating local DTSTART/DTEND, 2h default, midnight rollover,
+  RFC 5545 escaping, 75-octet folding, surrogate-pair safety, round-trip decode
+- Live: real button click produces a 620-byte `text/calendar` blob named
+  `nikah-2026-11-13.ics`, label flips to "Saved"
+- Deck: arrows, dots, wrapping, `aria-current` and live-region sync
+- Fixed: the throw threshold was `window.innerWidth * 0.28`. The invitation is
+  a fixed ~480px column, so on a desktop window that demanded a 478px drag —
+  wider than the card — and the deck could not be swiped at all. Now
+  card-relative.
+
+### Still needs a real device
+- The drag gesture itself end-to-end (the automated tab freezes rAF, so
+  Motion's frameloop never advances there; the decision rule is unit tested)
 
 ## Phase 7 — Countdown + Venue reveal
 - [ ] `sections/Countdown.tsx` — THE ONLY countdown on the site
@@ -136,6 +161,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 - [ ] OG tags + generated OG image (monogram + names + date, no photos) — blush/gold treatment
 - [ ] Contrast audit: gold on white is the risk area; wine for body text
 - [ ] Lighthouse mobile 90+; check no CLS, fonts preloaded
+- [ ] Bundle is 573 kB / 190 kB gzip — GSAP + Motion + Lenis all ship.
+      Code-split, or drop one animation library.
 
 ## Phase 10 — Ship
 - [ ] `npm run build` clean, preview verified
