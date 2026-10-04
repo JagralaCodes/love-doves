@@ -13,47 +13,59 @@
 
 export const wedding = {
   bride: {
-    name: 'Zauja',
-    parents: 'Mr. & Mrs. Abdul Rahman Jagrala',
+    /** Full name, as it reads on the family card. */
+    name: 'Huda Fahad Saliya',
+    shortName: 'Huda',
+    parents: 'Fahad Saliya & Memuna Fahad Saliya',
   },
   groom: {
-    name: 'Zaujj',
-    parents: 'Mr. & Mrs. Mohammed Yusuf Jagrala',
+    name: 'Mohammed Saliya',
+    shortName: 'Mohammed',
+    parents: 'Maajid Abdul Rahim Saliya & Rehana Maajid Saliya',
   },
 
   /** Shown on the wax seal, the family cards and the OG image. */
-  monogram: 'A & S',
+  monogram: 'H & M',
 
   /**
    * The ONE main event the single site-wide countdown targets.
    * ISO 8601 with an explicit offset so it is correct in every timezone.
    */
-  countdownTarget: '2026-11-13T11:00:00+05:30',
+  countdownTarget: '2026-11-13T11:00:00+05:30', // TODO: follows the unconfirmed Nikah time above
 
   events: [
     {
       name: 'Nikah',
       /** YYYY-MM-DD — formatted for display by lib/date.ts */
       date: '2026-11-13',
-      /** HH:mm in 24h — formatted for display by lib/date.ts */
+      /**
+       * HH:mm in 24h.
+       * TODO: UNCONFIRMED — a time was never given for the Nikah. This is a
+       * placeholder so the page renders; replace it before sharing the link.
+       */
       time: '11:00',
       /** Optional end time, used for the .ics calendar file. */
       endTime: '13:00',
-      venue: 'Masjid Al-Noor',
-      address: '14 Jumma Masjid Road, Shivajinagar, Bengaluru 560051',
-      mapsLink: 'https://maps.google.com/?q=Masjid+Al-Noor+Shivajinagar+Bengaluru',
+      venue: 'Masjid e Abu Bakar',
+      /** Locality confirmed from the map pin below (19.2735, 72.8913). */
+      address: 'Western Park, Mira Road (E), Thane',
+      /** Shared by the family. Pins the exact place rather than searching. */
+      mapsLink: 'https://maps.app.goo.gl/NqRjKr9MH6i4qUWC6',
       /** One short line of context shown under the venue. */
       note: 'The marriage contract, followed by dua.',
     },
     {
       name: 'Walima',
-      date: '2026-11-14',
+      date: '2026-11-15',
       time: '19:00',
-      endTime: '22:30',
-      venue: 'The Emerald Hall',
-      address: '88 Cunningham Road, Vasanth Nagar, Bengaluru 560052',
-      mapsLink: 'https://maps.google.com/?q=The+Emerald+Hall+Cunningham+Road+Bengaluru',
-      note: 'Dinner reception. Please join us.',
+      endTime: '22:00',
+      venue: 'Central Plaza Banquet',
+      address:
+        '1st Floor, Above Bank of India, Opp. HDFC Bank, Shanti Park, Mira Road (E), Thane 401107',
+      /** Shared by the family. Pins the exact place rather than searching. */
+      mapsLink: 'https://maps.app.goo.gl/UcoHkz6YoZaoEv4U6',
+      /** No dinner is being served, so the line does not promise one. */
+      note: 'Please join us for the Walima.',
     },
   ],
 
@@ -134,7 +146,8 @@ export const wedding = {
   },
 
   rsvp: {
-    deadline: '2026-11-20',
+    /** TODO: CONFIRM — was set after the wedding date; moved before it. */
+    deadline: '2026-11-05',
     /** Free key from https://web3forms.com — the form is disabled until this is set. */
     formAccessKey: '[WEB3FORMS ACCESS KEY]',
     receiverEmail: 'letsbegin81@gmail.com',

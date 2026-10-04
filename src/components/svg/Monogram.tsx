@@ -66,7 +66,19 @@ export function Monogram({
         textAnchor="middle"
         dominantBaseline="central"
         fill="url(#goldFoil)"
-        style={{ fontFamily: 'var(--font-script)', fontSize: 30 }}
+        style={{
+          // `var(--font-script, cursive)` rather than `var(--font-script), cursive`:
+          // if the custom property were ever missing, the second form is
+          // invalid at computed-value time and the whole declaration is
+          // dropped — it falls back to the INHERITED font, not to cursive.
+          // The fallback has to live inside var() to actually do anything.
+          fontFamily: 'var(--font-script, cursive)',
+          fontSize: 24,
+          // Pinyon Script ships at 400 only, so this is a synthetic bold.
+          // That is the intent here: the face is a hairline, and the
+          // initials need weight to hold up small and in gold.
+          fontWeight: 'bold',
+        }}
       >
         {initials}
       </text>
