@@ -18,9 +18,11 @@ const HEART_COUNT = 4
  * The opening gate: carved doors closed over the invitation, held by a
  * stack of four wax hearts.
  *
- * Each tap releases the front heart, which falls away under gravity with a
- * little spin and a sideways kick. When the last one goes, the doors swing
- * open in 3D and light floods through.
+ * The hearts sit concentrically, largest at the front, each one behind a
+ * step smaller so it is hidden until its turn. Each tap releases the front
+ * heart, which falls away under gravity with a little spin and a sideways
+ * kick, carrying its own stamped monogram with it. When the last one goes,
+ * the doors swing open and the gate fades off the invitation.
  *
  * There is no separate button — the hearts are the control. They are real
  * <button>s, so the whole sequence works from the keyboard too.
@@ -30,7 +32,6 @@ export function Gate({ onOpened }: Props) {
   const leftRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
   const stackRef = useRef<HTMLDivElement>(null)
-  const lightRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
 
   /** Refs, not state: taps can land faster than React re-renders. */
@@ -57,17 +58,14 @@ export function Gate({ onOpened }: Props) {
 
     const tl = gsap.timeline({ onComplete: onOpened })
 
+    // The doors swing, then the whole gate fades off the invitation.
+    // There is deliberately no light burst behind them: a full-bleed
+    // radial flash washed the page out to a flat oval and showed the hero
+    // through it mid-fade, which read as a glitch rather than an opening.
     tl.to(copyRef.current, { autoAlpha: 0, y: -12, duration: 0.4 })
       .to(leftRef.current, { rotateY: -102, duration: 1.5, ease: 'power3.inOut' }, 'swing')
       .to(rightRef.current, { rotateY: 102, duration: 1.5, ease: 'power3.inOut' }, 'swing')
-      .fromTo(
-        lightRef.current,
-        { autoAlpha: 0, scaleX: 0.1 },
-        { autoAlpha: 1, scaleX: 1, duration: 1.1, ease: 'power2.out' },
-        'swing+=0.15',
-      )
-      .to(lightRef.current, { autoAlpha: 0, duration: 0.6 }, 'swing+=1.15')
-      .to(root, { autoAlpha: 0, duration: 0.5 }, 'swing+=1.05')
+      .to(root, { autoAlpha: 0, duration: 0.6, ease: 'power2.inOut' }, 'swing+=0.95')
   }, [reduced, onOpened])
 
   const dropHeart = useCallback(() => {
@@ -125,10 +123,9 @@ export function Gate({ onOpened }: Props) {
     // The heart now in front lifts as the weight comes off it.
     const next = stack?.querySelector<HTMLElement>(`[data-heart="${index + 1}"]`)
     if (next) {
+      // It grows to full size as it becomes the front of the stack.
       gsap.to(next, {
         scale: 1,
-        xPercent: 0,
-        yPercent: 0,
         duration: 0.7,
         ease: 'expo.out',
         delay: 0.1,
@@ -164,17 +161,6 @@ export function Gate({ onOpened }: Props) {
       aria-label={wedding.texts.inviteLine}
     >
       <DoorDefs />
-
-      <div
-        ref={lightRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 45% 70% at 50% 45%, #fff8e0 0%, rgba(245,225,164,0.75) 28%, rgba(212,175,55,0.25) 55%, transparent 78%)',
-          transformOrigin: '50% 50%',
-        }}
-      />
 
       <div className="absolute inset-0 flex" style={{ transformStyle: 'preserve-3d' }}>
         <div
@@ -217,20 +203,29 @@ export function Gate({ onOpened }: Props) {
                 }
                 aria-hidden={isTop ? undefined : true}
                 tabIndex={isTop ? 0 : -1}
-                className="absolute inset-0 origin-center transition-transform duration-300 disabled:cursor-default"
+                // No CSS transition on transform: GSAP drives the lift and
+                // the fall, and a transition would smear every frame of it.
+                className="absolute inset-0 origin-center disabled:cursor-default"
                 style={{
-                  // Each heart behind the front one sits back and a little lower.
-                  transform: `translate(${depth * -5}px, ${depth * 7}px) scale(${1 - depth * 0.06})`,
+                  // Dead centre, no offset: the stack reads as one heart
+                  // seen face-on. Each heart behind is a step smaller, so
+                  // it hides completely behind the one in front and the
+                  // pile is only revealed as the front hearts fall away.
+                  transform: `scale(${1 - depth * 0.085})`,
                   zIndex: HEART_COUNT - depth,
                   pointerEvents: isTop ? 'auto' : 'none',
-                  filter: `drop-shadow(0 ${6 + depth * 2}px ${10 + depth * 4}px rgba(0,0,0,0.42))`,
+                  // One shadow for every heart. A depth-scaled shadow made
+                  // the hidden hearts cast a halo wider than the front one,
+                  // which showed as a smudge around an otherwise clean edge.
+                  filter: 'drop-shadow(0 6px 13px rgba(0,0,0,0.45))',
                 }}
               >
                 <HeartSeal
                   depth={depth - dropped}
-                  // The monogram rides whichever heart is currently in
-                  // front, so it never disappears with the first drop.
-                  initials={isTop ? wedding.monogram : undefined}
+                  // Every heart is stamped, so the monogram is already
+                  // there on the one behind and a falling heart carries
+                  // its own away with it.
+                  initials={wedding.monogram}
                   className="size-full"
                 />
               </button>

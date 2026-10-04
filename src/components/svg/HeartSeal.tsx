@@ -1,7 +1,7 @@
 import { useId } from 'react'
 
 type Props = {
-  /** Shown on the front-most heart only. */
+  /** The monogram stamped into the wax. Every heart carries one. */
   initials?: string
   className?: string
   /** 0 is the front heart; higher sits further back in the stack. */
@@ -15,8 +15,12 @@ const HEART_PATH =
  * A heart in pressed wax, bearing the monogram.
  *
  * Four of these stack on the gate. The back ones are dimmer and cooler so
- * the pile reads as depth rather than as one flat shape; only the front
- * heart carries the initials.
+ * the pile reads as depth rather than as one flat shape.
+ *
+ * Every heart is stamped with the monogram, and the stamp is part of the
+ * heart rather than an overlay on the front-most one: a heart knocked
+ * loose has to carry its own initials down with it, and the heart behind
+ * has to be already stamped when it comes into view.
  */
 export function HeartSeal({ initials, className = '', depth = 0 }: Props) {
   // Depth can arrive negative once hearts ahead of this one have gone.
@@ -61,14 +65,26 @@ export function HeartSeal({ initials, className = '', depth = 0 }: Props) {
         />
       </g>
 
-      {front && initials && (
+      {initials && (
         <text
           x="50"
           y="46"
           textAnchor="middle"
           dominantBaseline="central"
           fill="url(#goldFoil)"
-          style={{ fontFamily: 'var(--font-script)', fontSize: 24 }}
+        style={{
+          // `var(--font-script, cursive)` rather than `var(--font-script), cursive`:
+          // if the custom property were ever missing, the second form is
+          // invalid at computed-value time and the whole declaration is
+          // dropped — it falls back to the INHERITED font, not to cursive.
+          // The fallback has to live inside var() to actually do anything.
+          fontFamily: 'var(--font-script, cursive)',
+          fontSize: 24,
+          // Pinyon Script ships at 400 only, so this is a synthetic bold.
+          // That is the intent here: the face is a hairline, and the
+          // initials need weight to hold up small and in gold.
+          fontWeight: 'bold',
+        }}
         >
           {initials}
         </text>
