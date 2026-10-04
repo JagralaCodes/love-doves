@@ -5,7 +5,8 @@ import { useLang, langAttrs } from '../../hooks/useLang'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
 import { Monogram } from '../svg/Monogram'
-import { HeartCrescent, EightStar } from '../svg/Ornaments'
+import { EightStar } from '../svg/Ornaments'
+import { HeartKnot } from '../svg/HeartKnot'
 import { archHeadPath, JAMB_INSET } from '../svg/MihrabArch'
 import { SparkleField } from '../ui/SparkleField'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
@@ -38,7 +39,7 @@ function FamilyCard({ initial, name, relation, parents, side, rtl, lang }: CardP
         >
           <path
             d={`${archHeadPath('pointed')} L186 150 L14 150 Z`}
-            fill="url(#blushFace)"
+            fill="url(#archFaceTop)"
           />
           <path
             d={archHeadPath('pointed')}
@@ -49,7 +50,10 @@ function FamilyCard({ initial, name, relation, parents, side, rtl, lang }: CardP
             vectorEffect="non-scaling-stroke"
           />
         </svg>
-        <div className="pointer-events-none absolute inset-x-0 bottom-[-14%] flex justify-center">
+        {/* Inside the arch head. It used to hang at -14%, straddling
+            the springline, so it read as stuck to the seam rather
+            than seated in the arch. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-[7%] flex justify-center">
           <Monogram initials={initial} className="w-14" variant="roundel" />
         </div>
       </div>
@@ -74,7 +78,7 @@ function FamilyCard({ initial, name, relation, parents, side, rtl, lang }: CardP
           style={{ background: 'var(--foil-gold)', opacity: 0.8 }}
         />
 
-        <div className="relative px-5 pt-10 pb-7 text-center">
+        <div className="relative px-5 pt-7 pb-7 text-center">
           <GoldGlitterText
             block
             as="h3"
@@ -128,7 +132,7 @@ export function Families() {
 
       if (reduced) {
         gsap.fromTo(
-          cards,
+          [...cards, ...gsap.utils.toArray<HTMLElement>('[data-join]')],
           { autoAlpha: 0 },
           {
             autoAlpha: 1,
@@ -138,6 +142,7 @@ export function Families() {
             scrollTrigger: { trigger: section, start: 'top 80%', once: true },
           },
         )
+        // No scrubbing and no drawing-on: the cord is simply already tied.
         return
       }
 
@@ -158,18 +163,40 @@ export function Families() {
         )
       })
 
+      // The heart arrives on its own.
       gsap.fromTo(
-        '[data-join]',
-        { autoAlpha: 0, scale: 0.5 },
+        '[data-heart-enter]',
+        { autoAlpha: 0, scale: 0.4 },
         {
           autoAlpha: 1,
           scale: 1,
-          duration: 1,
-          ease: 'expo.out',
-          delay: 0.5,
+          duration: 1.1,
+          ease: 'back.out(1.7)',
+          delay: 0.45,
           scrollTrigger: { trigger: section, start: 'top 78%', once: true },
         },
       )
+
+      // The cord draws itself as the section passes, so it reads as being
+      // paid out from the bride's card, around the heart, to the groom's.
+      // Scrubbed rather than played: the viewer's scroll is what feeds it.
+      const cords = gsap.utils.toArray<SVGPathElement>('[data-cord]')
+      if (cords.length) {
+        gsap.set(cords, { drawSVG: '0%' })
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: '[data-join]',
+              start: 'top 88%',
+              end: 'bottom 55%',
+              scrub: 0.8,
+            },
+          })
+          .to('[data-cord="in"]', { drawSVG: '100%', ease: 'none' })
+          // Both halves of the loop pay out together, parting around the heart.
+          .to('[data-cord="back"], [data-cord="front"]', { drawSVG: '100%', ease: 'none' })
+          .to('[data-cord="out"]', { drawSVG: '100%', ease: 'none' })
+      }
     }, section)
 
     return () => ctx.revert()
@@ -202,11 +229,11 @@ export function Families() {
           lang={t.lang}
         />
 
-        {/* the motif that joins the two families */}
-        <span data-join className="flex items-center justify-center gap-4">
-          <span className="h-px w-14 bg-gradient-to-r from-transparent to-gold/60" />
-          <HeartCrescent className="w-11" title="Heart and crescent" />
-          <span className="h-px w-14 bg-gradient-to-l from-transparent to-gold/60" />
+        {/* The motif that joins the two families. The cord draws itself
+            as the section scrolls, running from the bride's card, around
+            the heart, and on to the groom's. */}
+        <span data-join className="-my-2 flex justify-center">
+          <HeartKnot className="w-[5.5rem]" title="A heart joining the two families" />
         </span>
 
         <FamilyCard

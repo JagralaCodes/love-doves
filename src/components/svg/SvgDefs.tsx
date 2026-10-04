@@ -71,6 +71,17 @@ export function SvgDefs() {
         </radialGradient>
 
         {/* Blush card face — a barely-there warm tint, not a flat fill. */}
+        {/* For an arch head that sits directly ON another surface.
+            `blushFace` ends on #fce4ea, but the card body beneath it is
+            #fdf1f4 — so the join showed as a hard colour step straight
+            across the card. This one lands exactly on the body colour,
+            so the head and the body read as one continuous surface. */}
+        <linearGradient id="archFaceTop" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="60%" stopColor="#fefafb" />
+          <stop offset="100%" stopColor="#fdf1f4" />
+        </linearGradient>
+
         <linearGradient id="blushFace" x1="0" y1="0" x2="0.4" y2="1">
           <stop offset="0%" stopColor="#ffffff" />
           <stop offset="55%" stopColor="#fdf1f4" />
