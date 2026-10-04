@@ -14,12 +14,12 @@
 export const wedding = {
   bride: {
     /** Full name, as it reads on the family card. */
-    name: 'Huda Fahad Saliya',
+    name: 'Huda',
     shortName: 'Huda',
     parents: 'Fahad Saliya & Memuna Fahad Saliya',
   },
   groom: {
-    name: 'Mohammed Saliya',
+    name: 'Mohammed',
     shortName: 'Mohammed',
     parents: 'Maajid Abdul Rahim Saliya & Rehana Maajid Saliya',
   },
@@ -107,6 +107,31 @@ export const wedding = {
     viewOnMap: 'View on map',
     daughterOf: 'Daughter of',
     sonOf: 'Son of',
+
+    /* Countdown */
+    countdownTo: 'until the Nikah',
+    days: 'Days',
+    hours: 'Hours',
+    minutes: 'Minutes',
+    seconds: 'Seconds',
+
+    /* Venue envelope */
+    swipeUp: 'Tap or swipe up to open',
+
+    /* RSVP */
+    rsvpBy: 'Please reply by',
+    rsvpName: 'Your name',
+    rsvpFamily: 'Family name',
+    rsvpMembers: 'Number of guests',
+    rsvpDua: 'A dua or a message (optional)',
+    rsvpSubmit: 'Send RSVP',
+    rsvpSending: 'Sending…',
+    rsvpThanks: 'Jazakallah Khair — we received your RSVP',
+    rsvpError: 'That did not go through. Please try again, or message us directly.',
+    rsvpDisabled: 'RSVP opens soon',
+    required: 'Required',
+    /** Shown beneath the names on the closing page. */
+    withLove: 'With love and duas',
   },
 
   /**
@@ -139,6 +164,31 @@ export const wedding = {
     viewOnMap: 'نقشہ دیکھیں',
     daughterOf: 'دختر',
     sonOf: 'پسر',
+
+    countdownHeading: 'دن گن رہے ہیں',
+    countdownTo: 'نکاح تک',
+    dayIsHere: 'الحمدللہ، وہ دن آ گیا',
+    days: 'دن',
+    hours: 'گھنٹے',
+    minutes: 'منٹ',
+    seconds: 'سیکنڈ',
+
+    envelopePrompt: 'کھولنے کے لیے چھوئیں',
+    swipeUp: 'چھوئیں یا اوپر سوائپ کریں',
+
+    rsvpHeading: 'کیا آپ شامل ہوں گے؟',
+    rsvpBy: 'براہِ کرم جواب دیں',
+    rsvpName: 'آپ کا نام',
+    rsvpFamily: 'خاندان کا نام',
+    rsvpMembers: 'مہمانوں کی تعداد',
+    rsvpDua: 'دعا یا پیغام (اختیاری)',
+    rsvpSubmit: 'جواب بھیجیں',
+    rsvpSending: 'بھیجا جا رہا ہے…',
+    rsvpThanks: 'جزاک اللہ خیر — آپ کا جواب موصول ہو گیا',
+    rsvpError: 'جواب نہیں پہنچ سکا۔ دوبارہ کوشش کریں، یا ہمیں براہِ راست پیغام بھیجیں۔',
+    rsvpDisabled: 'جواب جلد کھلے گا',
+    required: 'لازمی',
+    withLove: 'محبت اور دعاؤں کے ساتھ',
     events: {
       Nikah: 'نکاح',
       Walima: 'ولیمہ',
