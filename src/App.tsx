@@ -15,7 +15,6 @@ import { SparkleField } from './components/ui/SparkleField'
 import { PearlBokeh } from './components/ui/PearlBokeh'
 import { ShimmerDust } from './components/ui/ShimmerDust'
 import { SparkleLayer } from './components/ui/SparkleLayer'
-import { LanguageToggle } from './components/ui/LanguageToggle'
 import { Gate } from './components/sections/Gate'
 import { Hero } from './components/sections/Hero'
 import { QuranVerse } from './components/sections/QuranVerse'
@@ -43,8 +42,6 @@ export default function App() {
       <SparkleLayer />
 
       {!opened && <Gate onOpened={() => setOpened(true)} />}
-
-      <LanguageToggle className="fixed top-3 right-3 z-[60]" />
 
       <main>
         <Hero active={opened} />

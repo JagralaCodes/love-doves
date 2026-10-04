@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import { startLangUrlSync } from './lib/langStore'
 
 /**
  * The invitation always starts at the gate.
@@ -16,6 +17,11 @@ if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual'
 }
 window.scrollTo(0, 0)
+
+// The language lives in the URL, so a shared link opens in the language
+// it names. This also keeps it in step if the hash is edited or the
+// viewer navigates back.
+startLangUrlSync()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
