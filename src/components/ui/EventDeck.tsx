@@ -1,6 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { animate, motion, useMotionValue, useTransform } from 'motion/react'
+import { animate, motion, motionValue } from 'motion/react'
+import type { MotionValue } from 'motion/react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { sparkleBurst } from '../../lib/sparkleBus'
 import { resolveThrow } from '../../lib/deckThrow'
@@ -19,22 +20,38 @@ type Props<T> = {
   onFirstDrag?: () => void
 }
 
-/** Cards drawn behind the top one. More than two is never visible. */
+/** How many cards behind the top one are drawn. Deeper ones are hidden. */
 const PEEK = 2
+/**
+ * How far back each card sits: a step smaller and a step lower.
+ *
+ * The drop has to beat the shrink or there is no visible pile. Scaling
+ * about the centre already lifts the bottom edge by half the height lost
+ * (~12px on a 420px card), so STEP_Y has to clear that first.
+ */
+const STEP_SCALE = 0.055
+const STEP_Y = 26
 
 const SPRING = { type: 'spring', stiffness: 420, damping: 34, mass: 0.8 } as const
 
 /**
- * A deck of cards the viewer throws aside, one per event.
+ * A stack of cards that cycles: throw the top one off and it travels round
+ * and settles at the back of the pile, so the deck never runs out.
  *
- * Only the top card is draggable and only it carries content — the cards
- * behind are bare frames, so nothing is announced twice and the stack has
- * no hidden tab stops. Arrows and dots do the same job for anyone who is
- * not swiping, and the deck wraps, so it never dead-ends on the last card.
+ * Each card is its own element with its own position, kept for the life of
+ * the deck — they are never re-used to show a different event. That is
+ * what lets a card be followed all the way round: it slides off, its place
+ * in the pile becomes the back, and it slides home underneath the others.
+ * Swapping content between two elements, as this did before, can only ever
+ * make a card vanish and a different one appear.
  *
- * Throwing left moves forward; throwing right brings the previous card
- * back in from the edge, which is the same gesture reversed rather than a
- * second, unrelated transition.
+ * The cards are stacked in a single grid cell rather than absolutely
+ * positioned, so the deck is always exactly as tall as its tallest card
+ * and nothing shifts when the order changes.
+ *
+ * The top card slides straight along the swipe and does not tilt — a card
+ * thrown off a pile travels the way it was pushed, and rotating it is what
+ * made this read as a carousel.
  */
 export function EventDeck<T>({
   items,
@@ -52,45 +69,74 @@ export function EventDeck<T>({
   const cardRef = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
 
+  // One lasting x per card, so a card keeps its own position all the way
+  // round the pile. The count comes from the data, so these cannot be a
+  // list of useMotionValue calls — React's hook order has to be fixed.
+  // Keyed on the count: the event list comes from config and does not
+  // change at runtime, so in practice these are created once.
+  const xs = useMemo<MotionValue<number>[]>(
+    () => Array.from({ length: total }, () => motionValue(0)),
+    [total],
+  )
+
   /** The card's own width, which the throw distance and threshold key off. */
   const cardWidth = useCallback(() => cardRef.current?.offsetWidth || 320, [])
 
-  const x = useMotionValue(0)
-  // The card tips as it is pulled, the way a held card would.
-  const rotate = useTransform(x, [-260, 0, 260], reduced ? [0, 0, 0] : [-12, 0, 12])
-  const opacity = useTransform(x, [-320, -140, 0, 140, 320], [0.15, 1, 1, 1, 0.15])
-  // The card behind rises to meet the gap as the top one is pulled away.
-  const peekScale = useTransform(x, [-240, 0, 240], [1, 0.945, 1])
-  const peekLift = useTransform(x, [-240, 0, 240], [0, 14, 0])
+  /** Where a card sits in the pile: 0 is the top, 1 is behind it, and so on. */
+  const rankOf = useCallback(
+    (i: number) => (i - index + total) % total,
+    [index, total],
+  )
 
-  const flyDuration = reduced ? 0.18 : 0.4
-
-  /** Throws the top card out to `dir`, then brings `target` in from the other side. */
-  const go = useCallback(
-    (target: number, dir: -1 | 1) => {
+  /**
+   * Throws the card on top off to `dir`, moves the deck on, then walks it
+   * back in to the rear of the pile.
+   */
+  const throwTop = useCallback(
+    (dir: -1 | 1) => {
       if (busyRef.current || total < 2) return
       busyRef.current = true
 
-      // Far enough to clear the column, which clips its own overflow.
-      const width = cardWidth() * 1.4
-      animate(x, dir * width, {
-        duration: flyDuration,
+      const from = index
+      const x = xs[from]
+      const travel = cardWidth() * 1.45
+
+      animate(x, dir * travel, {
+        duration: reduced ? 0.16 : 0.38,
         ease: [0.32, 0, 0.67, 0],
       }).then(() => {
-        // Park the incoming card off the opposite edge before it is filled
-        // with new content, so it is never seen in the wrong place.
-        x.jump(-dir * width)
-        setIndex(((target % total) + total) % total)
-        animate(x, 0, reduced ? { duration: 0.2 } : SPRING).then(() => {
-          busyRef.current = false
-        })
+        // The deck moves on. This card is now the LAST in the pile, so its
+        // rank-driven scale and offset are already heading for the back.
+        setIndex((i) => (i + 1) % total)
+        // It comes home from the edge it left by, underneath everything —
+        // its z-index went to the bottom the moment the deck moved on.
+        animate(x, 0, reduced ? { duration: 0.2 } : { duration: 0.55, ease: 'easeOut' }).then(
+          () => {
+            busyRef.current = false
+          },
+        )
       })
     },
-    [cardWidth, flyDuration, reduced, total, x],
+    [cardWidth, index, reduced, total, xs],
   )
 
-  const next = useCallback(() => go(index + 1, -1), [go, index])
-  const prev = useCallback(() => go(index - 1, 1), [go, index])
+  /** Steps the deck back, drawing the card underneath out to the front. */
+  const stepBack = useCallback(() => {
+    if (busyRef.current || total < 2) return
+    busyRef.current = true
+    const target = (index - 1 + total) % total
+    const x = xs[target]
+    // It is at the back; bring it round the outside rather than letting it
+    // grow through the pile.
+    x.jump(-cardWidth() * 1.45)
+    setIndex(target)
+    animate(x, 0, reduced ? { duration: 0.2 } : SPRING).then(() => {
+      busyRef.current = false
+    })
+  }, [cardWidth, index, reduced, total, xs])
+
+  const next = useCallback(() => throwTop(-1), [throwTop])
+  const prev = useCallback(() => stepBack(), [stepBack])
 
   const onDragEnd = useCallback(
     (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
@@ -101,12 +147,11 @@ export function EventDeck<T>({
       )
 
       if (!thrown || total < 2) {
-        // Too short a pull: the card falls back into the stack.
-        animate(x, 0, reduced ? { duration: 0.16 } : SPRING)
+        // Too short a pull: the card falls back onto the pile.
+        animate(xs[index], 0, reduced ? { duration: 0.16 } : SPRING)
         return
       }
 
-      // Sparkles come off the card itself, wherever it was let go.
       const r = cardRef.current?.getBoundingClientRect()
       if (r) {
         sparkleBurst(r.left + r.width / 2, r.top + r.height / 2, {
@@ -115,25 +160,23 @@ export function EventDeck<T>({
           power: 160,
         })
       }
-      go(forward ? index + 1 : index - 1, forward ? -1 : 1)
+      // Off the way it was pushed, either way — then round to the back.
+      throwTop(forward ? -1 : 1)
     },
-    [cardWidth, go, index, reduced, total, x],
+    [cardWidth, index, reduced, throwTop, total, xs],
   )
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (total < 2) return
-      // Home/End jump the deck's ends; the arrows step and wrap.
       if (e.key === 'ArrowRight') next()
       else if (e.key === 'ArrowLeft') prev()
-      else if (e.key === 'Home') go(0, 1)
-      else if (e.key === 'End') go(total - 1, -1)
       else return
       // Only swallow the keys we actually handled, so Tab and the rest
       // still behave normally inside the card.
       e.preventDefault()
     },
-    [go, next, prev, total],
+    [next, prev, total],
   )
 
   const onDragStart = useCallback(() => {
@@ -142,59 +185,66 @@ export function EventDeck<T>({
     onFirstDrag?.()
   }, [onFirstDrag])
 
-  // Only draw as many shells as there are other cards to suggest.
-  const shells = Math.min(PEEK, Math.max(0, total - 1))
-
   return (
     <div className={`relative ${className}`}>
       <div
-        className="relative rounded-[1.35rem]"
+        className="relative grid"
         role="group"
         aria-roledescription="carousel"
         aria-label={label(items[index], index, total)}
-        // Focusable so the deck answers the arrow keys directly, the way a
-        // carousel is expected to. The arrows and dots below remain the
-        // explicit controls; this is the shortcut, not the only route.
         tabIndex={total > 1 ? 0 : -1}
         onKeyDown={onKeyDown}
       >
-        {/* Bare frames behind the top card: depth without duplicate content. */}
-        {Array.from({ length: shells }, (_, i) => {
-          const depth = shells - i
+        {items.map((item, i) => {
+          const rank = rankOf(i)
+          const isTop = rank === 0
+          // Deeper than the pile shows: parked, invisible, out of the way.
+          const buried = rank > PEEK
           return (
             <motion.div
-              key={`shell-${depth}`}
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 rounded-[1.35rem] border border-gold/25 bg-blush-soft"
-              style={{
-                zIndex: i,
-                // The nearest shell tracks the drag; the one behind is static.
-                scale: depth === 1 ? peekScale : 0.9,
-                y: depth === 1 ? peekLift : 26,
-                boxShadow: '0 10px 26px -18px rgba(94,18,39,0.4)',
+              key={i}
+              // Every card in the same grid cell: the deck is as tall as its
+              // tallest card, and no card has to change positioning when the
+              // order changes.
+              className="col-start-1 row-start-1 rounded-[1.35rem]"
+              ref={isTop ? cardRef : undefined}
+              drag={isTop && total > 1 ? 'x' : false}
+              // No constraints: the card tracks the finger one-to-one and the
+              // release is resolved by hand, so a short pull springs back and
+              // a long one keeps its momentum out of frame.
+              dragElastic={1}
+              dragMomentum={false}
+              onDragStart={isTop ? onDragStart : undefined}
+              onDragEnd={isTop ? onDragEnd : undefined}
+              whileDrag={{ cursor: 'grabbing' }}
+              // Only the card on top is reachable. The rest are real cards,
+              // really filled in — a blank card behind the front one reads
+              // as a bug — but `inert` keeps their text out of the reading
+              // order and their buttons out of the tab order.
+              inert={!isTop}
+              aria-hidden={!isTop || undefined}
+              animate={{
+                scale: 1 - STEP_SCALE * Math.min(rank, PEEK),
+                y: STEP_Y * Math.min(rank, PEEK),
+                opacity: buried ? 0 : 1,
               }}
-            />
+              transition={reduced ? { duration: 0.2 } : SPRING}
+              style={{
+                // No `rotate`: a card thrown off a pile travels the way it
+                // was pushed.
+                x: xs[i],
+                zIndex: total - rank,
+                pointerEvents: isTop ? 'auto' : 'none',
+                transformOrigin: 'center',
+                // pan-y, not none: a vertical flick still scrolls the page,
+                // so the deck never becomes a trap mid-invitation.
+                touchAction: 'pan-y',
+              }}
+            >
+              {children(item, i)}
+            </motion.div>
           )
         })}
-
-        <motion.div
-          ref={cardRef}
-          drag={total > 1 ? 'x' : false}
-          // No constraints: the card tracks the finger one-to-one and the
-          // release is resolved by hand, so a short pull springs back and a
-          // long one keeps its momentum out of frame.
-          dragElastic={1}
-          dragMomentum={false}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          whileDrag={{ cursor: 'grabbing' }}
-          className="relative z-10 rounded-[1.35rem]"
-          // pan-y, not none: a vertical flick still scrolls the page, so the
-          // deck never becomes a trap halfway down a long invitation.
-          style={{ x, rotate, opacity, touchAction: 'pan-y' }}
-        >
-          {children(items[index], index)}
-        </motion.div>
       </div>
 
       {/* Arrows and dots — the whole deck without a single swipe. */}
@@ -208,7 +258,12 @@ export function EventDeck<T>({
                 key={i}
                 type="button"
                 onClick={() => {
-                  if (i !== index) go(i, i > index ? -1 : 1)
+                  // The pile moves one card at a time, so a dot steps the
+                  // deck the short way round rather than teleporting.
+                  const r = rankOf(i)
+                  if (r === 0) return
+                  if (r <= total / 2) throwTop(-1)
+                  else stepBack()
                 }}
                 aria-current={i === index}
                 aria-label={label(item, i, total)}
