@@ -5,6 +5,7 @@ import type { MotionValue } from 'motion/react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { sparkleBurst } from '../../lib/sparkleBus'
 import { resolveThrow } from '../../lib/deckThrow'
+import { TapButton } from './Tappable'
 
 type Props<T> = {
   items: readonly T[]
@@ -249,14 +250,14 @@ export function EventDeck<T>({
 
       {/* Arrows and dots — the whole deck without a single swipe. */}
       {total > 1 && (
-        <div className="mt-7 flex items-center justify-center gap-5">
+        <div className="mt-5 flex items-center justify-center gap-5">
           <DeckArrow direction="prev" label={prevLabel} onClick={prev} />
 
           <span className="flex items-center gap-2">
             {items.map((item, i) => (
-              <button
+              <TapButton
                 key={i}
-                type="button"
+                lift={false}
                 onClick={() => {
                   // The pile moves one card at a time, so a dot steps the
                   // deck the short way round rather than teleporting.
@@ -277,7 +278,7 @@ export function EventDeck<T>({
                     transform: i === index ? 'scale(1.25)' : 'scale(1)',
                   }}
                 />
-              </button>
+              </TapButton>
             ))}
           </span>
 
@@ -302,8 +303,7 @@ function DeckArrow({
   onClick: () => void
 }) {
   return (
-    <button
-      type="button"
+    <TapButton
       onClick={onClick}
       aria-label={label}
       className="grid size-[var(--tap-min)] place-items-center text-wine transition-opacity duration-300 hover:opacity-60"
@@ -318,6 +318,6 @@ function DeckArrow({
           strokeLinejoin="round"
         />
       </svg>
-    </button>
+    </TapButton>
   )
 }

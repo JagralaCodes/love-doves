@@ -173,7 +173,7 @@ export function Hero({ active }: Props) {
   return (
     <section
       ref={rootRef}
-      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-20"
+      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-14"
     >
       <GeometricPattern scale={104} opacity={0.055} />
       <PearlBokeh count={6} />
@@ -273,7 +273,7 @@ export function Hero({ active }: Props) {
           </span>
         </h1>
 
-        <span data-hero-item data-vine className="mt-8 block">
+        <span data-hero-item data-vine className="mt-6 block">
           <FloralVine className="mx-auto w-52" />
         </span>
 

@@ -7,6 +7,7 @@ import { EightStar, Heart } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { EventDeck } from '../ui/EventDeck'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
+import { TapButton, TapLink } from '../ui/Tappable'
 
 import { wedding } from '../../config/wedding.config'
 import type { WeddingEvent } from '../../config/wedding.config'
@@ -31,23 +32,25 @@ function CardAction({
 }) {
   const inner = (
     <>
-      <span className="border-b border-gold/50 pb-1">{children}</span>
+      <span>{children}</span>
       {icon}
       {srSuffix && <span className="sr-only">{srSuffix}</span>}
     </>
   )
 
+  // The underline grows out from the centre rather than the whole link
+  // dimming, and the control squeezes under a press.
   const className =
-    'text-2xs inline-flex items-center gap-1.5 tracking-[0.2em] text-wine uppercase transition-opacity duration-300 hover:opacity-70'
+    'link-grow text-2xs inline-flex items-center gap-1.5 tracking-[0.2em] text-wine uppercase'
 
   return as === 'a' ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+    <TapLink href={href} target="_blank" rel="noopener noreferrer" className={className}>
       {inner}
-    </a>
+    </TapLink>
   ) : (
-    <button type="button" onClick={onClick} className={className}>
+    <TapButton onClick={onClick} className={className}>
       {inner}
-    </button>
+    </TapButton>
   )
 }
 
@@ -74,7 +77,7 @@ function EventCard({ event }: { event: WeddingEvent }) {
     <article
       // A fixed minimum height keeps every card in the deck the same size,
       // so the stack behind the top one lines up whatever the address length.
-      className="relative flex min-h-[26rem] flex-col items-center justify-center overflow-hidden rounded-[1.35rem] border border-gold/30 bg-blush-soft px-6 py-9 text-center"
+      className="card-lift relative flex min-h-[26rem] flex-col items-center justify-center overflow-hidden rounded-[1.35rem] border border-gold/30 bg-blush-soft px-6 py-8 text-center"
       style={{ boxShadow: '0 18px 40px -26px rgba(94,18,39,0.45)' }}
     >
       {/* An inset hairline, so the edge reads as pressed rather than boxed in. */}
@@ -229,7 +232,7 @@ export function Events() {
         {ur ? wedding.urdu.eventsHeading : wedding.texts.eventsHeading}
       </h2>
 
-      <div ref={ref} className="relative z-10 mt-8">
+      <div ref={ref} className="relative z-10 mt-6">
         <EventDeck
           items={wedding.events}
           label={cardLabel}
@@ -244,7 +247,7 @@ export function Events() {
         {wedding.events.length > 1 && (
           <p
             aria-hidden="true"
-            className={`text-2xs mt-5 flex items-center justify-center gap-2 tracking-[0.3em] text-wine-soft/70 transition-opacity duration-500 ${
+            className={`text-2xs mt-4 flex items-center justify-center gap-2 tracking-[0.3em] text-wine-soft/70 transition-opacity duration-500 ${
               ur ? 'font-urdu' : 'uppercase'
             } ${hinted ? 'opacity-0' : 'opacity-100'}`}
           >

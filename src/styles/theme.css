@@ -211,7 +211,10 @@
      gutter stays small and the vertical rhythm does the work. */
   --app-max: 30rem; /* 480px — the widest the invitation ever gets */
   --page-gutter: clamp(1.375rem, 6vw, 1.75rem);
-  --section-gap: clamp(4rem, 15vw, 5.5rem);
+  /* Was clamp(4rem, 15vw, 5.5rem): on a 390px phone that is 58px of air
+     above AND below every section, and the page read as a run of islands.
+     The reveals and ornaments already give each section its own breath. */
+  --section-gap: clamp(3rem, 10vw, 4.25rem);
   --measure: 100%;
 
   /* Minimum comfortable touch target. */

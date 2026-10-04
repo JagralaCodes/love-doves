@@ -252,6 +252,47 @@
   font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
 
+@utility link-grow {
+  /* A text link whose underline grows out from the centre on hover and
+     focus, instead of the whole link just dimming. Touch gets the same
+     rule on :active. */
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.2em;
+    height: 1px;
+    background: var(--color-gold);
+    opacity: 0.6;
+    transform: scaleX(0.35);
+    transform-origin: center;
+    transition: transform 0.45s var(--ease-elegant), opacity 0.3s ease;
+  }
+  &:hover::after,
+  &:focus-visible::after,
+  &:active::after {
+    transform: scaleX(1);
+    opacity: 0.95;
+  }
+}
+
+@utility card-lift {
+  /* Cards rise a hair and their shadow deepens under a pointer. Transform
+     and shadow only, so it never reflows; a touch screen simply never
+     hovers and loses nothing. */
+  transition:
+    transform 0.5s var(--ease-elegant),
+    box-shadow 0.5s var(--ease-elegant);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 44px -26px rgba(94, 18, 39, 0.5);
+    }
+  }
+}
+
 @utility section-shell {
   position: relative;
   padding-inline: var(--page-gutter);

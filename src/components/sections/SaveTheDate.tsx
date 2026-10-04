@@ -46,7 +46,7 @@ export function SaveTheDate() {
         {ur ? wedding.urdu.scratchPrompt : wedding.texts.scratchPrompt}
       </p>
 
-      <div ref={ref} className="relative z-10 mx-auto mt-7 max-w-[17rem]">
+      <div ref={ref} className="relative z-10 mx-auto mt-6 max-w-[17rem]">
         <ScratchCard
           shape={ARCH}
           className="w-full"
