@@ -154,6 +154,15 @@
   text-shadow: var(--glow-gold);
   @supports (background-clip: text) or (-webkit-background-clip: text) {
     background-image: var(--foil-gold);
+    /* Vertical breathing room for the PAINT box, not the layout box.
+       `background-clip: text` clips the gradient to the glyphs, but only
+       within this element's background box — and that box is the font's
+       nominal content area. Anything hanging outside it (Amiri's sweeping
+       Arabic tails, Pinyon Script's swashes) has no background to be
+       clipped from and paints nothing, so the letter is present and
+       invisible. This is an inline box, so vertical padding enlarges the
+       background without touching line height or layout. */
+    padding-block: 0.5em;
     /* 140% centred: the word spans ~14-86% of the gradient, so it opens and
        closes on the dark stops with the highlight crossing its middle. */
     background-size: 140% 100%;
@@ -182,6 +191,15 @@
   color: var(--color-gold-light);
   @supports (background-clip: text) or (-webkit-background-clip: text) {
     background-image: var(--foil-gold-bright);
+    /* Vertical breathing room for the PAINT box, not the layout box.
+       `background-clip: text` clips the gradient to the glyphs, but only
+       within this element's background box — and that box is the font's
+       nominal content area. Anything hanging outside it (Amiri's sweeping
+       Arabic tails, Pinyon Script's swashes) has no background to be
+       clipped from and paints nothing, so the letter is present and
+       invisible. This is an inline box, so vertical padding enlarges the
+       background without touching line height or layout. */
+    padding-block: 0.5em;
     background-size: 140% 100%;
     background-position: 50% 50%;
     -webkit-background-clip: text;
@@ -196,6 +214,15 @@
   color: var(--color-wine);
   @supports (background-clip: text) or (-webkit-background-clip: text) {
     background-image: var(--foil-rose);
+    /* Vertical breathing room for the PAINT box, not the layout box.
+       `background-clip: text` clips the gradient to the glyphs, but only
+       within this element's background box — and that box is the font's
+       nominal content area. Anything hanging outside it (Amiri's sweeping
+       Arabic tails, Pinyon Script's swashes) has no background to be
+       clipped from and paints nothing, so the letter is present and
+       invisible. This is an inline box, so vertical padding enlarges the
+       background without touching line height or layout. */
+    padding-block: 0.5em;
     background-size: 140% 100%;
     background-position: 50% 50%;
     -webkit-background-clip: text;
@@ -359,6 +386,35 @@
   50% {
     transform: translate3d(0, -8px, 0);
   }
+}
+
+/* The joining heart, given a pulse so it reads as alive rather than as a
+   printed shape. Two beats and a rest, like a real one, instead of an even
+   sine — an evenly breathing heart looks like a loading spinner. */
+@keyframes heart-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  8% {
+    transform: scale(1.075);
+  }
+  16% {
+    transform: scale(1.01);
+  }
+  24% {
+    transform: scale(1.055);
+  }
+  34% {
+    transform: scale(1);
+  }
+}
+
+[data-heart-beat] {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: heart-beat 2.6s var(--ease-in-out-slow) infinite;
+  will-change: transform;
 }
 
 /* The swipe hint on the event deck: chevrons drift the way the card goes. */

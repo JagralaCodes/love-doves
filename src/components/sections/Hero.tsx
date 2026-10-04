@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { gsap, SplitText } from '../../lib/gsap'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useFitText } from '../../hooks/useFitText'
@@ -16,7 +16,6 @@ import { FallingPetals } from '../ui/FallingPetals'
 import { ScrollHint } from '../ui/ScrollHint'
 
 import { wedding } from '../../config/wedding.config'
-import { formatFullDate } from '../../lib/date'
 
 /**
  * Spelled out rather than the U+FDFD ligature.
@@ -33,46 +32,36 @@ type Props = {
   active: boolean
 }
 
-/** Must match `background-size` / `background-position` on the foil utilities. */
-const FOIL_SCALE = 1.4
-const FOIL_OFFSET = 0.5
-
 /**
- * Re-applies the gold foil to individual letters after a split.
+ * Makes split letters legible again after SplitText.
  *
- * `background-clip: text` paints the gradient on ONE element and clips it
- * to that element's glyphs. Splitting moves each letter into its own
- * inline-block span, which becomes its own paint context — so the parent's
- * gradient stops reaching the letters and they render fully transparent.
+ * The names were losing their descenders: "Zauja" rendered as "Zauа" and
+ * "Zaujj" as "Zauu". It was never clipping or a missing glyph — it was
+ * `background-clip: text` applied per letter.
  *
- * The fix is to give every letter the same gradient, sized to the whole
- * word and offset by that letter's position, so the seam is invisible and
- * the word still reads as one continuous piece of foil.
+ * Splitting puts each letter in its own inline-block span, which becomes
+ * its own paint context, so the parent's gradient stops reaching it. The
+ * previous fix re-applied the gradient to every letter. But a letter's
+ * background box is only as wide as its ADVANCE width, and Pinyon Script
+ * is a swash face whose `j` hangs far outside that box. The overflowing
+ * part of the glyph had no background to be clipped from, so it simply
+ * painted nothing — the letter was there, and invisible.
+ *
+ * So the split letters take a solid colour instead. That is the state the
+ * names are meant to end in anyway, it cannot clip whatever the face does
+ * with its swashes, and the foil stays on the unsplit headings.
  */
-function reFoilChars(chars: HTMLElement[], foilVar = '--foil-gold') {
-  if (chars.length === 0) return
-
-  // Measure the word from the letters themselves. SplitText may hoist them
-  // out of the element that carried the gradient, so that element cannot be
-  // relied on for the extent — it can be left empty and zero-width.
-  const rects = chars.map((c) => c.getBoundingClientRect())
-  const left = Math.min(...rects.map((r) => r.left))
-  const right = Math.max(...rects.map((r) => r.right))
-  const width = right - left
-  if (width <= 0) return
-
-  const bgWidth = width * FOIL_SCALE
-  const originX = (width - bgWidth) * FOIL_OFFSET
-
-  chars.forEach((char, i) => {
-    const offset = rects[i].left - left
-    char.style.backgroundImage = `var(${foilVar})`
-    char.style.backgroundSize = `${bgWidth}px 100%`
-    char.style.backgroundPosition = `${originX - offset}px 50%`
-    char.style.backgroundClip = 'text'
-    char.style.webkitBackgroundClip = 'text'
-    char.style.color = 'transparent'
-    char.style.webkitTextFillColor = 'transparent'
+function solidifyChars(chars: HTMLElement[], color: string) {
+  chars.forEach((char) => {
+    // Clear the inherited foil before colouring, or the transparent fill
+    // from the parent utility wins and the letter stays invisible.
+    char.style.backgroundImage = 'none'
+    char.style.backgroundClip = 'initial'
+    char.style.webkitBackgroundClip = 'initial'
+    char.style.color = color
+    char.style.webkitTextFillColor = color
+    // Swashes overhang their advance box; let them.
+    char.style.overflow = 'visible'
   })
 }
 
@@ -85,6 +74,28 @@ export function Hero({ active }: Props) {
   const ur = lang === 'ur'
 
   const fit = useFitText<HTMLDivElement>()
+
+  // Read off the events rather than hardcoded, so adding a third
+  // celebration to the config puts it here too.
+  const eventNames = wedding.events
+    .map((e) => (ur ? (wedding.urdu.events[e.name] ?? e.name) : e.name))
+    .join(ur ? ' اور ' : ' & ')
+
+  // Hide the hero BEFORE the gate opens, not when its own timeline starts.
+  //
+  // The entrance only runs once `active` flips, which happens at the end of
+  // the gate's timeline. Until then the hero sat in its natural, fully
+  // rendered state — so as the gate faded out you saw the finished page for
+  // a few frames, and it then snapped back to the start of the animation and
+  // played in. Setting the start state on mount closes that window.
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!root || reduced || active) return
+    const ctx = gsap.context(() => {
+      gsap.set('[data-hero-item]', { autoAlpha: 0 })
+    }, root)
+    return () => ctx.revert()
+  }, [active, reduced])
 
   useEffect(() => {
     if (!active) return
@@ -124,7 +135,7 @@ export function Hero({ active }: Props) {
       gsap.utils.toArray<HTMLElement>('[data-name]').forEach((el, i) => {
         const split = new SplitText(el, { type: 'chars' })
         splits.push(split)
-        reFoilChars(split.chars as HTMLElement[], '--foil-rose')
+        solidifyChars(split.chars as HTMLElement[], 'var(--color-wine)')
         tl.fromTo(
           split.chars,
           { autoAlpha: 0, yPercent: 40, rotate: 3 },
@@ -231,7 +242,7 @@ export function Hero({ active }: Props) {
           ref={headingRef}
           tabIndex={-1}
           className="mt-7 outline-none"
-          aria-label={`${wedding.bride.name} and ${wedding.groom.name}`}
+          aria-label={`${wedding.bride.shortName} and ${wedding.groom.shortName}`}
         >
           <span data-hero-item data-name className="block">
             <GoldGlitterText
@@ -240,7 +251,7 @@ export function Hero({ active }: Props) {
               className="font-script text-fluid-5xl leading-[1.1]"
               specks={16}
             >
-              {wedding.bride.name}
+              {wedding.bride.shortName}
             </GoldGlitterText>
           </span>
 
@@ -257,7 +268,7 @@ export function Hero({ active }: Props) {
               className="font-script text-fluid-5xl leading-[1.1]"
               specks={16}
             >
-              {wedding.groom.name}
+              {wedding.groom.shortName}
             </GoldGlitterText>
           </span>
         </h1>
@@ -266,12 +277,21 @@ export function Hero({ active }: Props) {
           <FloralVine className="mx-auto w-52" />
         </span>
 
+        {/* The two celebrations, not the date. Each event carries its own
+            date on its card further down, and the countdown has the one
+            that matters — repeating it here just crowded the names. */}
         <p
           data-hero-item
           data-date
-          className="nums-lining mt-5 font-display text-fluid-lg tracking-wide text-wine"
+          className={`mt-5 text-wine ${
+            ur
+              ? 'font-urdu text-fluid-xl leading-[2]'
+              : 'font-display text-fluid-lg tracking-[0.18em] uppercase'
+          }`}
+          lang={t.lang}
+          dir={t.dir}
         >
-          {formatFullDate(wedding.events[0].date)}
+          {eventNames}
         </p>
       </div>
 

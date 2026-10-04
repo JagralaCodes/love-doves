@@ -4,6 +4,8 @@
  * living, per the design rules.
  */
 
+import { useId } from 'react'
+
 type Base = { className?: string; stroke?: string; title?: string }
 
 /* ─────────────────────────── Crescent + star ─────────────────────────── */
@@ -13,31 +15,41 @@ export function Crescent({
   fill = 'url(#goldFoil)',
   title,
 }: Base & { fill?: string }) {
+  const mid = `crescentCut-${useId().replace(/:/g, '')}`
+
   return (
     <svg
-      viewBox="0 0 120 100"
+      viewBox="0 0 104 100"
       className={className}
       role={title ? 'img' : 'presentation'}
       aria-hidden={title ? undefined : 'true'}
       aria-label={title}
     >
       {title ? <title>{title}</title> : null}
-      {/* Crescent: one disc with a second, offset disc subtracted via
-          even-odd fill. The offset sets how slender the arc reads. */}
+
+      {/* Two true circles, the second masked out of the first.
+          The previous shape subtracted a lens built from arcs of two
+          DIFFERENT radii (35 then 46), so its inner edge was not a circle
+          at all: the arc thinned unevenly and the lower horn collapsed.
+          A mask of two real circles cannot drift like that, and the horns
+          come out symmetrical by construction. */}
+      <defs>
+        <mask id={mid}>
+          <circle cx="50" cy="50" r="44" fill="#fff" />
+          <circle cx="64" cy="50" r="38" fill="#000" />
+        </mask>
+      </defs>
+      <circle cx="50" cy="50" r="44" fill={fill} mask={`url(#${mid})`} />
+
+      {/* Five-point star, nestled in the mouth between the horns.
+          The horns meet the inner circle at x = 74.6, so a star centred at
+          84 tucks inside the opening instead of floating off to one side. */}
       <path
-        fillRule="evenodd"
         fill={fill}
-        d="M50 4 A46 46 0 1 0 50 96 A46 46 0 1 1 50 4 Z
-           M58 15 A35 35 0 1 0 58 85 A46 46 0 0 1 58 15 Z"
+        transform="translate(84 50)"
+        d="M0 -15 L3.37 -4.64 L14.27 -4.64 L5.45 1.77 L8.82 12.14
+           L0 5.73 L-8.82 12.14 L-5.45 1.77 L-14.27 -4.64 L-3.37 -4.64 Z"
       />
-      {/* Five-point star, sized and placed to sit in the crescent's mouth
-          rather than float beside it. */}
-      <g transform="translate(88 42)">
-        <path
-          fill={fill}
-          d="M0 -17 L4.9 -5.5 L17.3 -4.1 L8 4.2 L10.6 16.4 L0 10.2 L-10.6 16.4 L-8 4.2 L-17.3 -4.1 L-4.9 -5.5 Z"
-        />
-      </g>
     </svg>
   )
 }
