@@ -37,14 +37,20 @@ const MAX_PARTICLES = 320
 const TRAIL_SPACING = 15
 
 /**
- * One fixed, full-screen canvas serving both sparkle effects:
+ * One fixed, full-screen canvas serving every sparkle effect:
  *
- *  - a light white trail following the finger or mouse, fading fast
- *  - white/gold bursts fired on reveals via the sparkle bus
+ *  - a trail of small pink hearts following the mouse, fading fast
+ *  - a puff of tiny hearts wherever a finger or mouse presses
+ *  - bursts fired on reveals via the sparkle bus
+ *
+ * The tap puff is not a nicety. The trail is a mouse effect: on a
+ * touchscreen `pointermove` fires only while a finger is already down and
+ * moving, so on the phones this invitation is actually opened on, a tap
+ * used to produce nothing at all.
  *
  * Mount once, near the root. Hidden from assistive tech, never
- * interactive, and skipped entirely under reduced motion. The trail
- * alone is dropped on low-end devices; bursts still run there.
+ * interactive, and skipped entirely under reduced motion. Only the trail
+ * is dropped on low-end devices; taps and bursts still run there.
  */
 export function SparkleLayer() {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -55,8 +61,11 @@ export function SparkleLayer() {
     if (!canvas || reduced) return
 
     const scale = particleScale()
-    if (scale === 0) return
     const trailEnabled = canRunPointerTrail()
+    // Bursts still run on a low-end phone even though the trail does not.
+    // The early return that used to live here killed the whole layer, so a
+    // weak device got no tap feedback at all -- the opposite of the intent.
+    const burstScale = Math.max(0.4, scale)
 
     const particles: Particle[] = []
     let pointer: { x: number; y: number } | null = null
@@ -89,7 +98,7 @@ export function SparkleLayer() {
     const spawnBurst = (x: number, y: number, o: BurstOptions) => {
       const tone = TONES[o.tone ?? 'mixed']
       const power = o.power ?? 180
-      const count = Math.round((o.count ?? 26) * Math.max(0.5, scale))
+      const count = Math.round((o.count ?? 26) * burstScale)
       for (let i = 0; i < count; i++) {
         // Even angular spread with jitter, so it reads as a burst
         // rather than a random cloud.
@@ -118,6 +127,47 @@ export function SparkleLayer() {
       }
     }
 
+    /**
+     * A small puff of tiny hearts at the point touched.
+     *
+     * The trail alone is a mouse effect: on a touchscreen `pointermove`
+     * only fires while a finger is already down and moving, so a tap --
+     * the main way this site is used -- produced nothing at all. This is
+     * what a finger gets.
+     */
+    const spawnTapHearts = (x: number, y: number) => {
+      const count = Math.round(12 * burstScale)
+      for (let i = 0; i < count; i++) {
+        const a = (i / count) * Math.PI * 2 + rand(-0.3, 0.3)
+        const speed = rand(26, 78)
+        add({
+          x: x + rand(-4, 4),
+          y: y + rand(-4, 4),
+          vx: Math.cos(a) * speed,
+          // Biased upward, so they lift off the finger rather than pooling.
+          vy: Math.sin(a) * speed - rand(18, 52),
+          life: 0,
+          maxLife: rand(0.5, 0.9),
+          // Deliberately small: these sit under a fingertip, and anything
+          // bigger reads as a splash rather than a glimmer.
+          size: rand(2.6, 5),
+          spin: rand(-0.5, 0.5),
+          spinSpeed: rand(-3, 3),
+          rgb: TRAIL_TONE[Math.floor(Math.random() * TRAIL_TONE.length)],
+          shape: Math.random() < 0.78 ? 'heart' : 'star',
+        })
+      }
+    }
+
+    const onPointerDown = (e: PointerEvent) => {
+      spawnTapHearts(e.clientX, e.clientY)
+      // Seed the trail here as well, or the first stretch of a finger drag
+      // is measured from wherever the pointer last was -- which on touch is
+      // where the PREVIOUS touch ended, often right across the screen.
+      pointer = { x: e.clientX, y: e.clientY }
+      lastEmit = { x: e.clientX, y: e.clientY }
+    }
+
     const onPointerMove = (e: PointerEvent) => {
       pointer = { x: e.clientX, y: e.clientY }
     }
@@ -126,6 +176,9 @@ export function SparkleLayer() {
       lastEmit = null
     }
 
+    // Taps glimmer on every device; only the trail needs headroom.
+    window.addEventListener('pointerdown', onPointerDown, { passive: true })
+    window.addEventListener('pointerup', onPointerLeave, { passive: true })
     if (trailEnabled) {
       window.addEventListener('pointermove', onPointerMove, { passive: true })
       window.addEventListener('pointerleave', onPointerLeave, { passive: true })
@@ -232,6 +285,8 @@ export function SparkleLayer() {
     return () => {
       teardown()
       unsubscribe()
+      window.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('pointerup', onPointerLeave)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerleave', onPointerLeave)
       window.removeEventListener('pointercancel', onPointerLeave)
