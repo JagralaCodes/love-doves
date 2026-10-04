@@ -50,7 +50,13 @@ export function Countdown() {
   ]
 
   return (
-    <section className="relative overflow-hidden bg-wine-deep px-[var(--page-gutter)] py-[var(--section-gap)]">
+    <section
+      className="relative overflow-hidden bg-wine-deep px-[var(--page-gutter)] py-[var(--section-gap)]"
+      // Night after the closing's dusk: the same wine at the top, so the two
+      // sections meet without a line, deepening downward toward the dawn
+      // glow at the horizon.
+      style={{ background: 'linear-gradient(180deg, #5e1227 0%, #45101f 48%, #330a17 100%)' }}
+    >
       <GeometricPattern scale={112} opacity={0.07} color="#d4af37" />
       <SparkleField count={18} tone="white" />
       <PearlBokeh count={3} tone="dark" />

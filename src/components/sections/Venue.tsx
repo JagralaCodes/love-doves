@@ -8,6 +8,7 @@ import { DomeIcon, Heart } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { Envelope } from '../ui/Envelope'
 import { TapLink } from '../ui/Tappable'
+import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 
@@ -77,6 +78,7 @@ export function Venue() {
       className="relative overflow-hidden bg-blush-soft px-[var(--page-gutter)] py-[var(--section-gap)]"
     >
       <GeometricPattern scale={96} opacity={0.045} />
+      <Seam from="var(--color-pearl-white)" />
       <SparkleField count={7} tone="gold" />
 
       <h2

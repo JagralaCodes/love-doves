@@ -9,6 +9,7 @@ import { archHeadPath, JAMB_INSET } from '../svg/archGeometry'
 import { EightStar, Heart } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { FallingPetals } from '../ui/FallingPetals'
+import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 
@@ -93,6 +94,7 @@ export function QuranVerse() {
       className="relative overflow-hidden bg-blush px-[var(--page-gutter)] py-[var(--section-gap)]"
     >
       <GeometricPattern scale={88} opacity={0.07} color="#9b2c4a" />
+      <Seam from="var(--color-pearl-white)" />
       <SparkleField count={6} tone="rose" />
       <FallingPetals count={8} shape="heart" />
 

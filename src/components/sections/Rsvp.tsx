@@ -10,6 +10,7 @@ import { EightStar } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { TapButton } from '../ui/Tappable'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
+import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 import { formatDate } from '../../lib/date'
@@ -140,6 +141,7 @@ export function Rsvp() {
   return (
     <section className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]">
       <GeometricPattern scale={100} opacity={0.045} />
+      <Seam from="var(--color-blush-soft)" />
       <SparkleField count={7} tone="rose" />
 
       <div ref={ref} className="relative z-10 mx-auto max-w-[20rem] text-center">

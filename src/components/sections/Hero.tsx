@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { gsap, SplitText } from '../../lib/gsap'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useFitText } from '../../hooks/useFitText'
+import { useParallax } from '../../hooks/useParallax'
 import { useLang, langAttrs } from '../../hooks/useLang'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
@@ -69,6 +70,7 @@ export function Hero({ active }: Props) {
   const rootRef = useRef<HTMLElement>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const reduced = useReducedMotion()
+  const lanternsRef = useParallax<HTMLDivElement>({ travel: 70, mode: 'lift' })
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
@@ -168,6 +170,26 @@ export function Hero({ active }: Props) {
     }
   }, [active, reduced])
 
+  // Re-entry. As the hero scrolls away the gold rule draws back in and the
+  // crescent sinks and dims; scrolling back up plays it the other way, so
+  // returning to the top feels like arriving again rather than a static
+  // page. Scrubbed, so it tracks the finger exactly. It runs on wrapper
+  // spans, never on the elements the entrance timeline animates.
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root || !active || reduced) return
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({
+          scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: 0.5 },
+          defaults: { ease: 'none' },
+        })
+        .to('[data-rule-exit]', { scaleX: 0.2, autoAlpha: 0.35 }, 0)
+        .to('[data-crescent-exit]', { y: 40, autoAlpha: 0.15 }, 0)
+    }, root)
+    return () => ctx.revert()
+  }, [active, reduced])
+
   // Move focus into the page once the gate is gone.
   useEffect(() => {
     if (active) headingRef.current?.focus()
@@ -184,14 +206,18 @@ export function Hero({ active }: Props) {
       <FallingPetals count={12} />
       <SparkleField count={10} tone="white" />
 
-      <Lantern className="absolute -top-2 left-5 z-10" width="2.6rem" cord={26} swayDuration={6.2} />
-      <Lantern
-        className="absolute -top-2 right-6 z-10"
-        width="2.1rem"
-        cord={44}
-        swayDuration={5.1}
-        swayDelay={-1.8}
-      />
+      {/* Lanterns ride their own layer so they can lift away on scroll —
+          the sway is a CSS animation on the lantern itself. */}
+      <div ref={lanternsRef} className="pointer-events-none absolute inset-0 z-10">
+        <Lantern className="absolute -top-2 left-5" width="2.6rem" cord={26} swayDuration={6.2} />
+        <Lantern
+          className="absolute -top-2 right-6"
+          width="2.1rem"
+          cord={44}
+          swayDuration={5.1}
+          swayDelay={-1.8}
+        />
+      </div>
 
       <div className="relative z-10 w-full text-center">
         {/* Bismillah */}
@@ -220,15 +246,19 @@ export function Hero({ active }: Props) {
           </div>
         </div>
 
-        <span
-          data-hero-item
-          data-rule
-          aria-hidden="true"
-          className="mx-auto mt-3 block h-px w-32 bg-gradient-to-r from-transparent via-gold to-transparent"
-        />
+        <span data-rule-exit className="mt-3 block">
+          <span
+            data-hero-item
+            data-rule
+            aria-hidden="true"
+            className="mx-auto block h-px w-32 bg-gradient-to-r from-transparent via-gold to-transparent"
+          />
+        </span>
 
-        <span data-hero-item data-crescent className="mt-8 block">
-          <Crescent className="mx-auto w-14" title="Crescent and star" />
+        <span data-crescent-exit className="mt-8 block">
+          <span data-hero-item data-crescent className="block">
+            <Crescent className="mx-auto w-14" title="Crescent and star" />
+          </span>
         </span>
 
         <p

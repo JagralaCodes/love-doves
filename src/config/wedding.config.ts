@@ -189,6 +189,7 @@ export const wedding = {
     rsvpDisabled: 'جواب جلد کھلے گا',
     required: 'لازمی',
     withLove: 'محبت اور دعاؤں کے ساتھ',
+    audioLabel: 'ہلکی پس منظر کی آواز',
     events: {
       Nikah: 'نکاح',
       Walima: 'ولیمہ',

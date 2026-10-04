@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { gsap } from '../../lib/gsap'
 import { useLang, langAttrs } from '../../hooks/useLang'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
+import { useParallax } from '../../hooks/useParallax'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
 import { Lantern } from '../svg/Lantern'
@@ -12,6 +13,7 @@ import { SparkleField } from '../ui/SparkleField'
 import { PearlBokeh } from '../ui/PearlBokeh'
 import { ShimmerDust } from '../ui/ShimmerDust'
 import { FallingPetals } from '../ui/FallingPetals'
+import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 
@@ -26,6 +28,7 @@ export function Closing() {
   const t = langAttrs(lang)
   const ur = lang === 'ur'
   const reduced = useReducedMotion()
+  const lanternsRef = useParallax<HTMLDivElement>({ travel: 60, mode: 'lift' })
 
   useEffect(() => {
     const section = ref.current
@@ -72,20 +75,31 @@ export function Closing() {
       className="relative flex min-h-[88svh] flex-col items-center justify-center overflow-hidden bg-wine-deep px-[var(--page-gutter)] py-[var(--section-gap)]"
     >
       <GeometricPattern scale={112} opacity={0.08} color="#d4af37" />
+      {/* Dusk: the light page above fades through blush and rose into the
+          wine of evening, rather than dropping into it at a hard line. */}
+      <Seam
+        from="var(--color-pearl-white)"
+        via={['rgba(252,228,234,0.92) 14%', 'rgba(244,184,198,0.6) 34%', 'rgba(122,32,56,0.45) 62%']}
+        height="20rem"
+      />
       <ShimmerDust density={52} tone="gold" />
       <SparkleField count={12} tone="gold" />
       <PearlBokeh count={4} tone="dark" />
       <FallingPetals count={10} shape="heart" />
 
-      <span data-rise className="absolute top-0 left-6 z-10">
-        <Lantern width="2rem" cord={22} swayDuration={6.8} />
-      </span>
-      <span data-rise className="absolute top-0 right-7 z-10">
-        <Lantern width="1.6rem" cord={38} swayDuration={5.6} swayDelay={-2.4} />
-      </span>
-      <span data-rise className="absolute top-0 left-[46%] z-10 hidden min-[380px]:block">
-        <Lantern width="1.2rem" cord={10} swayDuration={7.4} swayDelay={-1.1} lit />
-      </span>
+      {/* Own layer, so the lanterns can lift away on scroll without
+          fighting their drop-in, which animates the spans inside. */}
+      <div ref={lanternsRef} className="pointer-events-none absolute inset-0 z-10">
+        <span data-rise className="absolute top-0 left-6">
+          <Lantern width="2rem" cord={22} swayDuration={6.8} />
+        </span>
+        <span data-rise className="absolute top-0 right-7">
+          <Lantern width="1.6rem" cord={38} swayDuration={5.6} swayDelay={-2.4} />
+        </span>
+        <span data-rise className="absolute top-0 left-[46%] hidden min-[380px]:block">
+          <Lantern width="1.2rem" cord={10} swayDuration={7.4} swayDelay={-1.1} lit />
+        </span>
+      </div>
 
       <div className="relative z-10 text-center">
         <span data-mono className="block">

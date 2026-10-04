@@ -11,6 +11,7 @@ import { RopeHeart } from '../svg/RopeHeart'
 import { archHeadPath, JAMB_INSET } from '../svg/archGeometry'
 import { SparkleField } from '../ui/SparkleField'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
+import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 
@@ -241,6 +242,7 @@ export function Families() {
       className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]"
     >
       <GeometricPattern scale={96} opacity={0.05} />
+      <Seam from="var(--color-blush)" />
       <SparkleField count={7} tone="rose" />
 
       <h2

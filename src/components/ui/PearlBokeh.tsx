@@ -1,4 +1,5 @@
 import { useId, useMemo } from 'react'
+import { useParallax } from '../../hooks/useParallax'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { deviceTier } from '../../lib/device'
 import { seeded } from '../../lib/seeded'
@@ -12,6 +13,8 @@ type Props = {
    * 'dark' for wine sections, where pearl white is what actually shows.
    */
   tone?: 'light' | 'dark'
+  /** Scroll-parallax travel in px. Orbs are the furthest layer, so most. */
+  parallax?: number
 }
 
 const TINTS = {
@@ -38,7 +41,7 @@ const TINTS = {
  * Blur is expensive to animate, so each orb is blurred once and then only
  * its transform changes, which stays on the compositor.
  */
-export function PearlBokeh({ count = 7, className = '', tone = 'light' }: Props) {
+export function PearlBokeh({ count = 7, className = '', tone = 'light', parallax = 80 }: Props) {
   const tints = TINTS[tone]
   const reduced = useReducedMotion()
   const tier = deviceTier()
@@ -46,6 +49,7 @@ export function PearlBokeh({ count = 7, className = '', tone = 'light' }: Props)
   const total = reduced ? 0 : tier === 'low' ? 0 : tier === 'mid' ? Math.min(4, count) : count
 
   const seed = useId()
+  const layerRef = useParallax({ travel: parallax })
 
   const orbs = useMemo(() => {
     const rnd = seeded(seed)
@@ -67,24 +71,26 @@ export function PearlBokeh({ count = 7, className = '', tone = 'light' }: Props)
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
     >
-      {orbs.map((o, i) => (
-        <span
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            left: o.left,
-            top: o.top,
-            width: o.size,
-            height: o.size,
-            marginLeft: -o.size / 2,
-            marginTop: -o.size / 2,
-            background: `radial-gradient(circle at 34% 32%, ${o.tint}, transparent 68%)`,
-            filter: `blur(${o.blur}px)`,
-            animation: `bokeh-drift ${o.duration} ease-in-out ${o.delay} infinite`,
-            willChange: 'transform',
-          }}
-        />
-      ))}
+      <div ref={layerRef} className="absolute inset-0">
+        {orbs.map((o, i) => (
+          <span
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: o.left,
+              top: o.top,
+              width: o.size,
+              height: o.size,
+              marginLeft: -o.size / 2,
+              marginTop: -o.size / 2,
+              background: `radial-gradient(circle at 34% 32%, ${o.tint}, transparent 68%)`,
+              filter: `blur(${o.blur}px)`,
+              animation: `bokeh-drift ${o.duration} ease-in-out ${o.delay} infinite`,
+              willChange: 'transform',
+            }}
+          />
+        ))}
+      </div>
     </div>
   )
 }
