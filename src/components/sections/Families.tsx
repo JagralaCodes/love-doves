@@ -7,6 +7,7 @@ import { GeometricPattern } from '../svg/GeometricPattern'
 import { Monogram } from '../svg/Monogram'
 import { EightStar } from '../svg/Ornaments'
 import { HeartKnot } from '../svg/HeartKnot'
+import { RopeHeart } from '../svg/RopeHeart'
 import { archHeadPath, JAMB_INSET } from '../svg/MihrabArch'
 import { SparkleField } from '../ui/SparkleField'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
@@ -59,7 +60,7 @@ function FamilyCard({ initial, name, relation, parents, side, rtl, lang }: CardP
       </div>
 
       <div
-        className="relative bg-blush-soft"
+        className="card-lift relative bg-blush-soft"
         style={{ marginInline: inset, marginTop: -1 }}
       >
         <span
@@ -142,7 +143,8 @@ export function Families() {
             scrollTrigger: { trigger: section, start: 'top 80%', once: true },
           },
         )
-        // No scrubbing and no drawing-on: the cord is simply already tied.
+        // No scrubbing and no drawing-on: the cord and rope are already tied.
+        gsap.set('[data-rope], [data-rope-glow]', { autoAlpha: 1 })
         return
       }
 
@@ -197,6 +199,37 @@ export function Families() {
           .to('[data-cord="back"], [data-cord="front"]', { drawSVG: '100%', ease: 'none' })
           .to('[data-cord="out"]', { drawSVG: '100%', ease: 'none' })
       }
+
+      // The rope: a heart tied between the families as the viewer scrolls,
+      // with a lit bead riding the drawing tip. Scrubbed over a long range
+      // so it is paced by the scroll, not played at it.
+      const rope = section.querySelector<SVGPathElement>('[data-rope]')
+      const glow = section.querySelector<SVGPathElement>('[data-rope-glow]')
+      const bead = section.querySelector<SVGCircleElement>('[data-rope-bead]')
+      const core = section.querySelector<SVGCircleElement>('[data-rope-bead-core]')
+      if (rope && glow && bead && core) {
+        const length = rope.getTotalLength()
+        gsap.set([rope, glow], { drawSVG: '0%', autoAlpha: 1 })
+        gsap.set([bead, core], { autoAlpha: 0 })
+        gsap.to([rope, glow], {
+          drawSVG: '100%',
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '[data-rope-wrap]',
+            start: 'top 82%',
+            end: 'bottom 38%',
+            scrub: 0.6,
+            onUpdate: (self) => {
+              const at = rope.getPointAtLength(length * self.progress)
+              const visible = self.progress > 0.005 && self.progress < 0.995
+              gsap.set([bead, core], {
+                attr: { cx: at.x, cy: at.y },
+                autoAlpha: visible ? 1 : 0,
+              })
+            },
+          },
+        })
+      }
     }, section)
 
     return () => ctx.revert()
@@ -218,7 +251,7 @@ export function Families() {
         {ur ? wedding.urdu.familiesHeading : wedding.texts.familiesHeading}
       </h2>
 
-      <div className="relative z-10 mt-9 flex flex-col items-stretch gap-6">
+      <div className="relative z-10 mt-7 flex flex-col items-stretch gap-3">
         <FamilyCard
           side="left"
           initial={wedding.bride.name.charAt(0)}
@@ -232,9 +265,17 @@ export function Families() {
         {/* The motif that joins the two families. The cord draws itself
             as the section scrolls, running from the bride's card, around
             the heart, and on to the groom's. */}
-        <span data-join className="-my-2 flex justify-center">
+        <span data-join className="-my-3 flex justify-center">
           <HeartKnot className="w-[5.5rem]" title="A heart joining the two families" />
         </span>
+
+        {/* From the heart down to the groom's card, the rope ties a heart as
+            the viewer scrolls, then drops through its middle to land on the
+            card below. -mt pulls it up to meet the knot's out-cord; -mb
+            lets its final drop run straight into the arch's apex. */}
+        <div data-rope-wrap className="-mt-6 -mb-7 flex justify-center">
+          <RopeHeart className="w-[11.5rem]" />
+        </div>
 
         <FamilyCard
           side="right"
