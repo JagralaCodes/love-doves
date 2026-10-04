@@ -5,7 +5,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useLang, langAttrs } from '../../hooks/useLang'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
-import { archHeadPath, JAMB_INSET } from '../svg/MihrabArch'
+import { archHeadPath, JAMB_INSET } from '../svg/archGeometry'
 import { EightStar, Heart } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { FallingPetals } from '../ui/FallingPetals'

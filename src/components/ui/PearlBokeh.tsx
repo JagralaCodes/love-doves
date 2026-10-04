@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { deviceTier } from '../../lib/device'
+import { seeded } from '../../lib/seeded'
 
 type Props = {
   count?: number
@@ -44,19 +45,20 @@ export function PearlBokeh({ count = 7, className = '', tone = 'light' }: Props)
   // Blur has a real fill-rate cost; keep it modest on weaker phones.
   const total = reduced ? 0 : tier === 'low' ? 0 : tier === 'mid' ? Math.min(4, count) : count
 
-  const orbs = useMemo(
-    () =>
-      Array.from({ length: total }, (_, i) => ({
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        size: Math.random() * 190 + 90,
-        tint: tints[i % tints.length],
-        blur: Math.random() * 22 + 26,
-        duration: `${26 + Math.random() * 26}s`,
-        delay: `${-Math.random() * 30}s`,
-      })),
-    [total, tints],
-  )
+  const seed = useId()
+
+  const orbs = useMemo(() => {
+    const rnd = seeded(seed)
+    return Array.from({ length: total }, (_, i) => ({
+      left: `${rnd() * 100}%`,
+      top: `${rnd() * 100}%`,
+      size: rnd() * 190 + 90,
+      tint: tints[i % tints.length],
+      blur: rnd() * 22 + 26,
+      duration: `${26 + rnd() * 26}s`,
+      delay: `${-rnd() * 30}s`,
+    }))
+  }, [seed, total, tints])
 
   if (total === 0) return null
 

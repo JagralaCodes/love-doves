@@ -1,4 +1,4 @@
-import { archHeadPath } from './MihrabArch'
+import { archHeadPath } from './archGeometry'
 
 type LeafProps = {
   side: 'left' | 'right'

@@ -4,7 +4,7 @@ import { useLang, langAttrs } from '../../hooks/useLang'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
 import { Heart } from '../svg/Ornaments'
-import { archClosedPath } from '../svg/MihrabArch'
+import { archClosedPath } from '../svg/archGeometry'
 import { SparkleField } from '../ui/SparkleField'
 import { ScratchCard } from '../ui/ScratchCard'
 import { HeartConfetti } from '../ui/HeartConfetti'

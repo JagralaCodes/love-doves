@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import type { ElementType, ReactNode } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { particleScale } from '../../lib/device'
+import { seeded } from '../../lib/seeded'
 
 type Props = {
   children: ReactNode
@@ -59,17 +60,17 @@ export function GoldGlitterText({
 
   // Positions are random per mount but stable across re-renders, so the
   // specks do not jump around while the text animates.
-  const speckList = useMemo<Speck[]>(
-    () =>
-      Array.from({ length: speckCount }, () => ({
-        left: `${Math.random() * 96 + 2}%`,
-        top: `${Math.random() * 74 + 10}%`,
-        size: Math.random() * 2.6 + 1.4,
-        delay: `${Math.random() * 6}s`,
-        duration: `${2.2 + Math.random() * 2.4}s`,
-      })),
-    [speckCount],
-  )
+  const seed = useId()
+  const speckList = useMemo<Speck[]>(() => {
+    const rnd = seeded(seed)
+    return Array.from({ length: speckCount }, () => ({
+      left: `${rnd() * 96 + 2}%`,
+      top: `${rnd() * 74 + 10}%`,
+      size: rnd() * 2.6 + 1.4,
+      delay: `${rnd() * 6}s`,
+      duration: `${2.2 + rnd() * 2.4}s`,
+    }))
+  }, [seed, speckCount])
 
   return (
     <Tag

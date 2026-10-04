@@ -81,35 +81,6 @@ export function EightStar({
   )
 }
 
-/* ───────────────────────── Corner flourish ───────────────────────────── */
-
-/**
- * An arabesque corner, drawn for the top-left and mirrored by the caller
- * with a scale transform — one path, four corners.
- */
-export function CornerFlourish({
-  className = '',
-  stroke = 'url(#goldFoil)',
-}: Base) {
-  return (
-    <svg viewBox="0 0 80 80" className={className} aria-hidden="true">
-      <g fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round">
-        {/* the bracket itself */}
-        <path d="M4 34 L4 10 Q4 4 10 4 L34 4" strokeWidth="2" />
-        {/* inner echo */}
-        <path d="M11 32 L11 15 Q11 11 15 11 L32 11" opacity="0.55" />
-        {/* scrolling vine off the elbow */}
-        <path d="M11 44 C11 58, 20 64, 33 62 C25 70, 12 68, 8 58" />
-        <path d="M44 11 C58 11, 64 20, 62 33 C70 25, 68 12, 58 8" />
-        {/* leaf buds — foliage is permitted */}
-        <path d="M33 62 C36 57, 42 56, 46 58 C42 63, 36 65, 33 62 Z" fill={stroke} stroke="none" opacity="0.75" />
-        <path d="M62 33 C57 36, 56 42, 58 46 C63 42, 65 36, 62 33 Z" fill={stroke} stroke="none" opacity="0.75" />
-      </g>
-      <circle cx="7" cy="7" r="2.4" fill={stroke} />
-    </svg>
-  )
-}
-
 /* ───────────────────────── Arabesque vine ───────────────────────────── */
 
 export function FloralVine({ className = '', stroke = 'url(#goldFoil)' }: Base) {
@@ -194,43 +165,6 @@ export function Heart({
     >
       {title ? <title>{title}</title> : null}
       <path d={d} fill={stroke ? 'none' : fill} stroke={stroke} strokeWidth={stroke ? 3 : 0} />
-    </svg>
-  )
-}
-
-/**
- * The heart-and-crescent motif: a crescent cradling a small heart, used to
- * join the couple's names.
- */
-export function HeartCrescent({ className = '', title }: Base) {
-  return (
-    <svg
-      viewBox="0 0 120 100"
-      className={className}
-      role={title ? 'img' : 'presentation'}
-      aria-hidden={title ? undefined : 'true'}
-      aria-label={title}
-    >
-      {title ? <title>{title}</title> : null}
-      {/* crescent, opening to the right */}
-      <path
-        fillRule="evenodd"
-        fill="url(#goldFoil)"
-        d="M46 6 A44 44 0 1 0 46 94 A44 44 0 1 1 46 6 Z
-           M52 15 A35 35 0 1 0 52 85 A44 44 0 0 1 52 15 Z"
-      />
-      {/* heart nested in the opening */}
-      <g transform="translate(58 26) scale(0.44)">
-        <path
-          d="M50 88 C18 64, 6 44, 6 30 C6 15, 18 6, 30 6 C39 6, 46 11, 50 19 C54 11, 61 6, 70 6 C82 6, 94 15, 94 30 C94 44, 82 64, 50 88 Z"
-          fill="url(#roseFoil)"
-        />
-      </g>
-      {/* small star above */}
-      <path
-        d="M96 14 L99 21 L106 24 L99 27 L96 34 L93 27 L86 24 L93 21 Z"
-        fill="url(#goldFoil)"
-      />
     </svg>
   )
 }

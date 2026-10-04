@@ -19,8 +19,6 @@ const FOOT = 260
 
 /** Jamb position as a fraction of width — lets CSS borders line up with the head. */
 export const JAMB_INSET = LEFT / 200
-/** Head height as a fraction of width, for reserving space. */
-export const HEAD_RATIO = SPRING / 200
 
 /* ── heads: start at (LEFT, SPRING), end at (RIGHT, SPRING) ───────────── */
 
@@ -67,67 +65,10 @@ export function archHeadPath(variant: ArchVariant): string {
 }
 
 /** Full arch: jambs plus head, in a 200 x 260 viewBox. */
-export function archPath(variant: ArchVariant): string {
+function archPath(variant: ArchVariant): string {
   return `M${LEFT} ${FOOT} L${LEFT} ${SPRING} ${archHeadPath(variant).replace(`M${LEFT} ${SPRING} `, '')} L${RIGHT} ${FOOT}`
 }
 
 export function archClosedPath(variant: ArchVariant): string {
   return `${archPath(variant)} Z`
-}
-
-/* ── standalone arch outline ──────────────────────────────────────────── */
-
-type Props = {
-  variant?: ArchVariant
-  className?: string
-  fill?: string
-  stroke?: string
-  strokeWidth?: number
-  inner?: boolean
-  title?: string
-}
-
-export function MihrabArch({
-  variant = 'ogee',
-  className = '',
-  fill = 'none',
-  stroke = 'url(#goldFoil)',
-  strokeWidth = 2,
-  inner = true,
-  title,
-}: Props) {
-  const d = archClosedPath(variant)
-
-  return (
-    <svg
-      viewBox={`0 0 200 ${FOOT}`}
-      className={className}
-      role={title ? 'img' : 'presentation'}
-      aria-hidden={title ? undefined : 'true'}
-      aria-label={title}
-    >
-      {title ? <title>{title}</title> : null}
-      <path
-        d={d}
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={strokeWidth}
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      {inner && (
-        <g transform="translate(100 155) scale(0.9 0.92) translate(-100 -155)">
-          <path
-            d={d}
-            fill="none"
-            stroke={stroke}
-            strokeWidth={strokeWidth * 0.5}
-            strokeLinejoin="round"
-            opacity="0.5"
-            vectorEffect="non-scaling-stroke"
-          />
-        </g>
-      )}
-    </svg>
-  )
 }

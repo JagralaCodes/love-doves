@@ -77,7 +77,7 @@ export function formatTime(hhmm: string): string {
       minute: '2-digit',
       hour12: true,
     })
-    .replace(/ /g, ' ')
+    .replace(/\u202f/g, ' ')
 }
 
 /** Pads a countdown unit to two digits. */

@@ -8,7 +8,7 @@ import { Monogram } from '../svg/Monogram'
 import { EightStar } from '../svg/Ornaments'
 import { HeartKnot } from '../svg/HeartKnot'
 import { RopeHeart } from '../svg/RopeHeart'
-import { archHeadPath, JAMB_INSET } from '../svg/MihrabArch'
+import { archHeadPath, JAMB_INSET } from '../svg/archGeometry'
 import { SparkleField } from '../ui/SparkleField'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
 

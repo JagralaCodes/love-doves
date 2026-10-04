@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { particleScale } from '../../lib/device'
+import { seeded } from '../../lib/seeded'
 
 type Props = {
   /** How many stars are alive across the section. */
@@ -36,17 +37,18 @@ export function SparkleField({
   const total = reduced ? 0 : Math.round(count * scale)
   const { fill, glow } = TONES[tone]
 
-  const stars = useMemo(
-    () =>
-      Array.from({ length: total }, () => ({
-        left: `${Math.random() * 94 + 3}%`,
-        top: `${Math.random() * 90 + 5}%`,
-        size: Math.random() * (maxSize - 6) + 6,
-        delay: `${Math.random() * 9}s`,
-        duration: `${3 + Math.random() * 3.5}s`,
-      })),
-    [total, maxSize],
-  )
+  const seed = useId()
+
+  const stars = useMemo(() => {
+    const rnd = seeded(seed)
+    return Array.from({ length: total }, () => ({
+      left: `${rnd() * 94 + 3}%`,
+      top: `${rnd() * 90 + 5}%`,
+      size: rnd() * (maxSize - 6) + 6,
+      delay: `${rnd() * 9}s`,
+      duration: `${3 + rnd() * 3.5}s`,
+    }))
+  }, [seed, total, maxSize])
 
   if (total === 0) return null
 

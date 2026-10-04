@@ -73,7 +73,10 @@ export function Hero({ active }: Props) {
   const t = langAttrs(lang)
   const ur = lang === 'ur'
 
-  const fit = useFitText<HTMLDivElement>()
+  // Destructured, not held as `fit.x`: the hooks linter treats any
+  // property read off an object that carries refs as a ref read in render.
+  const { containerRef: fitBox, contentRef: fitContent, scale: fitScale } =
+    useFitText<HTMLDivElement>()
 
   // Read off the events rather than hardcoded, so adding a third
   // celebration to the config puts it here too.
@@ -195,15 +198,15 @@ export function Hero({ active }: Props) {
         <div
           data-hero-item
           data-bismillah
-          ref={fit.containerRef}
+          ref={fitBox}
           className="flex w-full justify-center"
         >
           <div
-            ref={fit.contentRef}
+            ref={fitContent}
             className="w-max shrink-0"
             // Scaled to the column rather than guessing a font size that
             // happens to fit — the Arabic's width varies with the face.
-            style={{ transform: `scale(${fit.scale})`, transformOrigin: 'center' }}
+            style={{ transform: `scale(${fitScale})`, transformOrigin: 'center' }}
           >
             <GoldGlitterText
               block
