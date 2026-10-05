@@ -95,7 +95,8 @@ export const wedding = {
     countdownHeading: 'Counting the days',
     dayIsHere: 'Alhamdulillah, the day is here',
     venueHeading: 'Where to find us',
-    envelopePrompt: 'Tap to open',
+    /** Accessible name of the heart seal on the venue envelope. */
+    envelopePrompt: 'Peel off the heart seal to open the envelope',
 
     familiesHeading: 'Together with our families',
     eventsHeading: 'The celebrations',
@@ -116,7 +117,7 @@ export const wedding = {
     seconds: 'Seconds',
 
     /* Venue envelope */
-    swipeUp: 'Tap or swipe up to open',
+    swipeUp: 'Slide the heart away to open',
 
     /* RSVP */
     rsvpBy: 'Please reply by',
@@ -173,8 +174,8 @@ export const wedding = {
     minutes: 'منٹ',
     seconds: 'سیکنڈ',
 
-    envelopePrompt: 'کھولنے کے لیے چھوئیں',
-    swipeUp: 'چھوئیں یا اوپر سوائپ کریں',
+    envelopePrompt: 'لفافہ کھولنے کے لیے دل کی مہر ہٹائیں',
+    swipeUp: 'کھولنے کے لیے دل کو کھسکائیں',
 
     rsvpHeading: 'کیا آپ شامل ہوں گے؟',
     rsvpBy: 'براہِ کرم جواب دیں',

@@ -138,7 +138,10 @@ export function Hero({ active }: Props) {
 
       // Names, letter by letter.
       gsap.utils.toArray<HTMLElement>('[data-name]').forEach((el, i) => {
-        const split = new SplitText(el, { type: 'chars' })
+        // aria: 'hidden' — the <h1> already carries "Huda and Mohammed" as
+        // its label. The default would put an aria-label on this <span>,
+        // which is not allowed on an element with no role.
+        const split = new SplitText(el, { type: 'chars', aria: 'hidden' })
         splits.push(split)
         solidifyChars(split.chars as HTMLElement[], 'var(--color-wine)')
         tl.fromTo(

@@ -143,7 +143,7 @@ export function Closing() {
         <span data-line className="block">
           <GoldGlitterText
             block
-            as="p"
+            as="h2"
             tone="dark"
             className={`mt-7 ${ur ? 'font-urdu text-fluid-xl leading-[2.4]' : 'font-display text-fluid-2xl'}`}
             specks={12}

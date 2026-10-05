@@ -145,6 +145,10 @@ export function QuranVerse() {
           />
 
           <div className="relative px-5 pt-4 pb-8 text-center">
+            {/* For the heading outline only; the reference is shown below. */}
+            <h2 data-no-split className="sr-only">
+              {ur ? wedding.urdu.quranReference : wedding.texts.quranReference}
+            </h2>
             <p
               ref={arabicRef}
               lang="ar"

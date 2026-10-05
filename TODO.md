@@ -20,6 +20,10 @@ scratch folder, not a project dependency) at 360 / 390 / 768, English and
 and pixel probes for geometry and hairlines. Zero console errors, no
 horizontal overflow at any width.
 
+**Next session, in order:** Lighthouse mobile run, a look at 1440px, then
+Ship (§4). Everything else open below needs a real phone or something from
+the Blocked list.
+
 Everything below is in priority order.
 
 ---
@@ -53,7 +57,8 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 - [ ] Press squeeze / hover underline — feel only; check on a real phone
 
 **Venue**
-- [x] Envelope: tap seal OR pull card up opens it; flap swings behind the card; card rises; envelope fades; no layout jump
+- [x] **Envelope, reworked to your notes:** nothing peeks out while sealed; the heart sticker sits in the dead centre; it is *peeled*, not tapped — slide or flick it away (a tap only wiggles it as a hint; keyboard: Enter/Space); then the flap swings back, the card climbs out *behind* the front pocket (lower half still inside), comes forward and settles while the envelope falls away. No layout jump; sealed card is `inert`
+- [ ] Envelope: feel the peel threshold on a real phone (`PEEL_DISTANCE` 64px / `PEEL_VELOCITY` 600 in `Envelope.tsx`)
 - [x] Gold route draws toward the masjid on scroll; dome rises to meet it
 - [ ] Both map links open the right pins — links are correct in config; open them once on a phone
 
@@ -86,11 +91,12 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 - [x] **Fix the 23 pre-existing lint errors**: `useFitText` refs read during render (Hero), `Math.random` in `useMemo` (GoldGlitterText, PearlBokeh, SparkleField), fast-refresh exports (MihrabArch), irregular whitespace (date.ts — the NNBSP is intentional; add a disable comment)
 - [x] Audit: only `transform` + `opacity` animated anywhere (Motion best-practice); fix any layout-property tweens
 - [x] Reduced-motion pass across every section — no particles, no parallax, no scrub
-- [ ] Responsive pass at 360 / 390 / 768 / 1440 (desktop just centres the column)
-- [ ] a11y: heading order, focus rings, contrast (gold on white is the risk), SVG labels, keyboard on every interaction (gate hearts, deck, envelope, scratch fallback)
-- [ ] **Bundle 604 kB / 199 kB gzip**: lazy-load deck, scratch card, confetti, envelope below the fold; consider dropping Lenis or Motion
-- [ ] **OG image** (monogram + names + date, blush/gold, no photos) + absolute `og:image` URL; **apple-touch-icon PNG** (iOS ignores the SVG)
-- [ ] `<title>` and OG title with the couple's names
+- [ ] Responsive pass — 360 / 390 / 768 done (no overflow); 1440 still to look at
+- [x] a11y: heading order, focus rings, contrast, SVG labels, keyboard on every interaction
+  — *axe-core: 0 violations (was: invalid aria-label from SplitText, `wine-soft` at 4.24:1 → darkened to #a44a61, 5.1:1). Every section now has a heading. Keyboard reaches scratch fallback, deck, dots, envelope seal; sealed card no longer focusable*
+- [x] **Bundle**: Save the Date onwards split into a lazy chunk (all of Motion goes with it). Critical path 612 → 428 kB, 200 → 143 kB gzip
+- [x] **OG image** `public/og.jpg` (73 KB, source in `design/og-card.html`) + absolute `og:image` built from `site.url`; **apple-touch-icon PNG**
+- [x] `<title>` and OG title with the couple's names — filled from the config at build time (`invitationMeta` in `vite.config.ts`)
 - [ ] Lighthouse mobile 90+, no CLS, fonts preloaded
 - [x] Dead code: delete `WaxSeal.tsx`, `HeartCrescent` in Ornaments, `ArchPanel`/`OrnateFrame`/`Ornament` if unused
 
@@ -108,7 +114,7 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 - [ ] **Nikah time** — still the `11:00` placeholder; the countdown and the `.ics` both use it
 - [ ] **Web3Forms access key** — free at https://web3forms.com; RSVP is disabled until it's in
 - [ ] RSVP deadline — moved to 5 Nov (was after the wedding); confirm
-- [ ] Monogram — currently `H & S`; `H & M` (Huda & Mohammed)?
+- [x] Monogram — now `H & M` in the config
 - [ ] Urdu proofread by a native speaker (all strings in `wedding.urdu`)
-- [ ] Final domain, for the absolute OG image URL
+- [ ] Final domain → `site.url` in the config; the OG image URL, canonical and `.ics` links all follow it
 - [ ] Ambient audio file → `public/audio/ambience.mp3` (optional; enables the toggle)

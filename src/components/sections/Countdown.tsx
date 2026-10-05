@@ -74,13 +74,13 @@ export function Countdown() {
       <div className="relative z-10 text-center">
         <Crescent className="mx-auto w-12" />
 
-        <p
+        <h2
           className={`text-2xs mt-6 tracking-[0.35em] text-gold-light/85 ${ur ? 'font-urdu' : 'uppercase'}`}
           lang={t.lang}
           dir={t.dir}
         >
           {ur ? wedding.urdu.countdownHeading : wedding.texts.countdownHeading}
-        </p>
+        </h2>
 
         {left.done ? (
           <div ref={doneRef} className="relative mt-8">

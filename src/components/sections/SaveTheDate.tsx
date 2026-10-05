@@ -76,13 +76,13 @@ export function SaveTheDate() {
             </svg>
 
             <div className="absolute inset-x-0 bottom-0 flex h-[62%] flex-col items-center justify-center px-7 text-center">
-              <p
+              <h2
                 className={`text-2xs tracking-[0.35em] text-wine-soft ${ur ? 'font-urdu' : 'uppercase'}`}
                 lang={t.lang}
                 dir={t.dir}
               >
                 {ur ? wedding.urdu.saveTheDate : wedding.texts.saveTheDate}
-              </p>
+              </h2>
 
               <GoldGlitterText
                 block
