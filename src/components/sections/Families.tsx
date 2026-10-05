@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap } from '../../lib/gsap'
+import { seam } from '../../lib/seam'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useLang, langAttrs } from '../../hooks/useLang'
 
@@ -11,7 +12,6 @@ import { RopeHeart } from '../svg/RopeHeart'
 import { archHeadPath, JAMB_INSET } from '../svg/archGeometry'
 import { SparkleField } from '../ui/SparkleField'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
-import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 
@@ -240,9 +240,9 @@ export function Families() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]"
+      style={seam('var(--color-blush)')}
     >
       <GeometricPattern scale={96} opacity={0.05} />
-      <Seam from="var(--color-blush)" />
       <SparkleField count={7} tone="rose" />
 
       <h2
@@ -275,7 +275,7 @@ export function Families() {
             the viewer scrolls, then drops through its middle to land on the
             card below. -mt pulls it up to meet the knot's out-cord; -mb
             lets its final drop run straight into the arch's apex. */}
-        <div data-rope-wrap className="-mt-6 -mb-7 flex justify-center">
+        <div data-rope-wrap className="-mt-1 -mb-12 flex justify-center">
           <RopeHeart className="w-[11.5rem]" />
         </div>
 

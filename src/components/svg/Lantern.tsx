@@ -1,5 +1,13 @@
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 
+/**
+ * Solid, not the foil gradient. The foil gradients are in objectBoundingBox
+ * units, and a perfectly vertical line has a zero-width bounding box — the
+ * gradient cannot map onto it and the stroke paints nothing at all. That is
+ * why the lanterns used to float with no visible cord.
+ */
+const CORD_GOLD = '#c49b2e'
+
 type Props = {
   /** Height in rem-ish CSS units; width follows the aspect. */
   width?: string
@@ -87,14 +95,14 @@ export function Lantern({
             strokeWidth="3"
             strokeLinejoin="round"
           />
-          <path d="M60 168 L60 182" stroke="url(#goldFoilV)" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M60 168 L60 182" stroke={CORD_GOLD} strokeWidth="2.5" strokeLinecap="round" />
           <circle cx="60" cy="188" r="6" fill="url(#goldFoil)" />
         </g>
 
         {/* cord */}
         <path
           d={`M60 0 L60 ${cord}`}
-          stroke="url(#goldFoilV)"
+          stroke={CORD_GOLD}
           strokeWidth="1.6"
           opacity="0.75"
         />

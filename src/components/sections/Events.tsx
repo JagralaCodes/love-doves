@@ -41,7 +41,7 @@ function CardAction({
   // The underline grows out from the centre rather than the whole link
   // dimming, and the control squeezes under a press.
   const className =
-    'link-grow text-2xs inline-flex items-center gap-1.5 tracking-[0.2em] text-wine uppercase'
+    'link-grow text-2xs inline-flex min-h-[var(--tap-min)] items-center gap-1.5 tracking-[0.16em] whitespace-nowrap text-wine uppercase'
 
   return as === 'a' ? (
     <TapLink href={href} target="_blank" rel="noopener noreferrer" className={className}>
@@ -137,7 +137,7 @@ function EventCard({ event }: { event: WeddingEvent }) {
       )}
 
       {/* Two quiet text actions divided by a hairline — no pills, no stamp. */}
-      <div className="relative mt-7 flex items-center justify-center gap-4">
+      <div className="relative mt-7 flex items-center justify-center gap-3.5">
         <CardAction
           as="a"
           href={event.mapsLink}

@@ -10,11 +10,11 @@ import { EightStar } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { TapButton } from '../ui/Tappable'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
-import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 import { formatDate } from '../../lib/date'
 import { sparkleBurstFrom } from '../../lib/sparkleBus'
+import { seam } from '../../lib/seam'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 type Errors = Partial<Record<'name' | 'family' | 'members', string>>
@@ -139,9 +139,11 @@ export function Rsvp() {
     'pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-fluid-sm text-wine-soft transition-all duration-200 peer-focus:top-2.5 peer-focus:translate-y-0 peer-focus:text-[0.62rem] peer-focus:tracking-[0.2em] peer-focus:uppercase peer-[:not(:placeholder-shown)]:top-2.5 peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[0.62rem] peer-[:not(:placeholder-shown)]:tracking-[0.2em] peer-[:not(:placeholder-shown)]:uppercase'
 
   return (
-    <section className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]">
+    <section
+      className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]"
+      style={seam('var(--color-blush-soft)')}
+    >
       <GeometricPattern scale={100} opacity={0.045} />
-      <Seam from="var(--color-blush-soft)" />
       <SparkleField count={7} tone="rose" />
 
       <div ref={ref} className="relative z-10 mx-auto max-w-[20rem] text-center">

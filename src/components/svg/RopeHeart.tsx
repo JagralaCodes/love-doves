@@ -16,17 +16,21 @@ type Props = {
  * the path by the section's ScrollTrigger to mark the drawing tip.
  *
  * In a 300 x 320 box: cleft (150,70), lobes out to x=40 and x=260, tip at
- * (150,250); the drop continues to (150,320), the card's edge.
+ * (150,250); the drop continues to (150,336) — 16 units past the box,
+ * drawn with overflow visible. The groom's card paints over it, so the
+ * overshoot hides under the arch face and the drop meets the apex at every
+ * width, even though the apex sits a few px higher or lower as the card
+ * scales.
  */
 export const ROPE_PATH =
   'M150 0 L150 70 ' +
   'C110 20, 40 30, 40 105 C40 160, 110 200, 150 250 ' +
   'C190 200, 260 160, 260 105 C260 30, 190 20, 150 70 ' +
-  'L150 320'
+  'L150 336'
 
 export function RopeHeart({ className = '' }: Props) {
   return (
-    <svg viewBox="0 0 300 320" className={className} aria-hidden="true">
+    <svg viewBox="0 0 300 320" className={className} overflow="visible" aria-hidden="true">
       <defs>
         <radialGradient id="ropeBead" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fff8e0" />

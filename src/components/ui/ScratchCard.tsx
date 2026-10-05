@@ -359,7 +359,9 @@ export function ScratchCard({
   return (
     <div
       ref={wrapRef}
-      className={`relative ${shape ? "" : "overflow-hidden rounded-[1.1rem]"} ${className}`}
+      // select-none: a mouse scratch drags across the date underneath the
+      // canvas, and would otherwise highlight it like selected text.
+      className={`relative select-none ${shape ? "" : "overflow-hidden rounded-[1.1rem]"} ${className}`}
     >
       {children}
 

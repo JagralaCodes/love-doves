@@ -163,6 +163,11 @@
        invisible. This is an inline box, so vertical padding enlarges the
        background without touching line height or layout. */
     padding-block: 0.5em;
+    /* Sideways too: script swashes (the d of "Mohammed") overhang their
+       advance width, and any part of a glyph outside the background box
+       paints nothing. The negative margin keeps layout unchanged. */
+    padding-inline: 0.35em;
+    margin-inline: -0.35em;
     /* 140% centred: the word spans ~14-86% of the gradient, so it opens and
        closes on the dark stops with the highlight crossing its middle. */
     background-size: 140% 100%;
@@ -200,6 +205,11 @@
        invisible. This is an inline box, so vertical padding enlarges the
        background without touching line height or layout. */
     padding-block: 0.5em;
+    /* Sideways too: script swashes (the d of "Mohammed") overhang their
+       advance width, and any part of a glyph outside the background box
+       paints nothing. The negative margin keeps layout unchanged. */
+    padding-inline: 0.35em;
+    margin-inline: -0.35em;
     background-size: 140% 100%;
     background-position: 50% 50%;
     -webkit-background-clip: text;
@@ -223,6 +233,11 @@
        invisible. This is an inline box, so vertical padding enlarges the
        background without touching line height or layout. */
     padding-block: 0.5em;
+    /* Sideways too: script swashes (the d of "Mohammed") overhang their
+       advance width, and any part of a glyph outside the background box
+       paints nothing. The negative margin keeps layout unchanged. */
+    padding-inline: 0.35em;
+    margin-inline: -0.35em;
     background-size: 140% 100%;
     background-position: 50% 50%;
     -webkit-background-clip: text;
@@ -252,17 +267,52 @@
   font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
 
+/* No letter-spacing on Arabic-script text.
+   The small-caps labels are tracked wide in English, and the same classes
+   follow the label into Urdu — where spacing letters apart breaks the
+   cursive joins and a word like دعوت falls into separate letters.
+   Deliberately UNLAYERED: Tailwind's utilities live in a cascade layer,
+   and any unlayered rule beats every layered one, whatever the
+   specificity — so this wins over tracking-[…] without !important. */
+.font-urdu,
+.font-arabic,
+[lang='ur'],
+[lang='ar'] {
+  letter-spacing: normal;
+}
+
+/* Sections overlap by one pixel.
+   Where two sections meet on a fractional pixel (which is most of the time
+   at 1.5x and 3x DPR), BOTH edges are anti-aliased, each covering only
+   part of that pixel row — and the white page behind shows through the
+   gap as a hairline. Invisible between two white sections, an obvious
+   pale line between two wine ones. With the overlap, the lower section's
+   soft edge falls on the upper section's solid paint instead. */
+@layer base {
+  main > section + section {
+    margin-top: -1px;
+  }
+}
+
 @utility link-grow {
   /* A text link whose underline grows out from the centre on hover and
      focus, instead of the whole link just dimming. Touch gets the same
-     rule on :active. */
+     rule on :active.
+
+     The underline belongs to the LABEL (the control's first child), not
+     to the control. Buttons carry a 44px minimum tap height and links do
+     not, so an underline hung off the control's own box sat a dozen pixels
+     lower on "Add to calendar" than on "View on map". */
   position: relative;
-  &::after {
+  & > :first-child {
+    position: relative;
+  }
+  & > :first-child::after {
     content: '';
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -0.2em;
+    bottom: -0.35em;
     height: 1px;
     background: var(--color-gold);
     opacity: 0.6;
@@ -270,9 +320,9 @@
     transform-origin: center;
     transition: transform 0.45s var(--ease-elegant), opacity 0.3s ease;
   }
-  &:hover::after,
-  &:focus-visible::after,
-  &:active::after {
+  &:hover > :first-child::after,
+  &:focus-visible > :first-child::after,
+  &:active > :first-child::after {
     transform: scaleX(1);
     opacity: 0.95;
   }

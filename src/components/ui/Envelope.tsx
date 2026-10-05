@@ -15,11 +15,16 @@ type Props = {
   /** Accessible name of the open control. */
   openLabel: string
   onOpened?: () => void
+  /** Language of the prompt, so Urdu gets its own face and direction. */
+  lang?: string
+  dir?: 'rtl' | 'ltr'
   className?: string
 }
 
 /** Pulling the card this far up (px) opens it; shorter pulls spring back. */
 const PULL_TO_OPEN = -56
+/** How much of the sealed card peeks above the envelope, inviting a pull. */
+const LIP = 14
 
 /**
  * A sealed envelope the viewer opens by tapping the wax heart or pulling
@@ -33,6 +38,13 @@ const PULL_TO_OPEN = -56
  * The card inside is the SAME element before and after: it is not swapped
  * for a "full" version. That keeps the rise continuous and avoids a layout
  * jump at the moment the envelope goes.
+ *
+ * The card sits in normal flow, and the envelope's layers are drawn over
+ * the box around it. An aspect-ratio box grows to fit in-flow content, so
+ * the envelope is never smaller than what it holds: two long addresses
+ * make a squarer envelope rather than a card sticking out of the top.
+ * Opening only ever moves things with transforms, so the box — and the
+ * page below it — never changes height.
  */
 export function Envelope({
   children,
@@ -40,6 +52,8 @@ export function Envelope({
   prompt,
   openLabel,
   onOpened,
+  lang,
+  dir,
   className = '',
 }: Props) {
   const [open, setOpen] = useState(false)
@@ -58,8 +72,12 @@ export function Envelope({
 
   return (
     <div className={`relative mx-auto w-full max-w-[20rem] ${className}`}>
-      {/* Reserve the envelope's height so the page does not jump when it goes. */}
-      <div className="relative" style={{ aspectRatio: '20 / 14', perspective: '1200px' }}>
+      {/* At least envelope-shaped, and taller if the card needs it. The card
+          is the only in-flow child, so it decides that. */}
+      <div
+        className="relative flex flex-col px-[7%] pb-[9%]"
+        style={{ aspectRatio: '20 / 14', perspective: '1200px', paddingTop: LIP }}
+      >
         <AnimatePresence>
           {!gone && (
             <motion.div
@@ -87,7 +105,9 @@ export function Envelope({
               <motion.div
                 className="absolute inset-x-0 top-0"
                 style={{
-                  height: '58%',
+                  // Past the pocket's V (60%), so the two overlap and no
+                  // sliver of the card shows between them.
+                  height: '61%',
                   transformOrigin: 'top center',
                   transformStyle: 'preserve-3d',
                   clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
@@ -133,8 +153,10 @@ export function Envelope({
         {/* The card. Draggable upward while sealed; rises out when opened;
             then settles as the content. */}
         <motion.div
-          className="absolute inset-x-[7%] bottom-[8%]"
-          style={{ zIndex: gone ? 10 : 2, touchAction: 'pan-y' }}
+          className="relative"
+          // The lip: pulled up out of the envelope's mouth by a margin, not a
+          // transform, so dragging and snapping back keep y = 0 as home.
+          style={{ zIndex: gone ? 10 : 2, touchAction: 'pan-y', marginTop: -LIP * 2 }}
           drag={open || reduced ? false : 'y'}
           dragConstraints={{ top: -70, bottom: 0 }}
           dragElastic={0.18}
@@ -143,7 +165,7 @@ export function Envelope({
             if (info.offset.y < PULL_TO_OPEN) openIt()
           }}
           initial={false}
-          animate={gone ? { y: 0, scale: 1 } : open ? { y: '-46%', scale: 1.02 } : { y: 0, scale: 1 }}
+          animate={gone ? { y: 0, scale: 1 } : open ? { y: '-38%', scale: 1.02 } : { y: 0, scale: 1 }}
           transition={T ?? { type: 'spring', stiffness: 160, damping: 22, delay: open && !gone ? 0.5 : 0 }}
         >
           <div
@@ -155,20 +177,23 @@ export function Envelope({
         </motion.div>
       </div>
 
-      <AnimatePresence>
-        {!open && (
-          <motion.p
-            key="prompt"
-            className="text-2xs mt-4 text-center tracking-[0.3em] text-wine-soft/80 uppercase"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={reduced ? undefined : { animation: 'float-soft 2.8s ease-in-out infinite' }}
-          >
-            {prompt}
-          </motion.p>
-        )}
-      </AnimatePresence>
+      {/* Faded out rather than removed once open: removing it would pull
+          everything below up by its height — exactly the jump the in-flow
+          card is there to prevent. */}
+      <motion.p
+        className={`text-2xs mt-4 text-center tracking-[0.3em] text-wine-soft/80 ${
+          lang === 'ur' ? 'font-urdu' : 'uppercase'
+        }`}
+        lang={lang}
+        dir={dir}
+        initial={false}
+        animate={{ opacity: open ? 0 : 1 }}
+        transition={{ duration: 0.4 }}
+        aria-hidden={open || undefined}
+        style={reduced || open ? undefined : { animation: 'float-soft 2.8s ease-in-out infinite' }}
+      >
+        {prompt}
+      </motion.p>
     </div>
   )
 }

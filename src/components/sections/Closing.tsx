@@ -13,9 +13,9 @@ import { SparkleField } from '../ui/SparkleField'
 import { PearlBokeh } from '../ui/PearlBokeh'
 import { ShimmerDust } from '../ui/ShimmerDust'
 import { FallingPetals } from '../ui/FallingPetals'
-import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
+import { seam } from '../../lib/seam'
 
 /**
  * The finale. Lanterns rise into place as the section comes on, the dua
@@ -73,15 +73,14 @@ export function Closing() {
     <section
       ref={ref}
       className="relative flex min-h-[88svh] flex-col items-center justify-center overflow-hidden bg-wine-deep px-[var(--page-gutter)] py-[var(--section-gap)]"
+      // Dusk: the light page above fades through blush and rose into the
+      // wine of evening, rather than dropping into it at a hard line.
+      style={seam('var(--color-pearl-white)', {
+        height: '20rem',
+        via: ['rgba(252,228,234,0.92) 14%', 'rgba(244,184,198,0.6) 34%', 'rgba(122,32,56,0.45) 62%'],
+      })}
     >
       <GeometricPattern scale={112} opacity={0.08} color="#d4af37" />
-      {/* Dusk: the light page above fades through blush and rose into the
-          wine of evening, rather than dropping into it at a hard line. */}
-      <Seam
-        from="var(--color-pearl-white)"
-        via={['rgba(252,228,234,0.92) 14%', 'rgba(244,184,198,0.6) 34%', 'rgba(122,32,56,0.45) 62%']}
-        height="20rem"
-      />
       <ShimmerDust density={52} tone="gold" />
       <SparkleField count={12} tone="gold" />
       <PearlBokeh count={4} tone="dark" />

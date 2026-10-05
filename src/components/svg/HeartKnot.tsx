@@ -31,6 +31,7 @@ export function HeartKnot({ className = '', title }: Props) {
   const uid = useId().replace(/:/g, '')
   const face = `knotFace-${uid}`
   const glow = `knotGlow-${uid}`
+  const cord = `knotCord-${uid}`
 
   return (
     <svg
@@ -43,6 +44,18 @@ export function HeartKnot({ className = '', title }: Props) {
       {title ? <title>{title}</title> : null}
 
       <defs>
+        {/* The straight cords need their own gradient. The shared gold foil
+            is in objectBoundingBox units, and a perfectly vertical line has
+            a bounding box of zero width — so the gradient has nothing to
+            map onto and the stroke paints NOTHING. User-space units give it
+            real coordinates. */}
+        <linearGradient id={cord} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="260">
+          <stop offset="0%" stopColor="#a67c1f" />
+          <stop offset="30%" stopColor="#d4af37" />
+          <stop offset="50%" stopColor="#f2e3b0" />
+          <stop offset="70%" stopColor="#d4af37" />
+          <stop offset="100%" stopColor="#a67c1f" />
+        </linearGradient>
         <radialGradient id={face} cx="38%" cy="26%" r="80%">
           <stop offset="0%" stopColor="#f9d9e1" />
           <stop offset="42%" stopColor="#f4b8c6" />
@@ -65,7 +78,7 @@ export function HeartKnot({ className = '', title }: Props) {
         data-cord="in"
         d="M70 4 L70 72"
         fill="none"
-        stroke="url(#goldFoil)"
+        stroke={`url(#${cord})`}
         strokeWidth="2.4"
         strokeLinecap="round"
       />
@@ -126,7 +139,7 @@ export function HeartKnot({ className = '', title }: Props) {
         data-cord="out"
         d="M70 188 L70 256"
         fill="none"
-        stroke="url(#goldFoil)"
+        stroke={`url(#${cord})`}
         strokeWidth="2.4"
         strokeLinecap="round"
       />

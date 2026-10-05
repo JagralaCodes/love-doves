@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '../../lib/gsap'
+import { seam } from '../../lib/seam'
 import { useWordReveal } from '../../hooks/useWordReveal'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useLang, langAttrs } from '../../hooks/useLang'
@@ -9,7 +10,6 @@ import { archHeadPath, JAMB_INSET } from '../svg/archGeometry'
 import { EightStar, Heart } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { FallingPetals } from '../ui/FallingPetals'
-import { Seam } from '../ui/Seam'
 
 import { wedding } from '../../config/wedding.config'
 
@@ -92,9 +92,9 @@ export function QuranVerse() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-blush px-[var(--page-gutter)] py-[var(--section-gap)]"
+      style={seam('var(--color-pearl-white)')}
     >
       <GeometricPattern scale={88} opacity={0.07} color="#9b2c4a" />
-      <Seam from="var(--color-pearl-white)" />
       <SparkleField count={6} tone="rose" />
       <FallingPetals count={8} shape="heart" />
 
