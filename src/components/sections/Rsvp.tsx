@@ -135,13 +135,23 @@ export function Rsvp() {
     `peer w-full rounded-[0.75rem] border bg-white/70 px-4 pt-5 pb-2 font-body text-wine-deep outline-none transition-colors duration-300 placeholder-transparent focus:border-wine/60 focus:bg-white ${
       bad ? 'border-wine/60' : 'border-gold/35'
     }`
-  const labelClass =
-    'pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-fluid-sm text-wine-soft transition-all duration-200 peer-focus:top-2.5 peer-focus:translate-y-0 peer-focus:text-[0.62rem] peer-focus:tracking-[0.2em] peer-focus:uppercase peer-[:not(:placeholder-shown)]:top-2.5 peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-[0.62rem] peer-[:not(:placeholder-shown)]:tracking-[0.2em] peer-[:not(:placeholder-shown)]:uppercase'
+  // Floating labels, transform only. The label never moves in layout: it
+  // rests centred in the field and floats by translate + scale from its
+  // start edge (left in English, right in Urdu). The old version animated
+  // `top` and `font-size`, re-laying out the form on every frame of focus.
+  // Logical `start-4`, so the label sits on the reading side in RTL too.
+  const FLOAT =
+    'peer-focus:-translate-y-[calc(50%+0.66rem)] peer-focus:scale-[0.74] peer-[:not(:placeholder-shown)]:-translate-y-[calc(50%+0.66rem)] peer-[:not(:placeholder-shown)]:scale-[0.74]'
+  const labelBase =
+    'pointer-events-none absolute start-4 origin-left text-fluid-sm text-wine-soft transition-transform duration-200 ease-out rtl:origin-right'
+  const labelClass = `${labelBase} top-1/2 -translate-y-1/2 ${FLOAT}`
+  // The textarea's label rests on its first line rather than its middle.
+  const areaLabelClass = `${labelBase} top-4 peer-focus:-translate-y-[0.62rem] peer-focus:scale-[0.74] peer-[:not(:placeholder-shown)]:-translate-y-[0.62rem] peer-[:not(:placeholder-shown)]:scale-[0.74]`
 
   return (
     <section
       className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]"
-      style={seam('var(--color-blush-soft)')}
+      style={seam('var(--color-blush-soft)', 'var(--color-pearl-white)')}
     >
       <GeometricPattern scale={100} opacity={0.045} />
       <SparkleField count={7} tone="rose" />
@@ -164,7 +174,12 @@ export function Rsvp() {
           lang={t.lang}
           dir={t.dir}
         >
-          {s(wedding.texts.rsvpBy, wedding.urdu.rsvpBy)} · {formatDate(wedding.rsvp.deadline)}
+          {s(wedding.texts.rsvpBy, wedding.urdu.rsvpBy)} ·{' '}
+          {/* Isolated: inside an RTL Urdu line, "5 November 2026" was being
+              reordered by the bidi algorithm into "November 2026 5". */}
+          <bdi lang="en" dir="ltr" className="font-body tracking-[0.12em]">
+            {formatDate(wedding.rsvp.deadline)}
+          </bdi>
         </p>
 
         {status === 'sent' ? (
@@ -183,7 +198,7 @@ export function Rsvp() {
             </p>
           </div>
         ) : (
-          <form ref={formRef} onSubmit={onSubmit} noValidate className="mt-7 space-y-3 text-left" dir={t.dir}>
+          <form ref={formRef} onSubmit={onSubmit} noValidate className="mt-7 space-y-3 text-start" dir={t.dir}>
             {/* Honeypot: real people never see it; bots fill it. */}
             <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
 
@@ -201,7 +216,7 @@ export function Rsvp() {
 
             <div className="relative">
               <textarea id="rsvp-dua" name="message" value={dua} onChange={(e) => setDua(e.target.value)} placeholder=" " rows={3} className={`${fieldClass()} resize-none leading-relaxed`} />
-              <label htmlFor="rsvp-dua" className={labelClass.replace('top-1/2 left-4 -translate-y-1/2', 'top-5 left-4 -translate-y-0')}>
+              <label htmlFor="rsvp-dua" className={areaLabelClass}>
                 {s(wedding.texts.rsvpDua, wedding.urdu.rsvpDua)}
               </label>
             </div>
@@ -259,7 +274,7 @@ function Field({
         {label}
       </label>
       {error && (
-        <span id={`${id}-err`} className="text-2xs absolute top-1/2 right-4 -translate-y-1/2 tracking-[0.15em] text-wine uppercase">
+        <span id={`${id}-err`} className="text-2xs absolute end-4 top-1/2 -translate-y-1/2 tracking-[0.15em] text-wine uppercase">
           {error}
         </span>
       )}

@@ -86,7 +86,7 @@ export function Venue() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-blush-soft px-[var(--page-gutter)] py-[var(--section-gap)]"
-      style={seam('var(--color-pearl-white)')}
+      style={seam('var(--color-pearl-white)', 'var(--color-blush-soft)')}
     >
       <GeometricPattern scale={96} opacity={0.045} />
       <SparkleField count={7} tone="gold" />

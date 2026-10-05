@@ -75,9 +75,13 @@ export function Closing() {
       className="relative flex min-h-[88svh] flex-col items-center justify-center overflow-hidden bg-wine-deep px-[var(--page-gutter)] py-[var(--section-gap)]"
       // Dusk: the light page above fades through blush and rose into the
       // wine of evening, rather than dropping into it at a hard line.
-      style={seam('var(--color-pearl-white)', {
+      style={seam('var(--color-pearl-white)', 'var(--color-wine-deep)', {
         height: '20rem',
-        via: ['rgba(252,228,234,0.92) 14%', 'rgba(244,184,198,0.6) 34%', 'rgba(122,32,56,0.45) 62%'],
+        via: [
+          ['#efd3da', 0.14],
+          ['#b87687', 0.34],
+          ['#6b182e', 0.62],
+        ],
       })}
     >
       <GeometricPattern scale={112} opacity={0.08} color="#d4af37" />

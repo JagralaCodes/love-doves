@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MotionConfig } from 'motion/react'
 import { useSmoothScroll } from './hooks/useSmoothScroll'
 import { useScrollLock } from './hooks/useScrollLock'
 import { useScrollRefresh } from './hooks/useScrollRefresh'
@@ -32,7 +33,9 @@ export default function App() {
   const lang = useLang()
 
   return (
-    <>
+    // Safety net: any Motion animation that forgets to check the preference
+    // still drops its transforms for viewers who asked for reduced motion.
+    <MotionConfig reducedMotion="user">
       <SvgDefs />
       <SparkleLayer />
       <ScrollThread visible={opened} />
@@ -64,6 +67,6 @@ export default function App() {
         {/* Last on purpose: the invitation closes on "see you soon". */}
         <Countdown />
       </main>
-    </>
+    </MotionConfig>
   )
 }

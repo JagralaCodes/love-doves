@@ -240,7 +240,7 @@ export function Families() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]"
-      style={seam('var(--color-blush)')}
+      style={seam('var(--color-blush)', 'var(--color-pearl-white)')}
     >
       <GeometricPattern scale={96} opacity={0.05} />
       <SparkleField count={7} tone="rose" />

@@ -1,178 +1,114 @@
-# TODO — Muslim Wedding Invitation (Nikah & Walima)
+# TODO — love-doves
 
-Status key: `[ ]` not started · `[~]` in progress · `[x]` done
+Everything personal lives in `src/config/wedding.config.ts`. Share links as
+`/#urdu` or `/#english`.
+
+## Where things stand
+
+Built, committed, on `origin/main`: gate, hero, verse, families, save-the-date,
+events deck, URL-based language, favicon, real names/dates/venues/maps links.
+
+Also committed: Tier 1 + 2 of the motion plan (Venue envelope, RSVP,
+Closing, Countdown, Families rope, press feedback, tighter spacing), Tier 3
+(parallax, section hand-offs, hero re-entry, progress thread, audio toggle),
+lint debt cleared (23 → 0), dead code removed.
+
+**How QA was done:** the Chrome extension would not connect, so the page was
+driven headless through the locally installed Chrome (puppeteer-core in a
+scratch folder, not a project dependency) at 360 / 390 / 768, English and
+`#urdu`, with and without reduced motion — screenshots reviewed, plus DOM
+and pixel probes for geometry and hairlines. Zero console errors, no
+horizontal overflow at any width.
+
+Everything below is in priority order.
 
 ---
 
-## Phase 1 — Setup & foundations  ✅ DONE
-- [x] Install deps: tailwindcss v4 + @tailwindcss/vite, gsap, motion, lenis
-- [x] Strip Vite scaffold (App.css, demo assets, icons.svg, boilerplate index.css)
-- [x] Self-host fonts into `public/fonts/` (Amiri, Cormorant Garamond, Pinyon Script, Jost)
-- [x] `src/styles/theme.css` — palette, fonts, spacing, easing as CSS variables + `@theme`
-- [x] `src/config/wedding.config.ts` — single source of truth (dummy data for now)
-- [x] `src/lib/date.ts` — one shared date/time formatting helper
-- [x] `src/lib/gsap.ts` — register ScrollTrigger, DrawSVGPlugin, SplitText once
-- [x] `src/hooks/useSmoothScroll.ts` — Lenis + GSAP ticker + ScrollTrigger sync
-- [x] `src/hooks/useReducedMotion.ts` — `prefers-reduced-motion` listener
-- [x] `src/hooks/useScrollLock.ts` — lock scroll until gate opens
-- [x] `index.html` — font preloads, meta, viewport, theme-color
-- [x] Folder structure: `components/sections/`, `components/ui/`, `components/svg/`, `hooks/`, `lib/`, `config/`, `styles/`
-- [x] Dev server runs clean, `tsc -b` passes
-- [x] `src/hooks/useReveal.ts` — varied scroll-reveal variants
+## 1. Visual QA
 
-## Phase 1.5 — Palette swap + dreamy effects  ✅ DONE
-- [x] Repalette `theme.css`: pearl-white / blush / rose-pink / wine / wine-deep / gold trio
-- [x] Re-tint shadows to warm rose; new `--foil-gold`, `--foil-rose`, `--glow-gold`, `--glow-white`
-- [x] `@theme static` so no token is pruned
-- [x] `ui/GoldGlitterText` — gradient clip + shine sweep + twinkling specks + soft halo
-- [x] `ui/SparkleField` — 4-point white/gold/rose stars, pop-twinkle-fade
-- [x] `ui/ShimmerDust` — canvas dust drifting across hero + countdown
-- [x] `ui/FallingPetals` — canvas petals tumbling on their own axis
-- [x] `ui/PearlBokeh` — blurred white/pink orbs drifting
-- [x] `ui/SparkleLayer` — pointer trail + reveal bursts on one fixed canvas
-- [x] `lib/sparkleBus` — fire a burst from anywhere (unit tested, 5/5)
-- [x] `lib/canvasScene` — shared DPR/resize/offscreen-pause engine on GSAP's ticker
-- [x] `lib/device` — tier detection; trail off on low-end, counts scaled on mid
-- [x] `PROMPT.md` section 3 updated to the new design system
-- [ ] Wire bursts into scratch card / swipe cards / envelope / RSVP success (Phases 5-8)
+Done headless (see above). What is left open needs a real phone in hand:
+touch feel, pacing, and the parts gated on the Web3Forms key.
 
-## Phase 1.6 — Mobile-first pass  ✅ DONE
-- [x] Type scale re-anchored to 360-480px (phone is the design target, not the fallback)
-- [x] One phone-width column: `#root` capped at 30rem, centred on blush on wider screens
-- [x] Safe-area padding for notch + home indicator
-- [x] `overscroll-behavior-y: none` so pull-to-refresh cannot fight the gate/scratch card
-- [x] 44px minimum touch targets; `touch-action: manipulation`; no tap-highlight flash
-- [x] Inputs forced to >=16px so iOS does not zoom on focus
-- [x] `ui/Ornament` — gold/rose divider with 8-point star
-- [x] `ui/ArchCard` — mihrab arch frame with gold hairline
-- [x] `ui/ScrollHint` — scroll cue
-- [x] Fixed: GoldGlitterText forced `inline-block`, overlapping the Bismillah and names
-- [x] Fixed: Cormorant old-style figures made dates render at x-height (`nums-lining`)
-- [x] Deepened the foil gradient — pale gold was failing contrast on white
-- [x] Bokeh split into light/dark tones; was smudging pink behind the hero names
-- [x] Verified no horizontal overflow at phone width
+**Gate → Hero**
+- [x] Four hearts stacked concentric, no offset; monogram on every heart, stays on a falling one
+- [x] Doors swing, gate fades, hero plays in — no oval flash, no finished-page flash, no stale scroll
+- [x] "Huda" / "Mohammed" fully legible in script; Bismillah tails not clipped; crescent + star correct
 
-## Phase 2 — SVG graphics library  ✅ DONE
-- [x] `svg/SvgDefs` — one hidden SVG of shared gold/rose/blush gradients, referenced by id
-- [x] `svg/GeometricPattern` — seamless girih tile (8-point star + corner quarters + lattice), drifting
-- [x] `svg/MihrabArch` — real arch geometry: ogee (Mughal onion), two-centred pointed, multifoil
-- [x] `svg/Lantern` — fanoos with pierced lattice, pivots from the cord not its centre
-- [x] `svg/Ornaments` — Crescent, EightStar, CornerFlourish, FloralVine, DomeIcon
-- [x] `svg/Monogram` — initials in a girih roundel or lobed cartouche
-- [x] `ui/ArchFrame` — arch that wraps content of any height (fixed-aspect head + stretching jambs)
-- [x] `ui/ArchPanel` — fixed-aspect ogee panel for the date
-- [x] `ui/OrnateFrame` — rectangular panel, doubled rule, corner brackets, star keystone
-- [x] Removed `ui/ArchCard` — the half-dome read as a headstone
-- [x] Urdu: Noto Nastaliq Urdu self-hosted, `--font-urdu`, roomier line box
-- [x] `ui/LanguageToggle` + `lib/langStore` — EN / اردو for translations; Arabic scripture unchanged
-- [x] Copy trimmed; graphics now carry the sections instead of paragraphs
-- [ ] `svg/GateDoors` + `svg/WaxSeal` — deferred to Phase 3, where they are animated
-- [ ] `svg/Bismillah` calligraphy path for DrawSVG — deferred to Phase 3
+**Families**
+- [x] Arch head → body is one surface (no seam); roundel sits inside the arch head
+- [x] Heart beats; cord draws bride → around heart → groom on scroll
+  — *the straight cords were invisible (gradient on a zero-width bbox); fixed*
+- [x] **Rope**: starts at the heart, ties a full heart shape, drops onto the groom's card; bead rides the tip
+  — *measured: now starts where the knot's cord ends and its drop runs under the groom's arch, so it meets the apex at 360/390/768*
+- [ ] Rope pacing *feels* immersive, not rushed — needs a real thumb on a phone; tune `start`/`end` on `[data-rope-wrap]`
+- [x] Rope's final drop lands exactly on the arch apex
 
-## Phase 3 — Gate + Hero  ✅ DONE
-- [x] `svg/GateDoors` — carved leaves, ogee arch head, girih panels, ring pulls
-- [x] `svg/WaxSeal` — monogram seal split along a shared fracture so it can break
-- [x] `sections/Gate` — seal cracks, doors swing in 3D, light floods, gold burst
-- [x] Scroll locked until opened; gate constrained to the phone column
-- [x] Keyboard operable (button autofocused); ref guard stops a double-fire
-- [x] Reduced motion: gate fades instead of swinging
-- [x] `sections/Hero` — Bismillah mask-wipe, SplitText names, lanterns, particles
-- [x] `hooks/useGlyphSupport` — measures U+FDFD, falls back to spelled-out Arabic
-- [x] Fixed: SplitText broke `background-clip:text`, leaving the names invisible
+**Save the Date**
+- [x] Foil fills the whole ogee arch, spun-gold look; scratch threshold fires at ~55%; heart confetti bursts
 
-## Phase 4 — Quran verse + Families  ✅ DONE
-- [x] `hooks/useWordReveal` — TreeWalker split preserving markup, whitespace and Arabic shaping
-- [x] `lib/wordProgress` — scroll-to-word mapping, unit tested (7 counts x 3 overlaps)
-- [x] Fixed: single-word passages could never finish revealing (span exceeded 1)
-- [x] `sections/QuranVerse` — ayah + translation scrub at their own pace
-- [x] Multifoil arch outline draws itself in with DrawSVG; jambs wipe down
-- [x] `sections/Families` — pointed-arch cards arriving from opposite edges
-- [x] Monogram roundels on the springline; heart-crescent joins the two
-- [x] `svg/Ornaments` — Heart and HeartCrescent added
-- [x] Hearts fall among the petals; pointer/touch nudges them aside
-- [x] Blur on hidden words limited to high-tier devices
+**Events**
+- [x] Swipe slides straight (no tilt); thrown card returns to the back; cards behind are filled in; loops forever
+- [x] "Add to calendar" downloads a valid `.ics` (intercepted and checked: escaping, folding, floating times, alarm)
+- [x] Card actions on one line, underlines aligned, 44px tap targets
+- [ ] Press squeeze / hover underline — feel only; check on a real phone
 
-## Phase 5 — Save the Date (scratch card)  ✅ DONE
-- [x] `ui/ScratchCard` — foil drawn procedurally: raking gradient, brushed grain, girih lattice
-- [x] `destination-out` scratching, segment-interpolated so fast drags leave no gaps
-- [x] `touch-action: none` so a scratch does not scroll the page
-- [x] Coverage sampled on release, not per frame — getImageData stalls the pipeline
-- [x] 55% cleared -> foil fades, gold/rose burst, petals and hearts fall
-- [x] "Or tap to reveal" fallback; auto-revealed under reduced motion
-- [x] sr-only live region reports scratch progress
-- [x] DPR capped at 2; repaints whole on resize
-- [x] `setPointerCapture` guarded — it throws on an unknown pointer id
-- [x] `sections/SaveTheDate` — foil inside the ogee arch panel
+**Venue**
+- [x] Envelope: tap seal OR pull card up opens it; flap swings behind the card; card rises; envelope fades; no layout jump
+- [x] Gold route draws toward the masjid on scroll; dome rises to meet it
+- [ ] Both map links open the right pins — links are correct in config; open them once on a phone
 
-## Phase 6 — Event swipe cards ✅ DONE
-- [x] `sections/Events.tsx` — deck of cards from `wedding.events`
-- [x] `ui/EventDeck.tsx` — generic deck; only the top card holds content, the
-      ones behind are bare frames (no duplicate text, no hidden tab stops)
-- [x] Motion drag, tilt while dragging, throw past threshold, snap back if short
-- [x] `lib/deckThrow.ts` — the throw rule, extracted and unit tested (14 cases)
-- [x] Dots + prev/next arrow buttons, arrow/Home/End keys, wraps both ways
-- [x] `lib/ics.ts` — client-side .ics generation + download (27 assertions)
-- [x] "View on map" + "Add to calendar" per card, as hairline text links
-- [x] Swipe hint that retires itself on first drag
+**RSVP**
+- [x] Labels float (now transform-only, on the start side in RTL)
+- [ ] Validation inline / empty submit shakes — can only be exercised once the Web3Forms key is in (the button is disabled until then)
+- [x] Shows "RSVP opens soon" while the key is a placeholder (correct until the key is in)
+- [ ] With a real key: success draws the ring + check, sparkles, thank-you; error shakes + message
 
-### Carried forward, deliberately
-The brief asked for "Open in Maps" / "Add to Calendar" **buttons**. They are
-hairline text links instead — the filled, bordered treatment is exactly what
-made the earlier card look like a postage stamp. Same two actions, same
-tap targets, quieter.
+**Closing → Countdown**
+- [x] Lanterns drop in from hooks; dua wipes in; family names + "With love and duas"
+- [x] Countdown is the LAST section; digits roll (not swap); only changed columns move; day/hour labels in Urdu under `#urdu`
+- [x] Spacing: no section reads as an island; nothing feels cramped
 
-### Verified
-- .ics: structure, floating local DTSTART/DTEND, 2h default, midnight rollover,
-  RFC 5545 escaping, 75-octet folding, surrogate-pair safety, round-trip decode
-- Live: real button click produces a 620-byte `text/calendar` blob named
-  `nikah-2026-11-13.ics`, label flips to "Saved"
-- Deck: arrows, dots, wrapping, `aria-current` and live-region sync
-- Fixed: the throw threshold was `window.innerWidth * 0.28`. The invitation is
-  a fixed ~480px column, so on a desktop window that demanded a 478px drag —
-  wider than the card — and the deck could not be swiped at all. Now
-  card-relative.
+**Cross-cutting**
+- [ ] Tap anywhere on touch → tiny glowing hearts; drag → trail — real-phone check
+- [x] `#urdu` flips every label, RTL only on translated blocks
+- [x] Reduced motion (`prefers-reduced-motion`): everything collapses to fades, no scrubbing, countdown digits swap
 
-### Still needs a real device
-- The drag gesture itself end-to-end (the automated tab freezes rAF, so
-  Motion's frameloop never advances there; the decision rule is unit tested)
+## 2. Tier 3 — Depth and cinematic flow
 
-## Phase 7 — Countdown + Venue reveal
-- [ ] `sections/Countdown.tsx` — THE ONLY countdown on the site
-- [ ] Rolling/flipping digits, days/hours/mins/secs, single interval, tab-blur safe
-- [ ] Night sky: crescent + twinkling stars (CSS/SVG, no canvas needed)
-- [ ] Reaching zero -> "Alhamdulillah, the day is here"
-- [ ] `sections/Venue.tsx` — closed envelope, tap or swipe up to open
-- [ ] Dotted gold path draws on scroll toward the dome icon
+- [x] **Parallax layering**: lanterns, bokeh, pattern at 0.3–0.6× scroll; content at 1× (GSAP ScrollTrigger scrub, transform only)
+- [x] **Section hand-offs**: soft gradient seams between sections, esp. RSVP (light) → Closing (wine) → Countdown so it reads as dusk falling
+- [x] Hero re-entry: scroll-scrubbed gold rule + crescent rise when scrolling back up
+- [x] **Ambient audio toggle**: fanoos-glow button, opt-in only, remembers choice — built; stays hidden until `public/audio/ambience.mp3` exists (see Blocked), then appears by itself
+- [x] Section progress: a thin gold thread down the gutter that fills with scroll
 
-## Phase 8 — RSVP + Closing
-- [ ] `sections/Rsvp.tsx` — Name / Family Name / Members (1-20) required, optional dua
-- [ ] "Please RSVP by [deadline]" from config
-- [ ] Web3Forms POST, subject `RSVP: [Name] [Family] - [N] members`
-- [ ] Validation, loading state, double-submit guard, friendly error
-- [ ] Self-drawing gold SVG check + "Jazakallah Khair, we received your RSVP"
-- [ ] `sections/Closing.tsx` — lanterns rise, closing dua, thank you, family names
+## 3. Tier 4 — Polish, performance, accessibility (old Phase 9)
 
-## Phase 9 — Polish
-- [ ] Vary the reveal per section (fade-up / mask wipe / draw-in / scale / stagger)
-- [ ] Audit: only `transform` + `opacity` animated
-- [ ] Reduced-motion pass across every section (no particles, no parallax)
-- [ ] Responsive pass at 360 / 390 / 768 / 1440
-- [ ] a11y: heading order, focus rings, contrast, SVG labels, keyboard on all interactions
-- [ ] OG tags + generated OG image (monogram + names + date, no photos) — blush/gold treatment
-- [ ] Contrast audit: gold on white is the risk area; wine for body text
-- [ ] Lighthouse mobile 90+; check no CLS, fonts preloaded
-- [ ] Bundle is 573 kB / 190 kB gzip — GSAP + Motion + Lenis all ship.
-      Code-split, or drop one animation library.
+- [x] **Fix the 23 pre-existing lint errors**: `useFitText` refs read during render (Hero), `Math.random` in `useMemo` (GoldGlitterText, PearlBokeh, SparkleField), fast-refresh exports (MihrabArch), irregular whitespace (date.ts — the NNBSP is intentional; add a disable comment)
+- [x] Audit: only `transform` + `opacity` animated anywhere (Motion best-practice); fix any layout-property tweens
+- [x] Reduced-motion pass across every section — no particles, no parallax, no scrub
+- [ ] Responsive pass at 360 / 390 / 768 / 1440 (desktop just centres the column)
+- [ ] a11y: heading order, focus rings, contrast (gold on white is the risk), SVG labels, keyboard on every interaction (gate hearts, deck, envelope, scratch fallback)
+- [ ] **Bundle 604 kB / 199 kB gzip**: lazy-load deck, scratch card, confetti, envelope below the fold; consider dropping Lenis or Motion
+- [ ] **OG image** (monogram + names + date, blush/gold, no photos) + absolute `og:image` URL; **apple-touch-icon PNG** (iOS ignores the SVG)
+- [ ] `<title>` and OG title with the couple's names
+- [ ] Lighthouse mobile 90+, no CLS, fonts preloaded
+- [x] Dead code: delete `WaxSeal.tsx`, `HeartCrescent` in Ornaments, `ArchPanel`/`OrnateFrame`/`Ornament` if unused
 
-## Phase 10 — Ship
-- [ ] `npm run build` clean, preview verified
-- [ ] `vercel.json` if needed
-- [ ] Vercel deploy steps written out
+## 4. Ship (old Phase 10)
+
+- [ ] `npm run build` clean; `vite preview` walked end to end
+- [ ] `vercel.json` SPA rewrite is in — confirm `/urdu` works on the deployed URL
+- [ ] Deploy to Vercel; set the final domain in `site.url`
+- [ ] Test the WhatsApp link preview and the `/#urdu` link from an actual phone
 
 ---
 
 ## Blocked on you
-- [ ] Real names, parents, dates, times, venues, addresses, Maps links
-- [ ] Web3Forms access key + receiver email
-- [ ] Ambient audio file -> `public/audio/ambience.mp3` (optional)
-- [ ] Final domain, for absolute OG image URL
+
+- [ ] **Nikah time** — still the `11:00` placeholder; the countdown and the `.ics` both use it
+- [ ] **Web3Forms access key** — free at https://web3forms.com; RSVP is disabled until it's in
+- [ ] RSVP deadline — moved to 5 Nov (was after the wedding); confirm
+- [ ] Monogram — currently `H & S`; `H & M` (Huda & Mohammed)?
+- [ ] Urdu proofread by a native speaker (all strings in `wedding.urdu`)
+- [ ] Final domain, for the absolute OG image URL
+- [ ] Ambient audio file → `public/audio/ambience.mp3` (optional; enables the toggle)

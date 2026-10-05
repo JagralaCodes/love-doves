@@ -92,7 +92,7 @@ export function QuranVerse() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-blush px-[var(--page-gutter)] py-[var(--section-gap)]"
-      style={seam('var(--color-pearl-white)')}
+      style={seam('var(--color-pearl-white)', 'var(--color-blush)')}
     >
       <GeometricPattern scale={88} opacity={0.07} color="#9b2c4a" />
       <SparkleField count={6} tone="rose" />
