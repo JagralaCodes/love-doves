@@ -1,0 +1,70 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+<!--
+  Source of public/og.jpg, the link-preview card. The names and dates are
+  baked in: if they change in wedding.config.ts, edit them here and
+  re-render at exactly 1200x630, 1x, as a JPEG under ~300 KB (WhatsApp
+  drops larger previews). Any headless Chrome screenshot will do.
+-->
+@font-face{font-family:Pinyon;src:url(../public/fonts/pinyon-script-latin-400-normal.woff2)}
+@font-face{font-family:Corm;src:url(../public/fonts/cormorant-garamond-latin-600-normal.woff2)}
+@font-face{font-family:Jost;src:url(../public/fonts/jost-latin-wght-normal.woff2);font-weight:100 900}
+@font-face{font-family:Amiri;src:url(../public/fonts/amiri-arabic-400-normal.woff2)}
+*{margin:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{position:relative;background:radial-gradient(ellipse 70% 85% at 50% 46%,#fff 0%,#fdf1f4 52%,#f8d2dc 100%);font-family:Jost}
+svg.bg{position:absolute;inset:0}
+.col{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:34px}
+.bis{font-family:Amiri;font-size:30px;color:#a67c1f;line-height:1.6}
+.rule{width:150px;height:1px;background:linear-gradient(90deg,transparent,#d4af37,transparent);margin:6px 0 14px}
+.name{font-family:Pinyon;font-size:96px;line-height:1.08;color:#9b2c4a;text-shadow:0 2px 0 rgba(255,255,255,.7),0 6px 18px rgba(155,44,74,.12);padding:0 .3em}
+.amp{display:flex;align-items:center;gap:14px;margin:0 0 2px}
+.amp i{display:block;width:56px;height:1px}
+.l{background:linear-gradient(90deg,transparent,rgba(212,175,55,.7))}.r{background:linear-gradient(270deg,transparent,rgba(212,175,55,.7))}
+.ev{margin-top:22px;font-size:18px;letter-spacing:.24em;font-variant-numeric:lining-nums;text-transform:uppercase;color:#7a2038;font-weight:400}
+.ev b{font-family:Corm;font-weight:600;font-size:23px;letter-spacing:.06em;color:#9b2c4a;font-variant-numeric:lining-nums}
+.dot{color:#d4af37;margin:0 .5em}
+</style></head><body>
+<svg class="bg" viewBox="0 0 1200 630">
+ <defs>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2=".35">
+   <stop offset="0" stop-color="#8a6b23"/><stop offset=".23" stop-color="#c49b2e"/><stop offset=".37" stop-color="#d4af37"/><stop offset=".51" stop-color="#fff8e0"/><stop offset=".66" stop-color="#d4af37"/><stop offset=".91" stop-color="#8a6b23"/><stop offset="1" stop-color="#a67c1f"/>
+  </linearGradient>
+  <pattern id="p" width="84" height="84" patternUnits="userSpaceOnUse" viewBox="0 0 100 100">
+   <g fill="none" stroke="#a67c1f" stroke-width="1.5"><polygon points="50.00,29.00 56.15,35.15 64.85,35.15 64.85,43.85 71.00,50.00 64.85,56.15 64.85,64.85 56.15,64.85 50.00,71.00 43.85,64.85 35.15,64.85 35.15,56.15 29.00,50.00 35.15,43.85 35.15,35.15 43.85,35.15"/><path d="M50 29 L100 21 M50 29 L0 21 M50 71 L100 79 M50 71 L0 79" stroke-width=".8" opacity=".7"/></g>
+  </pattern>
+  <radialGradient id="fade" cx="50%" cy="50%" r="60%"><stop offset=".35" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <mask id="m"><rect width="1200" height="630" fill="#fff"/><ellipse cx="600" cy="320" rx="380" ry="320" fill="#000"/></mask>
+ </defs>
+ <rect width="1200" height="630" fill="url(#p)" opacity=".09" mask="url(#m)"/>
+ <!-- double gold frame -->
+ <rect x="26" y="26" width="1148" height="578" rx="6" fill="none" stroke="url(#g)" stroke-width="2"/>
+ <rect x="36" y="36" width="1128" height="558" rx="3" fill="none" stroke="#d4af37" stroke-opacity=".35" stroke-width="1"/>
+ <!-- the ogee arch (the site's own geometry) framing the names -->
+ <g transform="translate(600 318) scale(3.05 2.18) translate(-100 -138)">
+  <path d="M14 260 L14 150 C14 104, 46 86, 72 60 C86 46, 95 28, 100 5 C105 28, 114 46, 128 60 C154 86, 186 104, 186 150 L186 260 Z" fill="#ffffff" fill-opacity=".55" stroke="url(#g)" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
+ </g>
+ <!-- crescent + star at the arch's apex -->
+ <g transform="translate(578 56)">
+  <mask id="cm"><rect width="60" height="60" fill="#fff"/><circle cx="26" cy="22" r="17" fill="#000"/></mask>
+  <circle cx="20" cy="22" r="19" fill="url(#g)" mask="url(#cm)"/>
+  <polygon transform="translate(38 22)" points="0,-8 2.3,-2.4 8,0 2.3,2.4 0,8 -2.3,2.4 -8,0 -2.3,-2.4" fill="url(#g)"/>
+ </g>
+ <!-- corner stars -->
+ <g fill="url(#g)">
+  <polygon transform="translate(26 26)" points="0,-12 3.5,-3.5 12,0 3.5,3.5 0,12 -3.5,3.5 -12,0 -3.5,-3.5"/>
+  <polygon transform="translate(1174 26)" points="0,-12 3.5,-3.5 12,0 3.5,3.5 0,12 -3.5,3.5 -12,0 -3.5,-3.5"/>
+  <polygon transform="translate(26 604)" points="0,-12 3.5,-3.5 12,0 3.5,3.5 0,12 -3.5,3.5 -12,0 -3.5,-3.5"/>
+  <polygon transform="translate(1174 604)" points="0,-12 3.5,-3.5 12,0 3.5,3.5 0,12 -3.5,3.5 -12,0 -3.5,-3.5"/>
+ </g>
+</svg>
+<div class="col">
+ <div class="bis" lang="ar" dir="rtl">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+ <div class="rule"></div>
+ <div class="name">Huda</div>
+ <div class="amp"><i class="l"></i>
+  <svg width="18" height="18" viewBox="-10 -10 20 20"><polygon points="0,-10 2.9,-7 7,-7 7,-2.9 10,0 7,2.9 7,7 2.9,7 0,10 -2.9,7 -7,7 -7,2.9 -10,0 -7,-2.9 -7,-7 -2.9,-7" fill="#d4af37"/></svg>
+  <i class="r"></i></div>
+ <div class="name">Mohammed</div>
+ <div class="ev">Nikah <b>13</b><span class="dot">·</span>Walima <b>15</b> November 2026</div>
+</div>
+</body></html>

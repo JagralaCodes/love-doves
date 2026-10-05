@@ -35,21 +35,27 @@
     />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <!-- iOS ignores SVG touch icons; it needs a PNG with its own ground. -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <title>Wedding Invitation</title>
-    <meta name="description" content="With the blessings of Allah, we invite you to share in our Nikah and Walima." />
+    <!-- %INVITE_*% values are filled from wedding.config.ts at build time
+         (see invitationMeta in vite.config.ts). -->
+    <title>%INVITE_TITLE%</title>
+    <meta name="description" content="%INVITE_DESCRIPTION%" />
+    <link rel="canonical" href="%INVITE_SITE_URL%/" />
 
-    <!-- Open Graph / WhatsApp preview. Finalised in Phase 9. -->
+    <!-- Open Graph / WhatsApp preview. The image URL must be absolute, and
+         a JPEG under ~300 KB: WhatsApp silently drops larger previews. -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Wedding Invitation" />
-    <meta
-      property="og:description"
-      content="With the blessings of Allah, we invite you to share in our Nikah and Walima."
-    />
-    <meta property="og:image" content="/og.png" />
+    <meta property="og:site_name" content="%INVITE_NAMES%" />
+    <meta property="og:title" content="%INVITE_TITLE%" />
+    <meta property="og:description" content="%INVITE_DESCRIPTION%" />
+    <meta property="og:url" content="%INVITE_SITE_URL%/" />
+    <meta property="og:image" content="%INVITE_SITE_URL%/og.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="%INVITE_TITLE%" />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
