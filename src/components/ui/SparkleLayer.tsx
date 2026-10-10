@@ -30,6 +30,8 @@ const TONES = {
 
 /** The trail is pink: small glittering hearts with sparkles between them. */
 const TRAIL_TONE = ['244,184,198', '249,217,225', '227,164,180', '252,228,234']
+/** A tap gets deeper pinks and wine with gold between, so it carries weight. */
+const TAP_TONE = ['244,184,198', '227,164,180', '197,106,133', '155,44,74', '245,225,164', '212,175,55']
 
 /** Cap so a frantic pointer or stacked bursts cannot melt a phone. */
 const MAX_PARTICLES = 320
@@ -190,29 +192,27 @@ export function SparkleLayer() {
       }
     }
 
-    /** A small puff of tiny hearts at the point touched. */
+    /** A generous burst of hearts at the point touched — the one bit of
+     *  feedback every tap on the page gets, so it is made to be felt. */
     const spawnTapHearts = (x: number, y: number) => {
-      const count = Math.round(12 * scale)
+      // Phones keep most of it: a tap is the whole interaction there.
+      const count = Math.round(30 * Math.max(scale, 0.7))
       for (let i = 0; i < count; i++) {
         const a = (i / count) * Math.PI * 2 + rand(-0.3, 0.3)
-        const speed = rand(26, 78)
+        const speed = rand(50, 150)
+        const heart = Math.random() < 0.85
         add({
-          x: x + rand(-4, 4),
-          y: y + rand(-4, 4),
+          x: x + rand(-5, 5),
+          y: y + rand(-5, 5),
           vx: Math.cos(a) * speed,
           // Biased upward, so they lift off the finger rather than pooling.
-          vy: Math.sin(a) * speed - rand(18, 52),
+          vy: Math.sin(a) * speed - rand(40, 110),
           life: 0,
-          maxLife: rand(0.5, 0.9),
-          // Deliberately small: these sit under a fingertip, and anything
-          // bigger reads as a splash rather than a glimmer.
-          size: rand(2.6, 5),
-          spin: rand(-0.5, 0.5),
-          spinSpeed: rand(-3, 3),
-          sprite: spriteFor(
-            Math.random() < 0.78 ? 'heart' : 'star',
-            TRAIL_TONE[Math.floor(Math.random() * TRAIL_TONE.length)],
-          ),
+          maxLife: rand(0.7, 1.25),
+          size: heart ? rand(4.5, 9) : rand(2.5, 4.5),
+          spin: rand(-0.6, 0.6),
+          spinSpeed: rand(-4, 4),
+          sprite: spriteFor(heart ? 'heart' : 'star', TAP_TONE[Math.floor(Math.random() * TAP_TONE.length)]),
         })
       }
     }
