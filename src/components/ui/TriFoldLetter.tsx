@@ -139,7 +139,9 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
       <div
         data-panel="bottom"
         className="absolute left-0 w-full [transform-style:preserve-3d]"
-        style={{ top: panel, height: bottomH, transformOrigin: '50% 0', zIndex: 1, background: 'var(--color-paper)' }}
+        // One pixel up under the middle panel, so no hairline of the page
+        // shows through the join between two 3D-transformed layers.
+        style={{ top: panel - 1, height: bottomH + 1, transformOrigin: '50% 0', zIndex: 1, background: 'var(--color-paper)' }}
       >
         <div className={face} style={{ background: 'var(--color-paper)' }}>
           <VenueFace event={walima} />
@@ -163,7 +165,7 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
       <div
         data-panel="top"
         className="absolute left-0 w-full [transform-style:preserve-3d]"
-        style={{ top: -topH, height: topH, transformOrigin: '50% 100%', zIndex: 3, background: 'var(--color-paper)' }}
+        style={{ top: -topH, height: topH + 1, transformOrigin: '50% 100%', zIndex: 3, background: 'var(--color-paper)' }}
       >
         {/* Front: the opening line, seen once unfolded. */}
         <div className={face} style={{ background: 'var(--color-paper)' }}>
