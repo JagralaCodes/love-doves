@@ -224,13 +224,14 @@ export function ScratchCard({
     setRevealed(true)
     setProgress(1)
 
+    // One short gold burst as the last of the foil clears.
     const el = wrapRef.current
     if (el) {
       const r = el.getBoundingClientRect()
       sparkleBurst(r.left + r.width / 2, r.top + r.height / 2, {
-        count: 46,
-        tone: 'mixed',
-        power: 260,
+        count: 40,
+        tone: 'gold',
+        power: 240,
       })
     }
     onRevealed?.()

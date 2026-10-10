@@ -49,15 +49,10 @@ function CardFrame({ w, h }: { w: number; h: number }) {
       </defs>
       <path d={outer} fill={`url(#${id}face)`} stroke="url(#goldFoil)" strokeWidth="1.6" />
       <path d={inner} fill="none" stroke="#e7cf8a" strokeWidth="0.6" />
-      <path
-        data-glow
-        d={outer}
-        fill="none"
-        stroke="#f5e1a4"
-        strokeWidth="5"
-        opacity="0"
-        style={{ filter: 'blur(3px)' }}
-      />
+      {/* A soft halo: two wide translucent strokes, not a blur filter,
+          so fading it is opacity alone. */}
+      <path data-glow d={outer} fill="none" stroke="var(--color-gold-light)" strokeWidth="9" opacity="0" strokeOpacity="0.35" />
+      <path data-glow d={outer} fill="none" stroke="var(--color-gold-light)" strokeWidth="4" opacity="0" strokeOpacity="0.8" />
     </svg>
   )
 }
@@ -190,7 +185,7 @@ export function Families() {
   const onArrive = useCallback((card: 'from' | 'to') => {
     const el = (card === 'from' ? brideRef : groomRef).current
     if (!el) return
-    gsap.fromTo(el.querySelector('[data-glow]'), { opacity: 0.9 }, { opacity: 0, duration: 1.3, ease: 'power2.out' })
+    gsap.fromTo(el.querySelectorAll('[data-glow]'), { opacity: 1 }, { opacity: 0, duration: 1.3, ease: 'power2.out' })
     gsap.fromTo(
       el.querySelector('[data-star]'),
       { scale: 1.22 },

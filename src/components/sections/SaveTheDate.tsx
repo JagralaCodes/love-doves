@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useReveal } from '../../hooks/useReveal'
 import { useLang, langAttrs } from '../../hooks/useLang'
 
@@ -7,7 +6,6 @@ import { Heart } from '../svg/Ornaments'
 import { archClosedPath } from '../svg/archGeometry'
 import { SparkleField } from '../ui/SparkleField'
 import { ScratchCard } from '../ui/ScratchCard'
-import { HeartConfetti } from '../ui/HeartConfetti'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
 
 import { wedding } from '../../config/wedding.config'
@@ -25,7 +23,6 @@ const ARCH = { d: archClosedPath('ogee'), width: 200, height: 260 }
  * the frame is what is left behind once the gold is scratched away.
  */
 export function SaveTheDate() {
-  const [revealed, setRevealed] = useState(false)
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
@@ -50,9 +47,9 @@ export function SaveTheDate() {
         <ScratchCard
           shape={ARCH}
           className="w-full"
-          threshold={0.55}
+          // Past 60% the rest clears itself, with one gold burst.
+          threshold={0.6}
           brush={24}
-          onRevealed={() => setRevealed(true)}
           revealLabel={ur ? wedding.urdu.tapToReveal : wedding.texts.tapToReveal}
         >
           {/* What the foil is hiding: the arch itself, with the date set
@@ -109,13 +106,6 @@ export function SaveTheDate() {
             </div>
           </div>
         </ScratchCard>
-
-        {/* Fires once, on mount — so it plays exactly when the foil goes. */}
-        {revealed && (
-          <div className="pointer-events-none absolute -inset-x-16 -inset-y-10 z-20">
-            <HeartConfetti count={60} />
-          </div>
-        )}
       </div>
     </section>
   )
