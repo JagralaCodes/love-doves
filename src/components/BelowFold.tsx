@@ -2,6 +2,7 @@ import { MotionConfig } from 'motion/react'
 import { useLang } from '../hooks/useLang'
 
 import { AudioToggle } from './ui/AudioToggle'
+import { ShareButton } from './ui/ShareButton'
 import { SaveTheDate } from './sections/SaveTheDate'
 import { Venue } from './sections/Venue'
 import { Rsvp } from './sections/Rsvp'
@@ -37,6 +38,7 @@ export default function BelowFold({ opened }: Props) {
         label={lang === 'ur' ? wedding.urdu.audioLabel : wedding.audio.label}
         visible={opened}
       />
+      <ShareButton visible={opened} />
 
       <SaveTheDate />
 

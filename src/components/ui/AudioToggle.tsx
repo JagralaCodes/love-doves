@@ -11,59 +11,42 @@ type Props = {
   visible: boolean
 }
 
-const STORE_KEY = 'love-doves:audio'
 const VOLUME = 0.35
 
-function readChoice(): boolean {
-  try {
-    return localStorage.getItem(STORE_KEY) === 'on'
-  } catch {
-    return false
-  }
-}
-
-function saveChoice(on: boolean) {
-  try {
-    localStorage.setItem(STORE_KEY, on ? 'on' : 'off')
-  } catch {
-    // Private mode or blocked storage: the toggle still works this visit.
-  }
-}
-
 /**
- * Opt-in ambience behind a small glowing fanoos.
+ * Optional music behind a small glowing fanoos, top-right.
  *
- * - Off by default. Sound never starts without the viewer asking for it.
- * - Renders NOTHING until the audio file has actually loaded its metadata,
- *   so with no file in public/audio the button simply does not exist —
- *   and the moment a file is dropped in, it appears.
- * - Remembers the choice. Browsers forbid starting sound without a gesture,
- *   so a remembered "on" waits for the first tap anywhere (opening the gate
- *   counts) and fades in from there.
+ * - Off by default, every visit. Sound never starts without a tap.
+ * - The audio file is not fetched until that tap: on mount only a HEAD
+ *   request checks the file exists, so with nothing in public/audio the
+ *   button does not exist, and dropping a file in makes it appear.
  * - Pauses while the tab is hidden; fades rather than cuts.
+ * - The lit glow is a layer whose opacity changes — no shadow animation.
  */
 export function AudioToggle({ src, label, visible }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [available, setAvailable] = useState(false)
-  const [on, setOn] = useState(readChoice)
+  const [on, setOn] = useState(false)
   const reduced = useReducedMotion()
 
-  // Probe the file once.
+  // Is there a file at all? One cheap request, no media loaded.
   useEffect(() => {
-    const audio = new Audio()
-    audio.preload = 'metadata'
-    audio.loop = true
-    audio.volume = 0
-    const ok = () => setAvailable(true)
-    audio.addEventListener('loadedmetadata', ok, { once: true })
-    audio.src = src
-    audioRef.current = audio
+    let alive = true
+    fetch(src, { method: 'HEAD' })
+      .then((r) => {
+        if (alive && r.ok && (r.headers.get('content-type') ?? '').startsWith('audio')) setAvailable(true)
+      })
+      .catch(() => {})
     return () => {
-      audio.removeEventListener('loadedmetadata', ok)
-      audio.pause()
-      audio.removeAttribute('src')
-      audio.load()
-      audioRef.current = null
+      alive = false
+      const audio = audioRef.current
+      if (audio) {
+        gsap.killTweensOf(audio)
+        audio.pause()
+        audio.removeAttribute('src')
+        audio.load()
+        audioRef.current = null
+      }
     }
   }, [src])
 
@@ -75,15 +58,20 @@ export function AudioToggle({ src, label, visible }: Props) {
   }, [])
 
   const start = useCallback(() => {
-    const audio = audioRef.current
-    if (!audio) return
+    // Created on first use, inside the tap, so the file loads only now.
+    let audio = audioRef.current
+    if (!audio) {
+      audio = new Audio(src)
+      audio.loop = true
+      audio.preload = 'auto'
+      audio.volume = 0
+      audioRef.current = audio
+    }
     audio
       .play()
       .then(() => fadeTo(VOLUME))
-      .catch(() => {
-        // Blocked (no gesture yet). The first-gesture listener retries.
-      })
-  }, [fadeTo])
+      .catch(() => setOn(false))
+  }, [src, fadeTo])
 
   const stop = useCallback(() => {
     const audio = audioRef.current
@@ -91,43 +79,24 @@ export function AudioToggle({ src, label, visible }: Props) {
     fadeTo(0, () => audio.pause())
   }, [fadeTo])
 
-  // Follow the switch.
-  useEffect(() => {
-    if (!available) return
-    if (!on) {
-      stop()
-      return
-    }
-    start()
-    // A remembered "on" cannot autoplay; begin on the first gesture.
-    const onGesture = () => {
-      if (audioRef.current?.paused) start()
-    }
-    window.addEventListener('pointerdown', onGesture, { once: true })
-    window.addEventListener('keydown', onGesture, { once: true })
-    return () => {
-      window.removeEventListener('pointerdown', onGesture)
-      window.removeEventListener('keydown', onGesture)
-    }
-  }, [on, available, start, stop])
-
   // Quiet while the tab is in the background.
   useEffect(() => {
-    if (!available) return
+    if (!on) return
     const onVis = () => {
       const audio = audioRef.current
       if (!audio) return
       if (document.hidden) audio.pause()
-      else if (on) start()
+      else start()
     }
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
-  }, [on, available, start])
+  }, [on, start])
 
   const toggle = () => {
     const next = !on
-    saveChoice(next)
     setOn(next)
+    if (next) start()
+    else stop()
   }
 
   return (
@@ -140,19 +109,21 @@ export function AudioToggle({ src, label, visible }: Props) {
             aria-pressed={on}
             aria-label={label}
             title={label}
-            className="pointer-events-auto absolute right-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] grid size-[var(--tap-min)] place-items-center rounded-full border border-gold/35 bg-wine-deep/70 backdrop-blur-sm"
-            style={{
-              boxShadow: on
-                ? '0 0 0 1px rgba(245,225,164,0.25), 0 0 22px 2px rgba(245,225,164,0.45)'
-                : '0 6px 16px -8px rgba(0,0,0,0.5)',
-              transition: 'box-shadow 0.6s ease',
-            }}
+            className="pointer-events-auto absolute top-[max(0.75rem,var(--safe-top))] right-3 grid size-[var(--tap-min)] place-items-center rounded-full border border-gold/35 bg-wine-deep/70 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.5)]"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: on ? 1 : 0.72, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             whileTap={reduced ? undefined : { scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 380, damping: 26 }}
           >
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-full transition-opacity duration-500"
+              style={{
+                boxShadow: '0 0 0 1px rgba(245,225,164,0.25), 0 0 22px 2px rgba(245,225,164,0.45)',
+                opacity: on ? 1 : 0,
+              }}
+            />
             <Lantern width="0.95rem" cord={0} lit={on} swayDuration={on && !reduced ? 3.4 : 0} />
           </motion.button>
         </div>

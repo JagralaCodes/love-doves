@@ -54,16 +54,18 @@ export function Closing() {
         { autoAlpha: 1, y: 0, duration: 1.6, ease: 'expo.out', stagger: 0.18, scrollTrigger: trigger },
       )
 
+      // Paced so the lines under the dua are in by about two seconds, not
+      // left as a blank run while the reader is already looking at it.
       const tl = gsap.timeline({ scrollTrigger: trigger, defaults: { ease: 'expo.out' } })
-      tl.fromTo('[data-mono]', { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 1.2 }, 0.2)
+      tl.fromTo('[data-mono]', { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 1 }, 0.1)
         .fromTo(
           '[data-dua]',
           { autoAlpha: 0, clipPath: 'inset(0 0 100% 0)', y: 14 },
-          { autoAlpha: 1, clipPath: 'inset(0 0 0% 0)', y: 0, duration: 1.3 },
+          { autoAlpha: 1, clipPath: 'inset(0 0 0% 0)', y: 0, duration: 1 },
           '-=0.6',
         )
-        .fromTo('[data-vine]', { autoAlpha: 0, scaleX: 0.5 }, { autoAlpha: 1, scaleX: 1, duration: 1 }, '-=0.7')
-        .fromTo('[data-line]', { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.14 }, '-=0.5')
+        .fromTo('[data-vine]', { autoAlpha: 0, scaleX: 0.5 }, { autoAlpha: 1, scaleX: 1, duration: 0.8 }, '-=0.6')
+        .fromTo('[data-line]', { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.08 }, '-=0.55')
     }, section)
 
     return () => ctx.revert()
@@ -72,7 +74,10 @@ export function Closing() {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-[88svh] flex-col items-center justify-center overflow-hidden bg-wine-deep px-[var(--page-gutter)] py-[var(--section-gap)]"
+      // Normal section rhythm — no minimum height. A near-full-screen
+      // minimum left a long run of empty wine between the ornament and the
+      // lines beneath it on a tall phone.
+      className="relative flex flex-col items-center justify-center overflow-hidden bg-wine-deep px-[var(--page-gutter)] pt-[calc(var(--section-gap)+2.5rem)] pb-[var(--section-gap)]"
       // Dusk: the light page above fades through blush and rose into the
       // wine of evening, rather than dropping into it at a hard line.
       style={seam('var(--color-pearl-white)', 'var(--color-wine-deep)', {
