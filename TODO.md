@@ -51,7 +51,7 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 - [x] Foil fills the whole ogee arch, spun-gold look; scratch threshold fires at ~55%; heart confetti bursts
 
 **Events** — *the card stack is gone* (`Events.tsx`, `EventDeck.tsx`, `deckThrow.ts` deleted). Venues + maps live on the envelope; the "when" moved above the reply form:
-- [x] **Schedule** (`ui/Schedule.tsx`), above the form: grouped by day, a gold thread with a bead per moment — Fri 13 Nov: Nikah *after Asr Namaz* (Masjid e Abu Bakar) → Rukhsati *after Maghrib Namaz*; Sun 15 Nov: Walima 7–10 PM (Central Plaza Banquet). EN + UR, RTL checked
+- [x] **Schedule** (`ui/Schedule.tsx`), above the form: grouped by day, a gold thread with a bead per moment — Fri 13 Nov: Nikah *after Asr Namaz* (Masjid e Abu Bakar) → Rukhsati *after Maghrib Namaz*; Sat 14 Nov: Walima 7–10 PM (Central Plaza Banquet). EN + UR, RTL checked
 - [x] "Add to calendar" kept, per event; the Nikah entry runs through the Rukhsati and names it in the description
 - [ ] Press squeeze / hover underline — feel only; check on a real phone
 

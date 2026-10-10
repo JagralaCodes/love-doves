@@ -66,7 +66,7 @@ export const wedding = {
     },
     {
       name: 'Walima',
-      date: '2026-11-15',
+      date: '2026-11-14',
       time: '19:00',
       endTime: '22:00',
       venue: 'Central Plaza Banquet',
