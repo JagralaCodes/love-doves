@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useCountdown } from '../../hooks/useCountdown'
 import { useReveal } from '../../hooks/useReveal'
 import { useLang, langAttrs } from '../../hooks/useLang'
-import { useReducedMotion } from '../../hooks/useReducedMotion'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
 import { Crescent, Heart } from '../svg/Ornaments'
@@ -10,7 +9,6 @@ import { SparkleField } from '../ui/SparkleField'
 import { PearlBokeh } from '../ui/PearlBokeh'
 import { RollingNumber } from '../ui/RollingNumber'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
-import { HeartConfetti } from '../ui/HeartConfetti'
 
 import { wedding } from '../../config/wedding.config'
 import { cell } from '../../lib/countdown'
@@ -21,15 +19,15 @@ import { sparkleBurstFrom } from '../../lib/sparkleBus'
  * invitation closes on "see you soon" rather than on a form.
  *
  * A night sky: wine-deep, a crescent, slow stars, the girih drifting. The
- * digits roll like a mechanical counter instead of swapping. When the day
- * arrives the clock gives way to "Alhamdulillah, the day is here" and a
- * burst of hearts.
+ * digits roll like a mechanical counter instead of swapping. Once the
+ * Nikah time has passed the clock gives way to a short line asking for
+ * duas — never a row of zeros, never a negative number (the arithmetic
+ * floors at zero).
  */
 export function Countdown() {
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
-  const reduced = useReducedMotion()
   const left = useCountdown(wedding.countdownTarget)
   const ref = useReveal<HTMLDivElement>({ variant: 'stagger-up', children: '[data-unit]', stagger: 0.12 })
   const doneRef = useRef<HTMLDivElement>(null)
@@ -83,18 +81,13 @@ export function Countdown() {
         </h2>
 
         {left.done ? (
-          <div ref={doneRef} className="relative mt-8">
-            {!reduced && (
-              <div className="pointer-events-none absolute -inset-x-10 -inset-y-16">
-                <HeartConfetti count={48} />
-              </div>
-            )}
+          <div ref={doneRef} className="relative mx-auto mt-8 max-w-[20rem]">
             <GoldGlitterText
               block
               as="p"
               tone="dark"
-              className={`${ur ? 'font-urdu text-fluid-2xl leading-[2.2]' : 'font-display text-fluid-3xl'}`}
-              specks={14}
+              className={`${ur ? 'font-urdu text-fluid-lg leading-[2.2]' : 'font-display text-fluid-xl leading-snug'}`}
+              specks={10}
               lang={t.lang}
               dir={t.dir}
             >

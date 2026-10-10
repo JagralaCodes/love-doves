@@ -24,6 +24,25 @@ type Errors = Partial<Record<'name' | 'family', string>>
 const ENDPOINT = 'https://api.web3forms.com/submit'
 const MIN_GUESTS = 1
 const MAX_GUESTS = 10
+/** Set on this device after a successful reply, so a return visit says so. */
+const REPLIED_KEY = 'love-doves:rsvp'
+
+function readReplied(): Choice | null {
+  try {
+    const v = localStorage.getItem(REPLIED_KEY)
+    return v === 'yes' || v === 'no' ? v : null
+  } catch {
+    return null
+  }
+}
+
+function saveReplied(choice: Choice) {
+  try {
+    localStorage.setItem(REPLIED_KEY, choice)
+  } catch {
+    // Private mode or blocked storage: the thank-you still shows this visit.
+  }
+}
 
 /** Until a real key is pasted into the config, the form cannot post. */
 const KEY_READY = !/^\[.*\]$/.test(wedding.rsvp.formAccessKey) && wedding.rsvp.formAccessKey.length > 10
@@ -47,6 +66,8 @@ export function Rsvp() {
   const ref = useReveal<HTMLDivElement>({ variant: 'mask-wipe' })
 
   const [choice, setChoice] = useState<Choice | null>(null)
+  // A reply already sent from this phone: show that, with a way to change it.
+  const [replied, setReplied] = useState<Choice | null>(readReplied)
   const [name, setName] = useState('')
   const [family, setFamily] = useState('')
   const [guests, setGuests] = useState(2)
@@ -103,6 +124,7 @@ export function Rsvp() {
       })
       const json = (await res.json()) as { success?: boolean }
       if (!res.ok || !json.success) throw new Error('rejected')
+      saveReplied(choice)
       // The button shrinks away first; the heart takes its place.
       await new Promise<void>((done) => {
         const btn = buttonRef.current
@@ -215,7 +237,28 @@ export function Rsvp() {
           {s(wedding.texts.rsvpInvite, wedding.urdu.rsvpInvite)}
         </p>
 
-        {status === 'sent' ? (
+        {replied && status !== 'sent' ? (
+          <div className="mt-8">
+            <Heart className="mx-auto w-12" />
+            <p
+              className={`mt-5 text-wine ${ur ? 'font-urdu text-fluid-lg leading-[2.2]' : 'font-display text-fluid-lg'}`}
+              lang={t.lang}
+              dir={t.dir}
+            >
+              {s(wedding.texts.rsvpAlready, wedding.urdu.rsvpAlready)}
+            </p>
+            <TapButton
+              onClick={() => {
+                setChoice(replied)
+                setReplied(null)
+              }}
+              className={`link-grow text-2xs mt-4 inline-flex min-h-[var(--tap-min)] items-center tracking-[0.2em] text-wine ${ur ? 'font-urdu' : 'uppercase'}`}
+              lang={t.lang}
+            >
+              <span>{s(wedding.texts.rsvpUpdate, wedding.urdu.rsvpUpdate)}</span>
+            </TapButton>
+          </div>
+        ) : status === 'sent' ? (
           <div ref={doneRef} className="mt-8">
             <span data-heart className="mx-auto block w-16" style={{ visibility: 'hidden' }}>
               <Heart className="w-full" />

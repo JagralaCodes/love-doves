@@ -46,7 +46,7 @@ export default function App() {
         {/* Holds a screen of space while the chunk lands, so the page never
             ends abruptly under a fast scroller. */}
         <Suspense fallback={<section className="min-h-svh bg-pearl-white" aria-busy="true" />}>
-          <BelowFold opened={opened} />
+          <BelowFold />
         </Suspense>
       </main>
     </>

@@ -11,6 +11,12 @@
  * ─────────────────────────────────────────────────────────────
  */
 
+/** The Nikah's date and clock time — the event card, the hero's date line,
+ *  the journey and the countdown all read these, so they can never disagree. */
+const NIKAH_DATE = '2026-11-13'
+/** 16:45 is an ASSUMPTION (see the Nikah event's note). */
+const NIKAH_TIME = '16:45'
+
 export const wedding = {
   bride: {
     /** Full name, as it reads on the family card. */
@@ -31,14 +37,14 @@ export const wedding = {
    * The ONE main event the single site-wide countdown targets.
    * ISO 8601 with an explicit offset so it is correct in every timezone.
    */
-  // The Nikah is after Asr; 4:45 PM is an assumed clock time (see the event).
-  countdownTarget: '2026-11-13T16:45:00+05:30',
+  // Derived, not typed twice. Explicit IST offset so it is right everywhere.
+  countdownTarget: `${NIKAH_DATE}T${NIKAH_TIME}:00+05:30`,
 
   events: [
     {
       name: 'Nikah',
       /** YYYY-MM-DD — formatted for display by lib/date.ts */
-      date: '2026-11-13',
+      date: NIKAH_DATE,
       /**
        * HH:mm in 24h. The family's timing is "after Asr namaz", which is
        * what the page shows (timeLabel). The countdown still needs a
@@ -46,7 +52,7 @@ export const wedding = {
        * in Mira Road in mid-November begins around 4:25 PM, so jamaat is
        * usually 4:35–4:45. Set it to the masjid's actual time if it differs.
        */
-      time: '16:45',
+      time: NIKAH_TIME,
       /** Optional end time (Maghrib is about 6:00 PM; this runs past it). */
       endTime: '19:30',
       /** Shown instead of the clock time. */
@@ -56,7 +62,14 @@ export const wedding = {
       /** Which line-art icon stands for the venue. */
       icon: 'masjid',
       /** The same evening, after the Nikah. No venue of its own on the page. */
-      followedBy: { name: 'Rukhsati', timeLabel: 'After Maghrib Namaz', icon: 'doli' },
+      followedBy: {
+        name: 'Rukhsati',
+        timeLabel: 'After Maghrib Namaz',
+        icon: 'doli',
+        /** TODO: CONFIRM — assumed to be from the masjid; change if the
+         *  Rukhsati leaves from somewhere else (e.g. the bride's home). */
+        venue: 'Masjid e Abu Bakar',
+      },
       venue: 'Masjid e Abu Bakar',
       /** Locality confirmed from the map pin below (19.2735, 72.8913). */
       address: 'Western Park, Mira Road (E), Thane',
@@ -105,7 +118,8 @@ export const wedding = {
     tapToReveal: 'Or tap to reveal',
     saveTheDate: 'Save the date',
     countdownHeading: 'Counting the days',
-    dayIsHere: 'Alhamdulillah, the day is here',
+    /** Shown in place of the clock once the Nikah time has passed. */
+    dayIsHere: 'Alhamdulillah — the Nikah has taken place. Please keep the couple in your duas.',
     venueHeading: 'Where to find us',
     /** The letter's opening line, before the two venues. */
     honouredLine: 'We would be honoured by your presence at',
@@ -144,10 +158,8 @@ export const wedding = {
     rsvpSending: 'Sending…',
     rsvpThanks: "JazakAllahu Khairan — we've saved your seat.",
     rsvpThanksNo: "We'll miss you — please keep us in your duas.",
-    /** The WhatsApp share: "<before> <names> — <date>. <after> <url>" */
-    share: 'Share on WhatsApp',
-    shareBefore: "You're invited to the Nikah & Walima of",
-    shareAfter: 'Open the invitation:',
+    rsvpAlready: "JazakAllahu Khairan — we've already received your RSVP 💕",
+    rsvpUpdate: 'Update my RSVP',
     rsvpError: 'That did not go through. Please try again, or message us directly.',
     rsvpDisabled: 'Replies open soon',
     required: 'Required',
@@ -184,7 +196,7 @@ export const wedding = {
 
     countdownHeading: 'دن گن رہے ہیں',
     countdownTo: 'نکاح تک',
-    dayIsHere: 'الحمدللہ، وہ دن آ گیا',
+    dayIsHere: 'الحمدللہ — نکاح ہو چکا ہے۔ براہِ کرم جوڑے کو اپنی دعاؤں میں یاد رکھیں۔',
     days: 'دن',
     hours: 'گھنٹے',
     minutes: 'منٹ',
@@ -208,14 +220,12 @@ export const wedding = {
     rsvpSending: 'بھیجا جا رہا ہے…',
     rsvpThanks: 'جزاک اللہ خیراً — آپ کی جگہ محفوظ ہے',
     rsvpThanksNo: 'آپ کی کمی محسوس ہوگی — ہمیں اپنی دعاؤں میں یاد رکھیں',
-    share: 'واٹس ایپ پر شیئر کریں',
-    shareBefore: 'آپ کو دعوت ہے:',
-    shareAfter: 'دعوت نامہ کھولیں:',
+    rsvpAlready: 'جزاک اللہ خیراً — آپ کا جواب ہمیں پہلے ہی مل چکا ہے 💕',
+    rsvpUpdate: 'جواب بدلیں',
     rsvpError: 'جواب نہیں پہنچ سکا۔ دوبارہ کوشش کریں، یا ہمیں براہِ راست پیغام بھیجیں۔',
     rsvpDisabled: 'جوابات جلد کھلیں گے',
     required: 'لازمی',
     withLove: 'محبت اور دعاؤں کے ساتھ',
-    audioLabel: 'ہلکی پس منظر کی آواز',
     events: {
       Nikah: 'نکاح',
       Rukhsati: 'رخصتی',
@@ -245,16 +255,11 @@ export const wedding = {
 
   /** Used for <title> and the OG tags. */
   site: {
-    url: 'https://example.vercel.app',
+    url: 'https://love-doves.vercel.app',
     description:
       'With the blessings of Allah, we invite you to share in our Nikah and Walima.',
   },
 
-  /** Optional soft ambience. Drop a file at public/audio/ and name it here. */
-  audio: {
-    src: '/audio/ambience.mp3',
-    label: 'Soft ambience',
-  },
 } as const
 
 export type Wedding = typeof wedding
