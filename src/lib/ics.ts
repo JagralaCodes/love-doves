@@ -30,6 +30,8 @@ export type CalendarEvent = {
   venue: string
   address: string
   note?: string
+  /** Timing in words ("After Zuhr Namaz"), put first in the description. */
+  timeLabel?: string
 }
 
 type Options = {
@@ -102,7 +104,7 @@ export function buildEventIcs(event: CalendarEvent, options: Options = {}): stri
     : new Date(start.getTime() + DEFAULT_DURATION_H * 3600_000)
 
   const dtStart = floatingStamp(start)
-  const description = [event.note, options.url].filter(Boolean).join('\n\n')
+  const description = [event.timeLabel, event.note, options.url].filter(Boolean).join('\n\n')
 
   const lines = [
     'BEGIN:VCALENDAR',

@@ -31,7 +31,8 @@ export const wedding = {
    * The ONE main event the single site-wide countdown targets.
    * ISO 8601 with an explicit offset so it is correct in every timezone.
    */
-  countdownTarget: '2026-11-13T11:00:00+05:30', // TODO: follows the unconfirmed Nikah time above
+  // The Nikah is after Zuhr; 2:00 PM is an assumed clock time (see the event).
+  countdownTarget: '2026-11-13T14:00:00+05:30',
 
   events: [
     {
@@ -39,13 +40,17 @@ export const wedding = {
       /** YYYY-MM-DD — formatted for display by lib/date.ts */
       date: '2026-11-13',
       /**
-       * HH:mm in 24h.
-       * TODO: UNCONFIRMED — a time was never given for the Nikah. This is a
-       * placeholder so the page renders; replace it before sharing the link.
+       * HH:mm in 24h. The family's timing is "after Zuhr namaz", which is
+       * what the card shows (timeLabel). The countdown and the calendar
+       * file still need a clock time: 14:00 is an ASSUMPTION — Zuhr jamaat
+       * in Mira Road in November is usually around 1:30 PM. Set it to the
+       * masjid's actual jamaat time plus a little, if it differs.
        */
-      time: '11:00',
+      time: '14:00',
       /** Optional end time, used for the .ics calendar file. */
-      endTime: '13:00',
+      endTime: '15:30',
+      /** Shown on the card instead of the clock time. */
+      timeLabel: 'After Zuhr Namaz',
       venue: 'Masjid e Abu Bakar',
       /** Locality confirmed from the map pin below (19.2735, 72.8913). */
       address: 'Western Park, Mira Road (E), Thane',
@@ -195,13 +200,26 @@ export const wedding = {
       Nikah: 'نکاح',
       Walima: 'ولیمہ',
     } as Record<string, string>,
+    /** Urdu for each event's timeLabel, keyed by event name. */
+    timeLabels: {
+      Nikah: 'نمازِ ظہر کے بعد',
+    } as Record<string, string>,
   },
 
   rsvp: {
     /** TODO: CONFIRM — was set after the wedding date; moved before it. */
     deadline: '2026-11-05',
-    /** Free key from https://web3forms.com — the form is disabled until this is set. */
-    formAccessKey: '[WEB3FORMS ACCESS KEY]',
+    /**
+     * Web3Forms access key. Public by design (it sits in the page source on
+     * every Web3Forms site): it can only ever deliver to the inbox it was
+     * created for. Lock it to the final domain in the Web3Forms dashboard.
+     */
+    formAccessKey: 'e849ca0e-5731-4f49-aa73-8067f81ff1dc',
+    /**
+     * For reference only — NOT used by the code. Web3Forms delivers to the
+     * email address the access key belongs to; to change where RSVPs land,
+     * change it on the Web3Forms side (see TODO.md).
+     */
     receiverEmail: 'letsbegin81@gmail.com',
     heading: 'Will you join us?',
   },

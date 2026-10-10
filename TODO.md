@@ -64,9 +64,10 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 
 **RSVP**
 - [x] Labels float (now transform-only, on the start side in RTL)
-- [ ] Validation inline / empty submit shakes — can only be exercised once the Web3Forms key is in (the button is disabled until then)
+- [x] Validation inline / empty submit shakes — verified, no request is sent on an empty submit
 - [x] Shows "RSVP opens soon" while the key is a placeholder (correct until the key is in)
-- [ ] With a real key: success draws the ring + check, sparkles, thank-you; error shakes + message
+- [x] Success draws the ring + check + thank-you; error shows the retry message — verified with the network mocked (payload checked: key, subject "RSVP: <name> <family> - N members", guests, dua, honeypot)
+- [ ] Send ONE real RSVP from the live site and confirm which inbox it lands in
 
 **Closing → Countdown**
 - [x] Lanterns drop in from hooks; dua wipes in; family names + "With love and duas"
@@ -111,8 +112,11 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 
 ## Blocked on you
 
-- [ ] **Nikah time** — still the `11:00` placeholder; the countdown and the `.ics` both use it
-- [ ] **Web3Forms access key** — free at https://web3forms.com; RSVP is disabled until it's in
+- [x] **Nikah time** — "after Zuhr Namaz", shown as words on the card (EN + UR)
+- [ ] Confirm the clock time behind it: the countdown and `.ics` assume **2:00 PM** (`time` / `countdownTarget` in the config) — set it to the masjid's Zuhr jamaat time + a little if different
+- [x] **Web3Forms access key** — in; the RSVP form is live
+- [ ] **Where RSVPs land:** Web3Forms sends to the email the KEY was created for — not to anything in our config (`receiverEmail` is a note only). To use another inbox, create a new access key for that address and swap it into `rsvp.formAccessKey`
+- [ ] In the Web3Forms dashboard, restrict the key to the final domain once it exists
 - [ ] RSVP deadline — moved to 5 Nov (was after the wedding); confirm
 - [x] Monogram — now `H & M` in the config
 - [ ] Urdu proofread by a native speaker (all strings in `wedding.urdu`)

@@ -111,10 +111,22 @@ function EventCard({ event }: { event: WeddingEvent }) {
         {formatFullDate(event.date)}
       </GoldGlitterText>
 
-      <p className="nums-lining text-2xs relative mt-1.5 tracking-[0.35em] text-wine-soft">
-        {formatTime(event.time)}
-        {event.endTime ? ` — ${formatTime(event.endTime)}` : ''}
-      </p>
+      {/* A timing like "after Zuhr" is shown as words; the clock time behind
+          it only feeds the calendar file and the countdown. */}
+      {'timeLabel' in event && event.timeLabel ? (
+        <p
+          className={`text-2xs relative mt-1.5 tracking-[0.35em] text-wine-soft ${ur ? 'font-urdu' : 'uppercase'}`}
+          lang={ur ? 'ur' : 'en'}
+          dir={ur ? 'rtl' : 'ltr'}
+        >
+          {ur ? (wedding.urdu.timeLabels[event.name] ?? event.timeLabel) : event.timeLabel}
+        </p>
+      ) : (
+        <p className="nums-lining text-2xs relative mt-1.5 tracking-[0.35em] text-wine-soft">
+          {formatTime(event.time)}
+          {event.endTime ? ` — ${formatTime(event.endTime)}` : ''}
+        </p>
+      )}
 
       <span
         className="relative my-6 flex items-center justify-center gap-3"

@@ -88,7 +88,9 @@ export function Rsvp() {
           family: family.trim(),
           members: Number(members),
           message: dua.trim(),
-          botcheck: '',
+          // The hidden honeypot: people never see it, bots tick it, and
+          // Web3Forms drops any submission where it is set.
+          botcheck: Boolean(formRef.current?.querySelector<HTMLInputElement>('[name="botcheck"]')?.checked),
         }),
       })
       const json = (await res.json()) as { success?: boolean }
