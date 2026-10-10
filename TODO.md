@@ -39,14 +39,13 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 - [x] Doors swing, gate fades, hero plays in — no oval flash, no finished-page flash, no stale scroll
 - [x] "Huda" / "Mohammed" fully legible in script; Bismillah tails not clipped; crescent + star correct
 
-**Families**
-- [x] Arch head → body is one surface (no seam); roundel sits inside the arch head
-- [x] Heart beats; cord draws bride → around heart → groom on scroll
-  — *the straight cords were invisible (gradient on a zero-width bbox); fixed*
-- [x] **Rope**: starts at the heart, ties a full heart shape, drops onto the groom's card; bead rides the tip
-  — *measured: now starts where the knot's cord ends and its drop runs under the groom's arch, so it meets the apex at 360/390/768*
-- [ ] Rope pacing *feels* immersive, not rushed — needs a real thumb on a phone; tune `start`/`end` on `[data-rope-wrap]`
-- [x] Rope's final drop lands exactly on the arch apex
+**Families** — *rebuilt from `heart-snake-prototype-v3.html`*; the knot, cord and rope are gone (`HeartKnot.tsx`, `RopeHeart.tsx` deleted)
+- [x] Cards in the prototype's arched style (gold line + inner hairline, initial in a gold star), drawn to their real size so the arch never stretches; still HTML text, EN + UR
+- [x] **Heart snake** (`ui/HeartSnake.tsx`): scroll down → 20 glossy hearts slither out from behind the bride's card, swing round and slip behind the groom's; scroll up → a second stream runs back groom → bride by its own route. Head-to-tail wine → blush ramp, gold every sixth heart, travelling slither + heartbeat, glow
+- [x] Better tracking than the prototype: follows the smoothed scroll only while the crossing is on screen (so the first stream leaves the bride's card as you arrive), glides to a stop instead of freezing, caps jumps, layout read only on resize, canvas behind the cards (no per-frame SVG filters), paused off-screen / hidden tab
+- [x] Arrival: the receiving card's gold edge flares, its star gives a beat, sparkles where the hearts went in
+- [x] Reduced motion: a still trail across the gap. Verified at 360 / 390 (EN + UR), down and up, no console errors
+- [ ] Feel the speed on a real phone (`SPEED` 2.2 route-px per scroll-px in `HeartSnake.tsx`)
 
 **Save the Date**
 - [x] Foil fills the whole ogee arch, spun-gold look; scratch threshold fires at ~55%; heart confetti bursts

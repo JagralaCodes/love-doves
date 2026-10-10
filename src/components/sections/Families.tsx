@@ -1,159 +1,175 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import { gsap } from '../../lib/gsap'
 import { seam } from '../../lib/seam'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useLang, langAttrs } from '../../hooks/useLang'
 
 import { GeometricPattern } from '../svg/GeometricPattern'
-import { Monogram } from '../svg/Monogram'
-import { EightStar } from '../svg/Ornaments'
-import { HeartKnot } from '../svg/HeartKnot'
-import { RopeHeart } from '../svg/RopeHeart'
-import { archHeadPath, JAMB_INSET } from '../svg/archGeometry'
 import { SparkleField } from '../ui/SparkleField'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
+import { HeartSnake } from '../ui/HeartSnake'
 
 import { wedding } from '../../config/wedding.config'
 
+/** The arch's shoulders sit this far down, as a share of the card's width. */
+const SHOULDER = 0.247
+
+/**
+ * A pointed-dome arch over a straight-sided body, drawn to the card's real
+ * size so it never stretches: outer gold line, inner hairline, and a gold
+ * glow that flares when a stream of hearts arrives.
+ */
+function arch(x0: number, y0: number, x1: number, y1: number, shoulder: number) {
+  const w = x1 - x0
+  const cy = y0 + 0.3 * (shoulder - y0)
+  return `M${x0} ${shoulder} Q${x0 + 0.043 * w} ${cy} ${x0 + w / 2} ${y0} Q${x1 - 0.043 * w} ${cy} ${x1} ${shoulder} V${y1} H${x0} Z`
+}
+
+function CardFrame({ w, h }: { w: number; h: number }) {
+  const id = useId()
+  const s = w * SHOULDER
+  const outer = arch(0.8, 0.8, w - 0.8, h - 0.8, s)
+  const inner = arch(10, 11, w - 10, h - 10, s + 3)
+  return (
+    <svg
+      aria-hidden="true"
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      className="absolute inset-0 overflow-visible"
+      style={{ filter: 'drop-shadow(0 8px 18px rgba(155,44,74,0.12))' }}
+    >
+      <defs>
+        <linearGradient id={`${id}face`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" />
+          <stop offset=".35" stopColor="#fdeef1" />
+          <stop offset="1" stopColor="#fbe7ec" />
+        </linearGradient>
+      </defs>
+      <path d={outer} fill={`url(#${id}face)`} stroke="url(#goldFoil)" strokeWidth="1.6" />
+      <path d={inner} fill="none" stroke="#e7cf8a" strokeWidth="0.6" />
+      <path
+        data-glow
+        d={outer}
+        fill="none"
+        stroke="#f5e1a4"
+        strokeWidth="5"
+        opacity="0"
+        style={{ filter: 'blur(3px)' }}
+      />
+    </svg>
+  )
+}
+
 type CardProps = {
+  cardRef: RefObject<HTMLDivElement | null>
   initial: string
   name: string
   relation: string
   parents: string
-  side: 'left' | 'right'
+  side: 'from' | 'to'
   rtl: boolean
   lang: string
 }
 
-/** One family's card, framed by a pointed arch. */
-function FamilyCard({ initial, name, relation, parents, side, rtl, lang }: CardProps) {
-  const inset = `${JAMB_INSET * 100}%`
+/** One family's card: the arch, the initial in a star, the name. */
+function FamilyCard({ cardRef, initial, name, relation, parents, side, rtl, lang }: CardProps) {
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null)
+
+  useLayoutEffect(() => {
+    const el = cardRef.current
+    if (!el) return
+    const read = () => setSize({ w: el.offsetWidth, h: el.offsetHeight })
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [cardRef])
 
   return (
-    <div data-family-card data-side={side} className="relative">
-      <div className="relative">
-        <svg
-          viewBox="0 0 200 150"
-          preserveAspectRatio="none"
-          className="block w-full"
-          style={{ aspectRatio: '200 / 78' }}
-          aria-hidden="true"
-        >
+    <div ref={cardRef} data-family-card data-side={side} className="relative mx-auto w-[74%] max-w-[19rem]">
+      {size && <CardFrame w={size.w} h={size.h} />}
+
+      {/* Padding in % is of the card's width, so the star always sits
+          under the dome whatever the screen. */}
+      <div className="relative px-4 pb-8 text-center" style={{ paddingTop: '10%' }}>
+        <svg data-star viewBox="-20 -20 40 40" className="mx-auto block w-[2.6rem]" aria-hidden="true">
           <path
-            d={`${archHeadPath('pointed')} L186 150 L14 150 Z`}
-            fill="url(#archFaceTop)"
-          />
-          <path
-            d={archHeadPath('pointed')}
-            fill="none"
+            d="M0-17l5 7 9-2-2 9 7 5-7 5 2 9-9-2-5 7-5-7-9 2 2-9-7-5 7-5-2-9 9 2z"
+            fill="#fff"
             stroke="url(#goldFoil)"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
+            strokeWidth="1.2"
           />
+          <text y="6" textAnchor="middle" className="font-script" fontSize="16" fill="#b8892a">
+            {initial}
+          </text>
         </svg>
-        {/* Inside the arch head. It used to hang at -14%, straddling
-            the springline, so it read as stuck to the seam rather
-            than seated in the arch. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-[7%] flex justify-center">
-          <Monogram initials={initial} className="w-14" variant="roundel" />
-        </div>
-      </div>
 
-      <div
-        className="card-lift relative bg-blush-soft"
-        style={{ marginInline: inset, marginTop: -1 }}
-      >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 w-px"
-          style={{ background: 'var(--foil-gold)', opacity: 0.8 }}
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-px"
-          style={{ background: 'var(--foil-gold)', opacity: 0.8 }}
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-px"
-          style={{ background: 'var(--foil-gold)', opacity: 0.8 }}
-        />
+        <GoldGlitterText
+          block
+          as="h3"
+          tone="rose"
+          className="mt-4 font-script text-fluid-2xl leading-tight"
+          specks={8}
+        >
+          {name}
+        </GoldGlitterText>
 
-        <div className="relative px-5 pt-7 pb-7 text-center">
-          <GoldGlitterText
-            block
-            as="h3"
-            tone="rose"
-            className="font-script text-fluid-2xl leading-tight"
-            specks={8}
-          >
-            {name}
-          </GoldGlitterText>
+        <p
+          className={`text-2xs mt-3 tracking-[0.3em] text-wine-soft ${rtl ? 'font-urdu' : 'uppercase'}`}
+          lang={lang}
+          dir={rtl ? 'rtl' : 'ltr'}
+        >
+          {relation}
+        </p>
 
-          <p
-            className={`text-2xs mt-3 tracking-[0.3em] text-wine-soft ${rtl ? 'font-urdu' : 'uppercase'}`}
-            lang={lang}
-            dir={rtl ? 'rtl' : 'ltr'}
-          >
-            {relation}
-          </p>
+        <span aria-hidden="true" className="mx-auto my-3 block size-1.5 rounded-full bg-gold" />
 
-          <span className="my-3 flex items-center justify-center">
-            <EightStar className="w-2.5" />
-          </span>
-
-          <p className="text-fluid-sm font-display leading-snug text-wine-deep">
-            {parents}
-          </p>
-        </div>
+        <p className="text-fluid-sm font-display leading-snug text-wine-deep">{parents}</p>
       </div>
     </div>
   )
 }
 
 /**
- * The two families, side by side.
+ * The two families, one above the other, joined by a stream of hearts.
  *
- * The cards arrive from opposite edges and rise as they settle, so the
- * pair reads as coming together rather than as two items fading in.
+ * Scroll down and the hearts slither out from behind the bride's card,
+ * swing round and slip behind the groom's; scroll up and a second stream
+ * carries them back. Each card glows as hearts arrive at it.
  */
 export function Families() {
   const sectionRef = useRef<HTMLElement>(null)
+  const brideRef = useRef<HTMLDivElement>(null)
+  const groomRef = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
 
+  // The cards rise in from opposite sides, as two families coming together.
   useEffect(() => {
     const section = sectionRef.current
     if (!section) return
 
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray<HTMLElement>('[data-family-card]')
-
       if (reduced) {
-        gsap.fromTo(
-          [...cards, ...gsap.utils.toArray<HTMLElement>('[data-join]')],
-          { autoAlpha: 0 },
-          {
-            autoAlpha: 1,
-            duration: 0.5,
-            ease: 'none',
-            stagger: 0.1,
-            scrollTrigger: { trigger: section, start: 'top 80%', once: true },
-          },
-        )
-        // No scrubbing and no drawing-on: the cord and rope are already tied.
-        gsap.set('[data-rope], [data-rope-glow]', { autoAlpha: 1 })
+        gsap.fromTo(cards, { autoAlpha: 0 }, {
+          autoAlpha: 1,
+          duration: 0.5,
+          ease: 'none',
+          stagger: 0.1,
+          scrollTrigger: { trigger: section, start: 'top 80%', once: true },
+        })
         return
       }
-
       cards.forEach((card) => {
-        const fromLeft = card.dataset.side === 'left'
+        const fromLeft = card.dataset.side === 'from'
         gsap.fromTo(
           card,
-          { autoAlpha: 0, x: fromLeft ? -64 : 64, y: 44, rotate: fromLeft ? -2 : 2 },
+          { autoAlpha: 0, x: fromLeft ? -56 : 56, y: 40, rotate: fromLeft ? -2 : 2 },
           {
             autoAlpha: 1,
             x: 0,
@@ -161,80 +177,26 @@ export function Families() {
             rotate: 0,
             duration: 1.4,
             ease: 'expo.out',
-            scrollTrigger: { trigger: section, start: 'top 78%', once: true },
+            scrollTrigger: { trigger: card, start: 'top 85%', once: true },
           },
         )
       })
-
-      // The heart arrives on its own.
-      gsap.fromTo(
-        '[data-heart-enter]',
-        { autoAlpha: 0, scale: 0.4 },
-        {
-          autoAlpha: 1,
-          scale: 1,
-          duration: 1.1,
-          ease: 'back.out(1.7)',
-          delay: 0.45,
-          scrollTrigger: { trigger: section, start: 'top 78%', once: true },
-        },
-      )
-
-      // The cord draws itself as the section passes, so it reads as being
-      // paid out from the bride's card, around the heart, to the groom's.
-      // Scrubbed rather than played: the viewer's scroll is what feeds it.
-      const cords = gsap.utils.toArray<SVGPathElement>('[data-cord]')
-      if (cords.length) {
-        gsap.set(cords, { drawSVG: '0%' })
-        gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: '[data-join]',
-              start: 'top 88%',
-              end: 'bottom 55%',
-              scrub: 0.8,
-            },
-          })
-          .to('[data-cord="in"]', { drawSVG: '100%', ease: 'none' })
-          // Both halves of the loop pay out together, parting around the heart.
-          .to('[data-cord="back"], [data-cord="front"]', { drawSVG: '100%', ease: 'none' })
-          .to('[data-cord="out"]', { drawSVG: '100%', ease: 'none' })
-      }
-
-      // The rope: a heart tied between the families as the viewer scrolls,
-      // with a lit bead riding the drawing tip. Scrubbed over a long range
-      // so it is paced by the scroll, not played at it.
-      const rope = section.querySelector<SVGPathElement>('[data-rope]')
-      const glow = section.querySelector<SVGPathElement>('[data-rope-glow]')
-      const bead = section.querySelector<SVGCircleElement>('[data-rope-bead]')
-      const core = section.querySelector<SVGCircleElement>('[data-rope-bead-core]')
-      if (rope && glow && bead && core) {
-        const length = rope.getTotalLength()
-        gsap.set([rope, glow], { drawSVG: '0%', autoAlpha: 1 })
-        gsap.set([bead, core], { autoAlpha: 0 })
-        gsap.to([rope, glow], {
-          drawSVG: '100%',
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '[data-rope-wrap]',
-            start: 'top 82%',
-            end: 'bottom 38%',
-            scrub: 0.6,
-            onUpdate: (self) => {
-              const at = rope.getPointAtLength(length * self.progress)
-              const visible = self.progress > 0.005 && self.progress < 0.995
-              gsap.set([bead, core], {
-                attr: { cx: at.x, cy: at.y },
-                autoAlpha: visible ? 1 : 0,
-              })
-            },
-          },
-        })
-      }
     }, section)
 
     return () => ctx.revert()
   }, [reduced])
+
+  // Hearts arriving: the card's gold edge flares and its star gives a beat.
+  const onArrive = useCallback((card: 'from' | 'to') => {
+    const el = (card === 'from' ? brideRef : groomRef).current
+    if (!el) return
+    gsap.fromTo(el.querySelector('[data-glow]'), { opacity: 0.9 }, { opacity: 0, duration: 1.3, ease: 'power2.out' })
+    gsap.fromTo(
+      el.querySelector('[data-star]'),
+      { scale: 1.22 },
+      { scale: 1, duration: 0.9, ease: 'elastic.out(1, 0.45)', transformOrigin: '50% 50%' },
+    )
+  }, [])
 
   return (
     <section
@@ -245,6 +207,8 @@ export function Families() {
       <GeometricPattern scale={96} opacity={0.05} />
       <SparkleField count={7} tone="rose" />
 
+      <HeartSnake boxRef={sectionRef} fromRef={brideRef} toRef={groomRef} onArrive={onArrive} />
+
       <h2
         className={`text-2xs relative z-10 text-center tracking-[0.35em] text-wine-soft ${ur ? 'font-urdu' : 'uppercase'}`}
         lang={t.lang}
@@ -253,9 +217,11 @@ export function Families() {
         {ur ? wedding.urdu.familiesHeading : wedding.texts.familiesHeading}
       </h2>
 
-      <div className="relative z-10 mt-7 flex flex-col items-stretch gap-3">
+      {/* The gap between the cards is the hearts' crossing. */}
+      <div className="relative z-10 mt-8 flex flex-col gap-[7.5rem]">
         <FamilyCard
-          side="left"
+          cardRef={brideRef}
+          side="from"
           initial={wedding.bride.name.charAt(0)}
           name={wedding.bride.name}
           relation={ur ? wedding.urdu.daughterOf : wedding.texts.daughterOf}
@@ -263,24 +229,9 @@ export function Families() {
           rtl={ur}
           lang={t.lang}
         />
-
-        {/* The motif that joins the two families. The cord draws itself
-            as the section scrolls, running from the bride's card, around
-            the heart, and on to the groom's. */}
-        <span data-join className="-my-3 flex justify-center">
-          <HeartKnot className="w-[5.5rem]" title="A heart joining the two families" />
-        </span>
-
-        {/* From the heart down to the groom's card, the rope ties a heart as
-            the viewer scrolls, then drops through its middle to land on the
-            card below. -mt pulls it up to meet the knot's out-cord; -mb
-            lets its final drop run straight into the arch's apex. */}
-        <div data-rope-wrap className="-mt-1 -mb-12 flex justify-center">
-          <RopeHeart className="w-[11.5rem]" />
-        </div>
-
         <FamilyCard
-          side="right"
+          cardRef={groomRef}
+          side="to"
           initial={wedding.groom.name.charAt(0)}
           name={wedding.groom.name}
           relation={ur ? wedding.urdu.sonOf : wedding.texts.sonOf}
