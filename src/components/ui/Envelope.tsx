@@ -19,10 +19,11 @@ type Props = {
 
 /* Everything is laid out for a 375px column and scaled by k = width/375. */
 const BASE = 375
-const STAGE_H = 640
+const STAGE_H = 660
 const ENV = { w: 311, h: 206, top: 238 }
 const FLAP_H = 124
-const LETTER = { w: 286, panel: 190, top: 236 }
+/** The folded stack is the middle panel's height; top is smaller, bottom larger. */
+const LETTER = { w: 286, top: 236, panels: [150, 190, 230] as [number, number, number] }
 const SEAL = { w: 62, h: 58, y: 352 }
 const HINT_TOP = 455
 const HEARTS = 10
@@ -185,8 +186,8 @@ export function Envelope({ initials, prompt, openLabel, lang, dir }: Props) {
     const letter = letterRef.current
     if (!letter) return
     const r = letter.getBoundingClientRect()
-    const top = r.top - LETTER.panel * k
-    const bottom = r.bottom + LETTER.panel * k
+    const top = r.top - LETTER.panels[0] * k
+    const bottom = r.top + (LETTER.panels[1] + LETTER.panels[2]) * k
     if (top < 0 || bottom > window.innerHeight) {
       glideTo(window.scrollY + (top + bottom) / 2 - window.innerHeight / 2)
     }
@@ -283,7 +284,11 @@ export function Envelope({ initials, prompt, openLabel, lang, dir }: Props) {
 
       {/* 2. The letter, folded (or open, under reduced motion). */}
       <div className="absolute inset-x-0" style={{ top: LETTER.top * k }}>
-        <TriFoldLetter ref={letterRef} width={LETTER.w * k} panel={LETTER.panel * k} />
+        <TriFoldLetter
+          ref={letterRef}
+          width={LETTER.w * k}
+          heights={[LETTER.panels[0] * k, LETTER.panels[1] * k, LETTER.panels[2] * k]}
+        />
       </div>
 
       {!reduced && (

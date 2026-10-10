@@ -51,7 +51,7 @@ function VenueFace({ event }: { event: WeddingEvent }) {
           {event.venue}
         </bdi>
       </p>
-      <p className="mt-[0.3em] max-w-[16em] font-body text-[0.72em] leading-[1.45] text-wine-mist">
+      <p className="mt-[0.3em] max-w-[18em] font-body text-[0.62em] leading-[1.45] text-wine-mist">
         <bdi lang="en" dir="ltr">
           {event.address}
         </bdi>
@@ -75,7 +75,7 @@ function VenueFace({ event }: { event: WeddingEvent }) {
         href={directionsUrl(event)}
         target="_blank"
         rel="noopener noreferrer"
-        className={`mt-[0.7em] inline-flex min-h-[2.4em] items-center gap-[0.4em] border-b border-gold pb-[0.15em] font-body text-[0.656em] tracking-[0.25em] text-wine-deep ${ur ? 'font-urdu' : 'uppercase'}`}
+        className={`mt-[0.6em] inline-flex min-h-[2.4em] items-center gap-[0.4em] border-b border-gold pb-[0.15em] font-body text-[0.56em] tracking-[0.25em] text-wine-deep ${ur ? 'font-urdu' : 'uppercase'}`}
         lang={t.lang}
       >
         <span>{ur ? wedding.urdu.getDirections : wedding.texts.getDirections}</span>
@@ -89,12 +89,14 @@ function VenueFace({ event }: { event: WeddingEvent }) {
 type Props = {
   /** Width of the letter in px; everything inside scales from it. */
   width: number
-  /** Height of one panel in px. */
-  panel: number
+  /** Heights of the top, middle and bottom panels in px. */
+  heights: [number, number, number]
 }
 
 /**
- * The tri-fold letter: three panels of cream paper, each `panel` tall.
+ * The tri-fold letter: three panels of cream paper. Open, they read as one
+ * sheet: the same paper, one continuous inner border, no shadow or crease
+ * along the folds.
  *
  *   top     hinged on the middle's top edge, folded DOWN over it; its back
  *           is the cover (monogram, "With love"), its front the opening line
@@ -108,7 +110,8 @@ type Props = {
  *
  * The forwarded ref is the letter's root — the thing the timeline moves.
  */
-export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldLetter({ width, panel }, ref) {
+export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldLetter({ width, heights }, ref) {
+  const [topH, panel, bottomH] = heights
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
@@ -136,21 +139,19 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
       <div
         data-panel="bottom"
         className="absolute left-0 w-full [transform-style:preserve-3d]"
-        style={{ top: panel, height: panel, transformOrigin: '50% 0', zIndex: 1, background: 'var(--color-paper)' }}
+        style={{ top: panel, height: bottomH, transformOrigin: '50% 0', zIndex: 1, background: 'var(--color-paper)' }}
       >
         <div className={face} style={{ background: 'var(--color-paper)' }}>
           <VenueFace event={walima} />
         </div>
         <span className={`${border} border-t-0`} style={{ top: -1 }} />
-        {/* Crease shadow along the fold. */}
-        <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[0.6em]" style={{ background: 'linear-gradient(rgba(150,110,60,0.13), transparent)' }} />
       </div>
 
       {/* Middle panel — the Nikah. */}
       <div
         data-panel="middle"
         className="absolute left-0 top-0 w-full [transform-style:preserve-3d]"
-        style={{ height: panel, zIndex: 2, background: 'var(--color-paper)', boxShadow: '0 10px 24px -12px rgba(94,18,39,0.35)' }}
+        style={{ height: panel, zIndex: 2, background: 'var(--color-paper)' }}
       >
         <div className={face} style={{ background: 'var(--color-paper)' }}>
           <VenueFace event={nikah} />
@@ -162,7 +163,7 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
       <div
         data-panel="top"
         className="absolute left-0 w-full [transform-style:preserve-3d]"
-        style={{ top: -panel, height: panel, transformOrigin: '50% 100%', zIndex: 3, background: 'var(--color-paper)' }}
+        style={{ top: -topH, height: topH, transformOrigin: '50% 100%', zIndex: 3, background: 'var(--color-paper)' }}
       >
         {/* Front: the opening line, seen once unfolded. */}
         <div className={face} style={{ background: 'var(--color-paper)' }}>
@@ -196,7 +197,6 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
           <span className={border} />
         </div>
         <span className={`${border} border-b-0`} style={{ bottom: -1 }} />
-        <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[0.6em]" style={{ background: 'linear-gradient(transparent, rgba(150,110,60,0.13))' }} />
       </div>
     </div>
   )
