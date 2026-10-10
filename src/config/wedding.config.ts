@@ -147,8 +147,6 @@ export const wedding = {
     /* Reply form */
     rsvpHeading: 'Our joy is incomplete without you',
     rsvpInvite: "Tell us you're coming, so we can keep a place for you and your family.",
-    rsvpYes: 'Joyfully attending',
-    rsvpNo: "Sadly can't make it",
     rsvpName: 'Your name',
     rsvpFamily: 'Family name',
     rsvpMembers: 'Number of guests',
@@ -156,10 +154,8 @@ export const wedding = {
     rsvpMore: 'One more guest',
     rsvpDua: 'A dua or a message (optional)',
     rsvpSubmit: 'Count us in',
-    rsvpSubmitNo: 'Send our duas',
     rsvpSending: 'Sending…',
     rsvpThanks: "JazakAllahu Khairan — we've saved your seat.",
-    rsvpThanksNo: "We'll miss you — please keep us in your duas.",
     rsvpAlready: "JazakAllahu Khairan — we've already received your RSVP 💕",
     rsvpUpdate: 'Update my RSVP',
     rsvpError: 'That did not go through. Please try again, or message us directly.',
@@ -210,8 +206,6 @@ export const wedding = {
 
     rsvpHeading: 'آپ کے بغیر ہماری خوشی ادھوری ہے',
     rsvpInvite: 'ہمیں بتائیں کہ آپ تشریف لا رہے ہیں، تاکہ ہم آپ اور آپ کے گھر والوں کے لیے جگہ رکھ سکیں۔',
-    rsvpYes: 'خوشی سے شریک ہوں گے',
-    rsvpNo: 'افسوس، شریک نہیں ہو سکیں گے',
     rsvpName: 'آپ کا نام',
     rsvpFamily: 'خاندان کا نام',
     rsvpMembers: 'مہمانوں کی تعداد',
@@ -219,10 +213,8 @@ export const wedding = {
     rsvpMore: 'ایک مہمان زیادہ',
     rsvpDua: 'دعا یا پیغام (اختیاری)',
     rsvpSubmit: 'ہم ضرور آئیں گے',
-    rsvpSubmitNo: 'دعائیں بھیجیں',
     rsvpSending: 'بھیجا جا رہا ہے…',
     rsvpThanks: 'جزاک اللہ خیراً — آپ کی جگہ محفوظ ہے',
-    rsvpThanksNo: 'آپ کی کمی محسوس ہوگی — ہمیں اپنی دعاؤں میں یاد رکھیں',
     rsvpAlready: 'جزاک اللہ خیراً — آپ کا جواب ہمیں پہلے ہی مل چکا ہے 💕',
     rsvpUpdate: 'جواب بدلیں',
     rsvpError: 'جواب نہیں پہنچ سکا۔ دوبارہ کوشش کریں، یا ہمیں براہِ راست پیغام بھیجیں۔',
@@ -254,6 +246,8 @@ export const wedding = {
      * change it on the Web3Forms side (see TODO.md).
      */
     receiverEmail: 'letsbegin81@gmail.com',
+    /** Every reply is also copied to these (Web3Forms `ccemail`). */
+    ccEmails: ['jagralashihab7786@gmail.com', 'jagralashihab786@gmail.com'],
   },
 
   /** Used for <title> and the OG tags. */
