@@ -1,46 +1,44 @@
+import { useEffect, useState } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 
 type Props = {
-  label?: string
   className?: string
 }
 
-/** A quiet cue that there is more below. Decorative, but labelled. */
-export function ScrollHint({ label = 'Scroll', className = '' }: Props) {
+/**
+ * A small gold chevron that bobs to say there is more below, and fades
+ * out for good the first time the page moves. Opacity only, so it costs
+ * nothing once it has gone.
+ */
+export function ScrollHint({ className = '' }: Props) {
   const reduced = useReducedMotion()
+  const [gone, setGone] = useState(false)
+
+  useEffect(() => {
+    const hide = () => setGone(true)
+    window.addEventListener('scroll', hide, { passive: true, once: true })
+    return () => window.removeEventListener('scroll', hide)
+  }, [])
 
   return (
-    <div
-      className={`flex flex-col items-center gap-2 ${className}`}
-      style={
-        reduced ? undefined : { animation: 'float-soft 2.8s ease-in-out infinite' }
-      }
+    <span
+      className={`block transition-opacity duration-500 ${gone ? 'opacity-0' : 'opacity-100'} ${className}`}
+      aria-hidden="true"
     >
-      <span className="text-2xs tracking-[0.4em] text-wine-soft/70 uppercase">
-        {label}
-      </span>
       <svg
-        viewBox="0 0 24 34"
-        className="w-3.5"
-        role="presentation"
-        aria-hidden="true"
+        viewBox="0 0 24 14"
+        className="mx-auto block w-5"
+        style={reduced ? undefined : { animation: 'float-soft 2.2s ease-in-out infinite' }}
       >
         <path
-          d="M12 2 V26"
-          stroke="var(--color-gold)"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-          opacity="0.6"
-        />
-        <path
-          d="M5 20 L12 27.5 L19 20"
+          d="M4 3 L12 11 L20 3"
           fill="none"
           stroke="var(--color-gold)"
-          strokeWidth="1.4"
+          strokeWidth="1.6"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>
-    </div>
+    </span>
   )
 }

@@ -67,6 +67,35 @@ export function splitDate(iso: string): {
   }
 }
 
+/** "13 · 11 · 2026" — the date as a small-caps line under the names. */
+export function formatDotDate(iso: string): string {
+  const d = parseDate(iso)
+  return [d.getDate(), d.getMonth() + 1, d.getFullYear()]
+    .map((n) => String(n).padStart(2, '0'))
+    .join(' · ')
+}
+
+/** "Friday, 13 Nov" */
+export function formatShortDate(iso: string): string {
+  const d = parseDate(iso)
+  const weekday = d.toLocaleDateString(LOCALE, { weekday: 'long' })
+  const month = d.toLocaleDateString(LOCALE, { month: 'short' })
+  return `${weekday}, ${d.getDate()} ${month}`
+}
+
+/** "7 – 10 PM", or "11 AM – 1 PM" when the two sides differ. */
+export function formatTimeRange(start: string, end: string): string {
+  const compact = (hhmm: string) => {
+    const { hours, minutes } = parseTime(hhmm)
+    const h12 = hours % 12 || 12
+    const mer = hours < 12 ? 'AM' : 'PM'
+    return { text: minutes ? `${h12}:${String(minutes).padStart(2, '0')}` : `${h12}`, mer }
+  }
+  const a = compact(start)
+  const b = compact(end)
+  return a.mer === b.mer ? `${a.text} – ${b.text} ${a.mer}` : `${a.text} ${a.mer} – ${b.text} ${b.mer}`
+}
+
 /** "11:00" -> "11:00 AM" */
 export function formatTime(hhmm: string): string {
   const { hours, minutes } = parseTime(hhmm)

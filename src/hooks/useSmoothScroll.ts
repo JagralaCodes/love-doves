@@ -20,6 +20,11 @@ export function useSmoothScroll() {
       duration: 1.1,
       // Gentle exponential glide, no overshoot.
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      // Touch stays NATIVE. Smoothing a finger (syncTouch) re-implements
+      // the phone's own scroll physics in JS and feels laggy on mid-range
+      // Android; Lenis only smooths the wheel. Its touch listeners are
+      // passive when it is not syncing.
+      syncTouch: false,
       touchMultiplier: 1.6,
       wheelMultiplier: 1,
     })

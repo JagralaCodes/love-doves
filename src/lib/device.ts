@@ -35,3 +35,13 @@ export function particleScale(): number {
   const tier = deviceTier()
   return tier === 'low' ? 0 : tier === 'mid' ? 0.5 : 1
 }
+
+/**
+ * The full-screen sparkle layer's own scale: half on four cores or fewer,
+ * or on a narrow phone, and never zero — a tap must always glimmer.
+ */
+export function sparkleScale(): number {
+  if (typeof window === 'undefined') return 1
+  const cores = navigator.hardwareConcurrency ?? 4
+  return cores <= 4 || window.innerWidth < 400 ? 0.5 : 1
+}

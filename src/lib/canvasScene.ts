@@ -13,6 +13,11 @@ export type Scene = {
   resize: (width: number, height: number) => void
   /** Called once per frame while the canvas is on screen. */
   draw: (c: SceneCtx) => void
+  /**
+   * True when there is nothing moving. The canvas is cleared once and then
+   * left alone — no clear, no draw — until this goes false again.
+   */
+  idle?: () => boolean
 }
 
 type Options = {
@@ -46,6 +51,7 @@ export function mountCanvasScene(
   let visible = !pauseOffscreen
   let last = performance.now()
   let elapsed = 0
+  let wasIdle = false
 
   const applySize = () => {
     const rect = canvas.getBoundingClientRect()
@@ -66,6 +72,15 @@ export function mountCanvasScene(
     const dt = Math.min((now - last) / 1000, 0.05)
     last = now
     if (!visible || document.hidden) return
+    if (scene.idle?.()) {
+      // A still scene costs nothing: wipe the last frame, then stop.
+      if (!wasIdle) {
+        ctx.clearRect(0, 0, width, height)
+        wasIdle = true
+      }
+      return
+    }
+    wasIdle = false
     elapsed += dt
     ctx.clearRect(0, 0, width, height)
     scene.draw({ ctx, width, height, dt, time: elapsed })

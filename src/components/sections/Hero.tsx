@@ -17,6 +17,7 @@ import { FallingPetals } from '../ui/FallingPetals'
 import { ScrollHint } from '../ui/ScrollHint'
 
 import { wedding } from '../../config/wedding.config'
+import { formatDotDate } from '../../lib/date'
 
 /**
  * Spelled out rather than the U+FDFD ligature.
@@ -119,22 +120,24 @@ export function Hero({ active }: Props) {
         return
       }
 
+      // Paced so the names are fully on screen about two seconds after the
+      // doors start to swing — this plays while they are still opening.
       const tl = gsap.timeline({ defaults: { ease: 'expo.out' } })
 
       // Bismillah wipes in behind a mask, then the gold rule draws beneath.
       tl.fromTo(
         '[data-bismillah]',
         { autoAlpha: 0, clipPath: 'inset(0 0 100% 0)', y: 12 },
-        { autoAlpha: 1, clipPath: 'inset(0 0 0% 0)', y: 0, duration: 1.3 },
+        { autoAlpha: 1, clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.9 },
       )
         .fromTo(
           '[data-rule]',
           { scaleX: 0 },
-          { scaleX: 1, duration: 1, transformOrigin: 'center' },
-          '-=0.7',
+          { scaleX: 1, duration: 0.7, transformOrigin: 'center' },
+          '-=0.6',
         )
-        .fromTo('[data-crescent]', { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 1 }, '-=0.6')
-        .fromTo('[data-invite]', { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.9 }, '-=0.6')
+        .fromTo('[data-crescent]', { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 0.7 }, '-=0.55')
+        .fromTo('[data-invite]', { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.6 }, '-=0.5')
 
       // Names, letter by letter.
       gsap.utils.toArray<HTMLElement>('[data-name]').forEach((el, i) => {
@@ -151,18 +154,19 @@ export function Hero({ active }: Props) {
             autoAlpha: 1,
             yPercent: 0,
             rotate: 0,
-            duration: 1,
-            stagger: 0.045,
+            duration: 0.7,
+            stagger: 0.03,
             ease: 'power3.out',
           },
-          i === 0 ? '-=0.4' : '-=0.55',
+          i === 0 ? '-=0.45' : '-=0.5',
         )
       })
 
-      tl.fromTo('[data-amp]', { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.7 }, '-=0.8')
-        .fromTo('[data-vine]', { autoAlpha: 0, scaleX: 0.6 }, { autoAlpha: 1, scaleX: 1, duration: 1 }, '-=0.5')
-        .fromTo('[data-date]', { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.9 }, '-=0.7')
-        .fromTo('[data-hint]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8 }, '-=0.4')
+      tl.fromTo('[data-amp]', { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.5 }, '-=0.6')
+        .fromTo('[data-vine]', { autoAlpha: 0, scaleX: 0.6 }, { autoAlpha: 1, scaleX: 1, duration: 0.7 }, '-=0.4')
+        .fromTo('[data-date]', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.6 }, '-=0.5')
+        .fromTo('[data-events]', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.6 }, '-=0.45')
+        .fromTo('[data-hint]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, '-=0.3')
     }, root)
 
     return () => {
@@ -201,7 +205,7 @@ export function Hero({ active }: Props) {
   return (
     <section
       ref={rootRef}
-      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-14"
+      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-12"
     >
       <GeometricPattern scale={104} opacity={0.055} />
       <PearlBokeh count={6} />
@@ -313,13 +317,21 @@ export function Hero({ active }: Props) {
           <FloralVine className="mx-auto w-52" />
         </span>
 
-        {/* The two celebrations, not the date. Each event carries its own
-            date on its card further down, and the countdown has the one
-            that matters — repeating it here just crowded the names. */}
+        {/* The date, small under the names; English digits either way. */}
         <p
           data-hero-item
           data-date
-          className={`mt-5 text-wine ${
+          className="nums-lining mt-5 font-body text-2xs tracking-[0.4em] text-wine-soft"
+          lang="en"
+          dir="ltr"
+        >
+          {formatDotDate(wedding.events[0].date)}
+        </p>
+
+        <p
+          data-hero-item
+          data-events
+          className={`mt-2 text-wine ${
             ur
               ? 'font-urdu text-fluid-xl leading-[2]'
               : 'font-display text-fluid-lg tracking-[0.18em] uppercase'
@@ -329,11 +341,13 @@ export function Hero({ active }: Props) {
         >
           {eventNames}
         </p>
-      </div>
 
-      <span data-hero-item data-hint className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2">
-        <ScrollHint />
-      </span>
+        {/* In flow under the copy, never pinned to the bottom edge where a
+            short screen let it land on top of the line above. */}
+        <span data-hero-item data-hint className="mt-8 block">
+          <ScrollHint />
+        </span>
+      </div>
     </section>
   )
 }

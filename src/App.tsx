@@ -17,10 +17,13 @@ const BelowFold = lazy(() => import('./components/BelowFold'))
 
 export default function App() {
   const lenisRef = useSmoothScroll()
+  // `opened` flips as the doors begin to swing, so the hero plays in behind
+  // them; `gateGone` once the gate has faded and can leave the tree.
   const [opened, setOpened] = useState(false)
+  const [gateGone, setGateGone] = useState(false)
 
-  // Hold the viewer on the gate until they open it.
-  useScrollLock(!opened, lenisRef)
+  // Hold the viewer on the gate until it has gone.
+  useScrollLock(!gateGone, lenisRef)
   // Re-measure scroll triggers when the page grows — including when the
   // lazy sections arrive.
   useScrollRefresh()
@@ -31,7 +34,7 @@ export default function App() {
       <SparkleLayer />
       <ScrollThread visible={opened} />
 
-      {!opened && <Gate onOpened={() => setOpened(true)} />}
+      {!gateGone && <Gate onOpening={() => setOpened(true)} onOpened={() => setGateGone(true)} />}
 
       <main>
         <Hero active={opened} />

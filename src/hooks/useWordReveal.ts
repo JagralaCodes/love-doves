@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { ScrollTrigger } from '../lib/gsap'
+import { gsap, ScrollTrigger } from '../lib/gsap'
 import { prefersReducedMotion } from '../lib/motionPrefs'
 import { deviceTier } from '../lib/device'
 import { wordProgressAt } from '../lib/wordProgress'
@@ -12,24 +12,44 @@ type Options = {
   /** Soften un-revealed words with a blur. High-tier devices only. */
   blur?: boolean
   disabled?: boolean
+  /**
+   * 'scroll' scrubs the reveal to the scroll position, so it sits wherever
+   * the reader stops. 'time' plays it once, over `duration` seconds, from
+   * the moment the passage comes into view — and always finishes.
+   */
+  mode?: 'scroll' | 'time'
+  /** Seconds, for `mode: 'time'`. */
+  duration?: number
+  /** Seconds before a timed reveal begins. */
+  delay?: number
 }
 
 /**
- * Reveals text word by word as the reader scrolls through it.
+ * Reveals text word by word — scrubbed to the scroll, or played once on
+ * entering view.
  *
  * Words are split by walking text nodes rather than rewriting innerHTML,
  * so inline markup, whitespace and — crucially for Arabic — the shaping
  * inside each word survive. Each word is wrapped in place and the original
  * text nodes are restored on teardown.
  *
- * Scroll progress drives a per-word `--word-progress`; CSS interpolates
- * the visible state from it. Under reduced motion nothing is split at all.
+ * Progress drives a per-word `--word-progress`; CSS interpolates the
+ * visible state from it. Under reduced motion nothing is split at all.
  */
 export function useWordReveal<T extends HTMLElement = HTMLDivElement>(
   options: Options = {},
 ) {
   const ref = useRef<T | null>(null)
-  const { overlap = 0.25, start = 'top 85%', end = 'bottom 60%', blur, disabled } = options
+  const {
+    overlap = 0.25,
+    start = 'top 85%',
+    end = 'bottom 60%',
+    blur,
+    disabled,
+    mode = 'scroll',
+    duration = 2.2,
+    delay = 0,
+  } = options
 
   useEffect(() => {
     const el = ref.current
@@ -108,18 +128,31 @@ export function useWordReveal<T extends HTMLElement = HTMLDivElement>(
 
     apply(0)
 
-    const trigger = ScrollTrigger.create({
-      trigger: el,
-      start,
-      end,
-      scrub: true,
-      onUpdate: (self) => apply(self.progress),
-    })
+    let tween: gsap.core.Tween | undefined
+    const trigger =
+      mode === 'time'
+        ? ScrollTrigger.create({
+            trigger: el,
+            start,
+            once: true,
+            onEnter: () => {
+              const p = { v: 0 }
+              tween = gsap.to(p, { v: 1, duration, delay, ease: 'none', onUpdate: () => apply(p.v) })
+            },
+          })
+        : ScrollTrigger.create({
+            trigger: el,
+            start,
+            end,
+            scrub: true,
+            onUpdate: (self) => apply(self.progress),
+          })
 
     // Word geometry depends on the webfont; re-measure once it lands.
     document.fonts?.ready.then(() => ScrollTrigger.refresh()).catch(() => {})
 
     return () => {
+      tween?.kill()
       trigger.kill()
       // Put the original text nodes back so the DOM is left as authored.
       for (const { original, inserted, parent } of restores) {
@@ -131,7 +164,7 @@ export function useWordReveal<T extends HTMLElement = HTMLDivElement>(
         }
       }
     }
-  }, [overlap, start, end, blur, disabled])
+  }, [overlap, start, end, blur, disabled, mode, duration, delay])
 
   return ref
 }

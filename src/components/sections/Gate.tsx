@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { PointerEvent as ReactPointerEvent } from 'react'
 import { gsap } from '../../lib/gsap'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { GateDoorLeaf, DoorDefs } from '../svg/GateDoors'
@@ -9,6 +10,9 @@ import { wedding } from '../../config/wedding.config'
 import { useLang, langAttrs } from '../../hooks/useLang'
 
 type Props = {
+  /** The doors have begun to swing: start the page behind them. */
+  onOpening: () => void
+  /** The gate has faded out completely and can be unmounted. */
   onOpened: () => void
 }
 
@@ -16,15 +20,18 @@ type Props = {
  * The opening gate: carved doors closed over the invitation, held shut by
  * a single wax heart.
  *
- * Tapping the heart releases it: it lifts for a beat, then falls away
- * under gravity with a little spin and a sideways kick, carrying its
- * stamped monogram with it. Then the doors swing open and the gate fades
- * off the invitation.
+ * One tap releases it. It lifts for a beat, then falls away under gravity
+ * with a little spin and a sideways kick — and while it is still falling
+ * the doors start to swing, the hero begins to play in behind them, and
+ * the gate fades off. Tap to names on screen is about 2.4 seconds.
  *
- * There is no separate button — the heart is the control. It is a real
- * <button>, so the whole sequence works from the keyboard too.
+ * The release fires on `pointerdown`, not `click`: a click needs the
+ * finger to lift without moving and can be eaten by a 300 ms double-tap
+ * delay or a stray drag, and a first tap that does nothing is the worst
+ * thing this screen can do. Keyboard users still get a click (Enter /
+ * Space), guarded so the two can never both fire.
  */
-export function Gate({ onOpened }: Props) {
+export function Gate({ onOpening, onOpened }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
   const leftRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
@@ -33,7 +40,6 @@ export function Gate({ onOpened }: Props) {
 
   /** A ref, not state: a second tap can land before React re-renders. */
   const releasedRef = useRef(false)
-  const openingRef = useRef(false)
   const [released, setReleased] = useState(false)
 
   const reduced = useReducedMotion()
@@ -42,31 +48,30 @@ export function Gate({ onOpened }: Props) {
   const ur = lang === 'ur'
 
   const openDoors = useCallback(() => {
-    if (openingRef.current) return
-    openingRef.current = true
-
     const root = rootRef.current
     if (!root) return
+    onOpening()
 
     if (reduced) {
       gsap.to(root, { autoAlpha: 0, duration: 0.45, ease: 'none', onComplete: onOpened })
       return
     }
 
-    const tl = gsap.timeline({ onComplete: onOpened })
+    // The leaves cover the whole screen while shut, so the backdrop behind
+    // them can go now: the hero shows through the widening gap as they
+    // swing, instead of after the whole gate has faded.
+    root.style.backgroundColor = 'transparent'
 
-    // The doors swing, then the whole gate fades off the invitation.
-    // There is deliberately no light burst behind them: a full-bleed
-    // radial flash washed the page out to a flat oval and showed the hero
-    // through it mid-fade, which read as a glitch rather than an opening.
-    tl.to(copyRef.current, { autoAlpha: 0, y: -12, duration: 0.4 })
-      .to(leftRef.current, { rotateY: -102, duration: 1.5, ease: 'power3.inOut' }, 'swing')
-      .to(rightRef.current, { rotateY: 102, duration: 1.5, ease: 'power3.inOut' }, 'swing')
-      .to(root, { autoAlpha: 0, duration: 0.6, ease: 'power2.inOut' }, 'swing+=0.95')
-  }, [reduced, onOpened])
+    gsap
+      .timeline({ onComplete: onOpened })
+      .to(copyRef.current, { autoAlpha: 0, y: -12, duration: 0.3 }, 0)
+      .to(leftRef.current, { rotateY: -104, duration: 1.2, ease: 'power3.inOut' }, 0.05)
+      .to(rightRef.current, { rotateY: 104, duration: 1.2, ease: 'power3.inOut' }, 0.05)
+      .to(root, { autoAlpha: 0, duration: 0.5, ease: 'power2.inOut' }, 0.75)
+  }, [reduced, onOpening, onOpened])
 
   const releaseHeart = useCallback(() => {
-    if (releasedRef.current || openingRef.current) return
+    if (releasedRef.current) return
     releasedRef.current = true
     setReleased(true)
 
@@ -84,36 +89,39 @@ export function Gate({ onOpened }: Props) {
       power: 170,
     })
 
-    const tl = gsap.timeline({ onComplete: openDoors })
-
-    // A beat of release before gravity takes it...
-    tl.to(heart, {
-      scale: 1.07,
-      yPercent: -12,
-      rotate: -5,
-      duration: 0.16,
-      ease: 'power2.out',
-    })
+    gsap
+      .timeline()
+      // A beat of release before gravity takes it...
+      .to(heart, { scale: 1.07, yPercent: -12, rotate: -5, duration: 0.14, ease: 'power2.out' })
       // ...then it drops, accelerating, tumbling and drifting aside.
       .to(heart, {
         y: window.innerHeight * 0.8,
         x: gsap.utils.random(26, 54),
         rotate: gsap.utils.random(38, 70),
         scale: 0.86,
-        duration: 0.95,
+        duration: 0.8,
         ease: 'power2.in',
       })
-      .to(heart, { autoAlpha: 0, duration: 0.35, ease: 'power1.in' }, '-=0.35')
+      .to(heart, { autoAlpha: 0, duration: 0.3, ease: 'power1.in' }, '-=0.3')
+      // The doors do not wait for it to land.
+      .add(openDoors, 0.4)
   }, [reduced, openDoors])
 
-  // Settle the heart in once the gate appears.
+  const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return
+    releaseHeart()
+  }
+
+  // Settle the heart in once the gate appears. Opacity only — `autoAlpha`
+  // would set `visibility: hidden`, and a hidden element cannot be tapped,
+  // so a quick first tap would have gone straight through to the door.
   useEffect(() => {
     const heart = heartRef.current
     if (!heart) return
     gsap.fromTo(
       heart,
-      { autoAlpha: 0, scale: 0.86 },
-      { autoAlpha: 1, scale: 1, duration: reduced ? 0.3 : 1, ease: 'expo.out', delay: 0.15 },
+      { opacity: 0, scale: 0.86 },
+      { opacity: 1, scale: 1, duration: reduced ? 0.3 : 0.9, ease: 'expo.out' },
     )
   }, [reduced])
 
@@ -158,13 +166,18 @@ export function Gate({ onOpened }: Props) {
         <button
           ref={heartRef}
           type="button"
+          onPointerDown={onPointerDown}
           onClick={releaseHeart}
           disabled={released}
           aria-label="Release the heart to open the invitation"
           // No CSS transition on transform: GSAP drives the lift and the
           // fall, and a transition would smear every frame of it.
           className="pointer-events-auto relative size-28 origin-center disabled:cursor-default"
-          style={{ filter: 'drop-shadow(0 6px 13px rgba(0,0,0,0.45))' }}
+          style={{
+            filter: 'drop-shadow(0 6px 13px rgba(0,0,0,0.45))',
+            // No double-tap-to-zoom delay on the one control that matters.
+            touchAction: 'manipulation',
+          }}
         >
           <HeartSeal initials={wedding.monogram} className="size-full" />
         </button>

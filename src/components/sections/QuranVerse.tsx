@@ -14,11 +14,13 @@ import { FallingPetals } from '../ui/FallingPetals'
 import { wedding } from '../../config/wedding.config'
 
 /**
- * The ayah, revealed word by word as the reader scrolls through it, inside
- * a multifoil arch whose outline draws itself in.
+ * The ayah, revealed word by word inside a multifoil arch whose outline
+ * draws itself in.
  *
- * The Arabic and the translation get separate scrubs so each reads at its
- * own pace rather than racing the other.
+ * Each passage plays once, over a couple of seconds, from the moment it
+ * comes into view — not scrubbed to the scroll, which left the translation
+ * stopped mid-sentence wherever the thumb happened to rest. The Arabic
+ * leads and the translation follows a beat behind.
  */
 export function QuranVerse() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -29,15 +31,18 @@ export function QuranVerse() {
   const ur = lang === 'ur'
 
   const arabicRef = useWordReveal<HTMLParagraphElement>({
-    start: 'top 82%',
-    end: 'bottom 62%',
+    mode: 'time',
+    start: 'top 85%',
+    duration: 2.2,
     overlap: 0.3,
   })
 
   // Re-keyed on language so the hook re-splits when the text swaps.
   const transRef = useWordReveal<HTMLParagraphElement>({
-    start: 'top 88%',
-    end: 'bottom 70%',
+    mode: 'time',
+    start: 'top 90%',
+    duration: 2.2,
+    delay: 0.3,
     overlap: 0.35,
   })
 

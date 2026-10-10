@@ -4,7 +4,9 @@ import type { Scene } from '../../lib/canvasScene'
 import { onSparkleBurst } from '../../lib/sparkleBus'
 import type { BurstOptions } from '../../lib/sparkleBus'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import { canRunPointerTrail, particleScale } from '../../lib/device'
+import { canRunPointerTrail, sparkleScale } from '../../lib/device'
+
+type Shape = 'star' | 'dot' | 'heart'
 
 type Particle = {
   x: number
@@ -16,8 +18,7 @@ type Particle = {
   size: number
   spin: number
   spinSpeed: number
-  rgb: string
-  shape: 'star' | 'dot' | 'heart'
+  sprite: HTMLCanvasElement
 }
 
 const TONES = {
@@ -35,6 +36,26 @@ const MAX_PARTICLES = 320
 /** Trail particles are emitted per this many px travelled, not per frame,
  *  so spacing stays even whether the pointer creeps or flies. */
 const TRAIL_SPACING = 15
+/** Sprites are drawn at this radius (CSS px) and scaled down from there. */
+const SPRITE_R = 7
+
+function heartPath(ctx: CanvasRenderingContext2D, s: number) {
+  // Two lobes meeting at a point, sized about the particle's radius.
+  ctx.beginPath()
+  ctx.moveTo(0, s * 0.72)
+  ctx.bezierCurveTo(-s * 1.25, -s * 0.2, -s * 0.55, -s * 1.05, 0, -s * 0.38)
+  ctx.bezierCurveTo(s * 0.55, -s * 1.05, s * 1.25, -s * 0.2, 0, s * 0.72)
+}
+
+function starPath(ctx: CanvasRenderingContext2D, s: number) {
+  // Four-point sparkle, drawn as a concave diamond.
+  ctx.beginPath()
+  ctx.moveTo(0, -s)
+  ctx.quadraticCurveTo(s * 0.16, -s * 0.16, s, 0)
+  ctx.quadraticCurveTo(s * 0.16, s * 0.16, 0, s)
+  ctx.quadraticCurveTo(-s * 0.16, s * 0.16, -s, 0)
+  ctx.quadraticCurveTo(-s * 0.16, -s * 0.16, 0, -s)
+}
 
 /**
  * One fixed, full-screen canvas serving every sparkle effect:
@@ -48,9 +69,14 @@ const TRAIL_SPACING = 15
  * moving, so on the phones this invitation is actually opened on, a tap
  * used to produce nothing at all.
  *
+ * Every particle is a pre-rendered sprite — shape, colour and glow baked
+ * once per combination — so a frame is one `drawImage` per particle with
+ * no path building and no per-particle shadow. With nothing alive the
+ * scene reports idle and the canvas is not touched at all; most of the
+ * time that is exactly the state it is in.
+ *
  * Mount once, near the root. Hidden from assistive tech, never
- * interactive, and skipped entirely under reduced motion. Only the trail
- * is dropped on low-end devices; taps and bursts still run there.
+ * interactive, and skipped entirely under reduced motion.
  */
 export function SparkleLayer() {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -60,16 +86,44 @@ export function SparkleLayer() {
     const canvas = ref.current
     if (!canvas || reduced) return
 
-    const scale = particleScale()
+    const scale = sparkleScale()
     const trailEnabled = canRunPointerTrail()
-    // Bursts still run on a low-end phone even though the trail does not.
-    // The early return that used to live here killed the whole layer, so a
-    // weak device got no tap feedback at all -- the opposite of the intent.
-    const burstScale = Math.max(0.4, scale)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+
+    // ── sprites, made on demand and kept ──────────────────────────────
+    const sprites = new Map<string, HTMLCanvasElement>()
+    const spriteFor = (shape: Shape, rgb: string) => {
+      const key = `${shape}|${rgb}`
+      let c = sprites.get(key)
+      if (c) return c
+      c = document.createElement('canvas')
+      // Room for the glow around the shape.
+      const pad = SPRITE_R * 2.4
+      const size = Math.ceil(pad * 2 * dpr)
+      c.width = c.height = size
+      const g = c.getContext('2d')
+      if (g) {
+        g.setTransform(dpr, 0, 0, dpr, size / 2 / dpr, size / 2 / dpr)
+        g.fillStyle = `rgb(${rgb})`
+        g.shadowBlur = 8
+        g.shadowColor = `rgba(${rgb},0.85)`
+        if (shape === 'heart') heartPath(g, SPRITE_R)
+        else if (shape === 'star') starPath(g, SPRITE_R)
+        else {
+          g.beginPath()
+          g.arc(0, 0, SPRITE_R * 0.5, 0, Math.PI * 2)
+        }
+        g.fill()
+      }
+      sprites.set(key, c)
+      return c
+    }
 
     const particles: Particle[] = []
     let pointer: { x: number; y: number } | null = null
     let lastEmit: { x: number; y: number } | null = null
+    /** The pointer has moved since the trail last caught up with it. */
+    let pointerMoved = false
 
     const add = (p: Particle) => {
       if (particles.length >= MAX_PARTICLES) particles.shift()
@@ -79,7 +133,7 @@ export function SparkleLayer() {
     const spawnTrail = (x: number, y: number) => {
       const roll = Math.random()
       // Mostly hearts, with sparkles and motes between them for glitter.
-      const shape = roll < 0.55 ? 'heart' : roll < 0.8 ? 'star' : 'dot'
+      const shape: Shape = roll < 0.55 ? 'heart' : roll < 0.8 ? 'star' : 'dot'
       add({
         x: x + rand(-3, 3),
         y: y + rand(-3, 3),
@@ -90,20 +144,27 @@ export function SparkleLayer() {
         size: shape === 'heart' ? rand(3.4, 7) : rand(1.4, 3.4),
         spin: rand(-0.4, 0.4),
         spinSpeed: rand(-2.2, 2.2),
-        rgb: TRAIL_TONE[Math.floor(Math.random() * TRAIL_TONE.length)],
-        shape,
+        sprite: spriteFor(shape, TRAIL_TONE[Math.floor(Math.random() * TRAIL_TONE.length)]),
       })
     }
 
     const spawnBurst = (x: number, y: number, o: BurstOptions) => {
       const tone = TONES[o.tone ?? 'mixed']
       const power = o.power ?? 180
-      const count = Math.round((o.count ?? 26) * burstScale)
+      const count = Math.round((o.count ?? 26) * scale)
       for (let i = 0; i < count; i++) {
         // Even angular spread with jitter, so it reads as a burst
         // rather than a random cloud.
         const a = (i / count) * Math.PI * 2 + rand(-0.25, 0.25)
         const speed = power * rand(0.35, 1)
+        const shape: Shape =
+          o.tone === 'rose'
+            ? Math.random() < 0.6
+              ? 'heart'
+              : 'star'
+            : Math.random() < 0.62
+              ? 'star'
+              : 'dot'
         add({
           x,
           y,
@@ -114,29 +175,14 @@ export function SparkleLayer() {
           size: rand(2.2, 5.4),
           spin: rand(0, Math.PI),
           spinSpeed: rand(-5, 5),
-          rgb: tone[Math.floor(Math.random() * tone.length)],
-          shape:
-            o.tone === 'rose'
-              ? Math.random() < 0.6
-                ? 'heart'
-                : 'star'
-              : Math.random() < 0.62
-                ? 'star'
-                : 'dot',
+          sprite: spriteFor(shape, tone[Math.floor(Math.random() * tone.length)]),
         })
       }
     }
 
-    /**
-     * A small puff of tiny hearts at the point touched.
-     *
-     * The trail alone is a mouse effect: on a touchscreen `pointermove`
-     * only fires while a finger is already down and moving, so a tap --
-     * the main way this site is used -- produced nothing at all. This is
-     * what a finger gets.
-     */
+    /** A small puff of tiny hearts at the point touched. */
     const spawnTapHearts = (x: number, y: number) => {
-      const count = Math.round(12 * burstScale)
+      const count = Math.round(12 * scale)
       for (let i = 0; i < count; i++) {
         const a = (i / count) * Math.PI * 2 + rand(-0.3, 0.3)
         const speed = rand(26, 78)
@@ -153,8 +199,10 @@ export function SparkleLayer() {
           size: rand(2.6, 5),
           spin: rand(-0.5, 0.5),
           spinSpeed: rand(-3, 3),
-          rgb: TRAIL_TONE[Math.floor(Math.random() * TRAIL_TONE.length)],
-          shape: Math.random() < 0.78 ? 'heart' : 'star',
+          sprite: spriteFor(
+            Math.random() < 0.78 ? 'heart' : 'star',
+            TRAIL_TONE[Math.floor(Math.random() * TRAIL_TONE.length)],
+          ),
         })
       }
     }
@@ -170,10 +218,12 @@ export function SparkleLayer() {
 
     const onPointerMove = (e: PointerEvent) => {
       pointer = { x: e.clientX, y: e.clientY }
+      pointerMoved = true
     }
     const onPointerLeave = () => {
       pointer = null
       lastEmit = null
+      pointerMoved = false
     }
 
     // Taps glimmer on every device; only the trail needs headroom.
@@ -187,33 +237,12 @@ export function SparkleLayer() {
 
     const unsubscribe = onSparkleBurst((x, y, o) => spawnBurst(x, y, o))
 
-    const drawHeart = (ctx: CanvasRenderingContext2D, s: number) => {
-      // Two lobes meeting at a point, sized about the particle's radius.
-      ctx.beginPath()
-      ctx.moveTo(0, s * 0.72)
-      ctx.bezierCurveTo(-s * 1.25, -s * 0.2, -s * 0.55, -s * 1.05, 0, -s * 0.38)
-      ctx.bezierCurveTo(s * 0.55, -s * 1.05, s * 1.25, -s * 0.2, 0, s * 0.72)
-      ctx.fill()
-    }
-
-    const drawStar = (
-      ctx: CanvasRenderingContext2D,
-      s: number,
-    ) => {
-      // Four-point sparkle, drawn as a concave diamond.
-      ctx.beginPath()
-      ctx.moveTo(0, -s)
-      ctx.quadraticCurveTo(s * 0.16, -s * 0.16, s, 0)
-      ctx.quadraticCurveTo(s * 0.16, s * 0.16, 0, s)
-      ctx.quadraticCurveTo(-s * 0.16, s * 0.16, -s, 0)
-      ctx.quadraticCurveTo(-s * 0.16, -s * 0.16, 0, -s)
-      ctx.fill()
-    }
-
     const createScene = (): Scene => ({
       resize() {
         /* full-viewport; nothing to recompute */
       },
+
+      idle: () => particles.length === 0 && !(trailEnabled && pointerMoved),
 
       draw({ ctx, dt }) {
         // --- emit trail by distance travelled, not per frame ---
@@ -234,6 +263,7 @@ export function SparkleLayer() {
             dist = Math.hypot(dx, dy)
           }
         }
+        pointerMoved = false
 
         // --- integrate and draw ---
         for (let i = particles.length - 1; i >= 0; i--) {
@@ -254,26 +284,18 @@ export function SparkleLayer() {
 
           // Fade in fast, out slow.
           const alpha = k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85
-          const size = p.size * (1 - k * 0.55)
+          const s = (p.size * (1 - k * 0.55)) / SPRITE_R / dpr
+          const cos = Math.cos(p.spin) * s
+          const sin = Math.sin(p.spin) * s
+          const half = p.sprite.width / 2
 
-          ctx.save()
-          ctx.translate(p.x, p.y)
-          ctx.rotate(p.spin)
           ctx.globalAlpha = Math.max(0, alpha)
-          ctx.fillStyle = `rgb(${p.rgb})`
-          ctx.shadowBlur = 8
-          ctx.shadowColor = `rgba(${p.rgb},0.85)`
-          if (p.shape === 'heart') {
-            drawHeart(ctx, size)
-          } else if (p.shape === 'star') {
-            drawStar(ctx, size)
-          } else {
-            ctx.beginPath()
-            ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2)
-            ctx.fill()
-          }
-          ctx.restore()
+          // The scene's transform is the DPR scale; compose the sprite's
+          // rotation and size on top of it.
+          ctx.setTransform(cos * dpr, sin * dpr, -sin * dpr, cos * dpr, p.x * dpr, p.y * dpr)
+          ctx.drawImage(p.sprite, -half, -half)
         }
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
         ctx.globalAlpha = 1
       },
     })
