@@ -109,18 +109,42 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 
 ---
 
+## 5. UI polish pass (10 Oct, from claude-code-prompt.md)
+
+Done, in order, each checked headless at 390×844 and 360×740 (the Chrome
+extension still does not connect, so DevTools device mode + the Performance
+panel on a real phone remain for you — see "Blocked on you").
+
+- [x] **Global**: sparkle layer uses pre-rendered sprites (no per-particle shadowBlur), stops drawing when nothing is alive, half the particles on ≤4 cores / <400px; canvas scenes can report idle; Lenis `syncTouch: false` (native touch); arrival glow and music glow are opacity, not filter / box-shadow animations. Hard-coded rgba() still exists in older seams/shadows — new code uses tokens.
+- [x] **Gate**: release on pointerdown, never visibility:hidden while fading in, touch-action manipulation; doors start while the heart falls; hero plays in behind them. Measured: hero starts 0.5s, names fully visible **2.2s** after the tap (was ~5s).
+- [x] **Hero**: date line `13 · 11 · 2026` under the names; scroll hint is an in-flow bouncing chevron that fades on first scroll — 32px clear of the NIKAH & WALIMA line at both sizes.
+- [x] **Quran verse**: word reveal plays once over ~2.2s on entering view (Arabic, then the translation a beat later) — always finishes.
+- [x] **Heart snake**: freezes with the page (one frame per scroll event; 0 draws during a 1s pause); one sweep each way (bride-left → groom-right down, groom-left → bride-right up); one stream at a time (in within 10px, out within 20px); head 30px → tail 14px; SPEED 1.6; no per-frame allocations/gBCR.
+- [x] **Scratch card**: clears at 60% with one gold burst; the extra confetti canvas there is gone.
+- [x] **Envelope → letter** (the main change): letter rises out, envelope stays as a pocket 40px below it; cream paper, deckle edge, gold border, "We would be honoured by your presence at", two venue cards with icon / label / name / address / "Friday, 13 Nov · After Asr" / "Saturday, 14 Nov · 7 – 10 PM" / **Get directions** (Google Maps directions). *Copy address removed at your request.* Reduced motion shows it open. The box grows once at open with a matching scroll jump so the envelope never moves on screen.
+- [x] **Journey line**: 220px, masjid "Nikah · Fri 13 Nov" → chandelier "Walima · Sat 14 Nov", dotted gold path drawn by a scrubbed dash mask. Dead space gone.
+- [x] **Progress thread**: 2px gradient fill, dots for Invite · Verse · Families · Date · Venue · Celebrations · RSVP that light as the thread reaches them, heart on the tip.
+- [x] **Celebrations**: Add-to-calendar gone everywhere, `lib/ics.ts` deleted; venue names 13px, times 18px; gold icons (masjid / doli / chandelier).
+- [x] **RSVP**: "Joyfully attending" / "Sadly can't make it" first, then name, family, − / + guests (1–10, attending only), dua; 16px inputs; button shrinks into a heart with a gold burst, then "JazakAllahu Khairan — we've saved your seat." or "We'll miss you — please keep us in your duas." Web3Forms payload now carries `attending` and `members`. *"Reply by" line removed at your request.*
+- [x] **Closing**: no 88svh minimum; 20px from the vine to the first line; lines in by ~2s.
+- [x] **Share on WhatsApp**: floating bottom-right (safe area), after the gate; message + the page's own URL.
+- [x] **Music**: top-right, off by default, HEAD-checks the file on mount and only creates the audio on the first tap. Still appears only once `public/audio/ambience.mp3` exists.
+- [x] `npm run build` clean; tsc + eslint clean; axe: 0 violations; CLS 0.0000 while scrolling.
+- [ ] **Performance on a phone** — headless Chrome has no GPU, so its 4× CPU numbers overstate the cost: p50 frame 16.8ms, p95 ~34ms, max 150ms, 0–1 long task (52ms), at 390 and 360. Please do the DevTools 4× check on a real device; the likely heavy spots are the hero's blurred bokeh orbs and the drop-shadowed sparkle stars.
+
 ## Blocked on you
 
 - [x] **Nikah time** — now "after **Asr** Namaz" (was Zuhr), shown as words (EN + UR)
 - [x] **Rukhsati** — "after Maghrib Namaz", same day as the Nikah (`followedBy` on the Nikah in the config)
-- [ ] Confirm the clock times behind them: countdown + `.ics` assume Nikah **4:45 PM**, entry running to **7:30 PM** to cover the Rukhsati (Asr ≈ 4:25, Maghrib ≈ 6:00 in Mira Road mid-Nov) — set `time` / `endTime` / `countdownTarget` to the masjid's jamaat time if different
+- [ ] Confirm the clock time behind it: the countdown assumes Nikah **4:45 PM** (Asr ≈ 4:25 in Mira Road mid-Nov) — set `time` / `countdownTarget` to the masjid's jamaat time if different
+- [ ] **Walima is now Sat 14 Nov** (moved from the 15th) — confirm 7–10 PM still holds
 - [ ] Rukhsati: confirm it is on 13 Nov, and whether it has its own venue (e.g. from the bride's home) — none is shown for it now
 - [x] **Web3Forms access key** — in; the RSVP form is live
 - [ ] **Where RSVPs land:** Web3Forms sends to the email the KEY was created for — not to anything in our config (`receiverEmail` is a note only). To use another inbox, create a new access key for that address and swap it into `rsvp.formAccessKey`
 - [ ] In the Web3Forms dashboard, restrict the key to the final domain once it exists
-- [ ] RSVP deadline — moved to 5 Nov (was after the wedding); confirm
 - [x] Monogram — now `H & M` in the config
 - [x] Bride's parents' surname — Saliya → **Dhukka** (Fahad Dhukka & Memuna Fahad Dhukka)
 - [ ] Urdu proofread by a native speaker (all strings in `wedding.urdu`)
 - [ ] Final domain → `site.url` in the config; the OG image URL, canonical and `.ics` links all follow it
-- [ ] Ambient audio file → `public/audio/ambience.mp3` (optional; enables the toggle)
+- [ ] Music file → `public/audio/ambience.mp3` (optional; the top-right toggle appears once it exists)
+- [ ] **Something in your IDE keeps rewriting `Rsvp.tsx`** with `clsx(...)` wrappers (not a dependency) and an old form body — an open editor buffer auto-saving? Close that tab or reload it from disk, or it will clobber the committed version again
