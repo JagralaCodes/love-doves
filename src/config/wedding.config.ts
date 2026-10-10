@@ -16,7 +16,7 @@ export const wedding = {
     /** Full name, as it reads on the family card. */
     name: 'Huda',
     shortName: 'Huda',
-    parents: 'Fahad Saliya & Memuna Fahad Saliya',
+    parents: 'Fahad Dhukka & Memuna Fahad Dhukka',
   },
   groom: {
     name: 'Mohammed',

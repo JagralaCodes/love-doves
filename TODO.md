@@ -119,6 +119,7 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 - [ ] In the Web3Forms dashboard, restrict the key to the final domain once it exists
 - [ ] RSVP deadline — moved to 5 Nov (was after the wedding); confirm
 - [x] Monogram — now `H & M` in the config
+- [x] Bride's parents' surname — Saliya → **Dhukka** (Fahad Dhukka & Memuna Fahad Dhukka)
 - [ ] Urdu proofread by a native speaker (all strings in `wedding.urdu`)
 - [ ] Final domain → `site.url` in the config; the OG image URL, canonical and `.ics` links all follow it
 - [ ] Ambient audio file → `public/audio/ambience.mp3` (optional; enables the toggle)
