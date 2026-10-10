@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { sparkleBurst } from '../../lib/sparkleBus'
+import { maxDpr } from '../../lib/device'
 
 type Props = {
   /** The positioned box the canvas fills. Routes are drawn in its space. */
@@ -186,7 +187,7 @@ export function HeartSnake({ boxRef, fromRef, toRef, onArrive }: Props) {
     const ctx = canvas?.getContext('2d')
     if (!box || !from || !to || !canvas || !downPath || !upPath || !ctx) return
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr())
     const sprites = [...RAMP, GOLD].map((c) => sprite(c, dpr))
     const half = sprites[0].width / 2
 

@@ -173,13 +173,10 @@ export function Gate({ onOpening, onOpened }: Props) {
           // No CSS transition on transform: GSAP drives the lift and the
           // fall, and a transition would smear every frame of it.
           className="pointer-events-auto relative size-28 origin-center disabled:cursor-default"
-          style={{
-            filter: 'drop-shadow(0 6px 13px rgba(0,0,0,0.45))',
-            // No double-tap-to-zoom delay on the one control that matters.
-            touchAction: 'manipulation',
-          }}
+          // No double-tap-to-zoom delay on the one control that matters.
+          style={{ touchAction: 'manipulation' }}
         >
-          <HeartSeal initials={wedding.monogram} className="size-full" />
+          <HeartSeal initials={wedding.monogram} className="size-full" shadow />
         </button>
 
         <div ref={copyRef} className="mt-9 text-center">

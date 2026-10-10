@@ -48,7 +48,6 @@ export function Lantern({
         animation: reduced
           ? undefined
           : `lantern-sway ${swayDuration}s ease-in-out ${swayDelay}s infinite`,
-        willChange: reduced ? undefined : 'transform',
       }}
     >
       <svg viewBox={`0 0 120 ${H}`} style={{ width: '100%', height: 'auto' }}>

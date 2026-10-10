@@ -1,4 +1,5 @@
 import { gsap } from './gsap'
+import { maxDpr as deviceMaxDpr } from './device'
 
 export type SceneCtx = {
   ctx: CanvasRenderingContext2D
@@ -23,7 +24,7 @@ export type Scene = {
 type Options = {
   /** Skip frames while the canvas is scrolled out of view. */
   pauseOffscreen?: boolean
-  /** Cap the device pixel ratio — 2 is plenty, 3 wastes fill rate. */
+  /** Cap the device pixel ratio — 2 is plenty (1.5 on a low-power phone). */
   maxDpr?: number
 }
 
@@ -41,7 +42,7 @@ export function mountCanvasScene(
   createScene: () => Scene,
   options: Options = {},
 ): () => void {
-  const { pauseOffscreen = true, maxDpr = 2 } = options
+  const { pauseOffscreen = true, maxDpr = deviceMaxDpr() } = options
   const ctx = canvas.getContext('2d', { alpha: true })
   if (!ctx) return () => {}
 

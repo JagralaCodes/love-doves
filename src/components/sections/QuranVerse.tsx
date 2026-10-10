@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '../../lib/gsap'
+import { prepareDraw, drawFromCentre } from '../../lib/draw'
 import { seam } from '../../lib/seam'
 import { useWordReveal } from '../../hooks/useWordReveal'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
@@ -52,22 +53,22 @@ export function QuranVerse() {
     const section = sectionRef.current
     if (!path || !section) return
 
+    const length = prepareDraw(path)
     if (reduced) {
-      gsap.set(path, { drawSVG: '100%' })
+      drawFromCentre(path, length, 1)
       return
     }
 
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        path,
-        { drawSVG: '50% 50%' },
-        {
-          drawSVG: '0% 100%',
-          duration: 1.6,
-          ease: 'power2.inOut',
-          scrollTrigger: { trigger: section, start: 'top 78%', once: true },
-        },
-      )
+      // Draws outwards from the apex, both ways at once.
+      const draw = { p: 0 }
+      gsap.to(draw, {
+        p: 1,
+        duration: 1.6,
+        ease: 'power2.inOut',
+        onUpdate: () => drawFromCentre(path, length, draw.p),
+        scrollTrigger: { trigger: section, start: 'top 78%', once: true },
+      })
       gsap.fromTo(
         '[data-jamb]',
         { scaleY: 0 },

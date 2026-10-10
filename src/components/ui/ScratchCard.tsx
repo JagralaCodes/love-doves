@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { sparkleBurst } from '../../lib/sparkleBus'
+import { maxDpr } from '../../lib/device'
 
 type Props = {
   /** What sits under the foil. */
@@ -22,7 +23,6 @@ type Props = {
   shape?: { d: string; width: number; height: number }
 }
 
-const MAX_DPR = 2
 /** How many pixels to step when sampling coverage — full reads are wasteful. */
 const SAMPLE_STEP = 8
 
@@ -248,7 +248,7 @@ export function ScratchCard({
     const resize = () => {
       const rect = canvas.getBoundingClientRect()
       if (!rect.width || !rect.height) return
-      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR)
+      const dpr = Math.min(window.devicePixelRatio || 1, maxDpr())
       sizeRef.current = { w: rect.width, h: rect.height, dpr }
       canvas.width = Math.round(rect.width * dpr)
       canvas.height = Math.round(rect.height * dpr)

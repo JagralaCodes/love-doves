@@ -36,12 +36,30 @@ export function particleScale(): number {
   return tier === 'low' ? 0 : tier === 'mid' ? 0.5 : 1
 }
 
+let low: boolean | null = null
+
 /**
- * The full-screen sparkle layer's own scale: half on four cores or fewer,
- * or on a narrow phone, and never zero — a tap must always glimmer.
+ * The one shared "low-power" flag: a phone-width screen, or four cores or
+ * fewer. Computed once. Everything decorative scales itself by it.
  */
-export function sparkleScale(): number {
-  if (typeof window === 'undefined') return 1
+export function lowPower(): boolean {
+  if (low !== null) return low
+  if (typeof window === 'undefined') return (low = false)
   const cores = navigator.hardwareConcurrency ?? 4
-  return cores <= 4 || window.innerWidth < 400 ? 0.5 : 1
+  return (low = window.innerWidth < 480 || cores <= 4)
+}
+
+/** Share of the decorative DOM particles (specks, stars, bokeh) to render. */
+export function decorScale(): number {
+  return lowPower() ? 0.4 : 1
+}
+
+/** The full-screen sparkle canvas's share — half in low-power mode, never zero. */
+export function sparkleScale(): number {
+  return lowPower() ? 0.5 : 1
+}
+
+/** Device pixel ratio cap for every canvas. */
+export function maxDpr(): number {
+  return lowPower() ? 1.5 : 2
 }

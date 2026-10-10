@@ -187,8 +187,10 @@
 }
 
 @utility foil-shimmer {
-  /* The slow shine sweep across gold lettering. */
-  animation: foil-sweep var(--dur-shine) var(--ease-in-out-slow) infinite;
+  /* The shine sweep across gold lettering. Once, not forever: it animates
+     background-position, which repaints the text every frame. Off-screen
+     sections are paused, so it plays the first time the text is seen. */
+  animation: foil-sweep var(--dur-shine) var(--ease-in-out-slow) 1;
 }
 
 @utility foil-text-bright {
@@ -249,9 +251,9 @@
 }
 
 @utility word-reveal {
-  /* Tunables the hook reads/overrides per instance. */
+  /* Tunables the hook reads/overrides per instance. No blur: a filter on
+     dozens of inline spans at once is the costliest thing a phone can paint. */
   --word-hidden-opacity: 0.16;
-  --word-blur: 5px;
   --word-rise: 0.16em;
 }
 
@@ -340,7 +342,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   KEYFRAMES — transform/opacity/background-position only
+   KEYFRAMES — transform/opacity only (foil-sweep: background-position, played once)
    ───────────────────────────────────────────────────────────── */
 
 /* One word of a scroll-scrubbed passage. The visible end state is
@@ -352,15 +354,12 @@
       (1 - var(--word-hidden-opacity, 0.16)) * var(--word-progress, 1)
   );
   transform: translateY(calc((1 - var(--word-progress, 1)) * var(--word-rise, 0.16em)));
-  filter: blur(calc((1 - var(--word-progress, 1)) * var(--word-blur, 5px)));
-  will-change: opacity, transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal-word {
     opacity: 1;
     transform: none;
-    filter: none;
   }
 }
 
@@ -490,7 +489,23 @@
   transform-box: fill-box;
   transform-origin: center;
   animation: heart-beat 2.6s var(--ease-in-out-slow) infinite;
-  will-change: transform;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   OFF SCREEN — nothing animates where nobody can see it
+   (useOffscreenSections sets the classes)
+   ───────────────────────────────────────────────────────────── */
+
+/* Off screen the animation is removed, not paused: a paused transform
+   animation still holds its compositor layer, and the layers are what make
+   a phone's browser stutter or drop the tab. Every CSS animation here is a
+   decorative loop (or the one-shot shimmer, which then plays on arrival),
+   so restarting from the first frame costs nothing. */
+.is-offscreen * {
+  animation-name: none !important;
+}
+html.is-hidden * {
+  animation-play-state: paused !important;
 }
 
 /* ─────────────────────────────────────────────────────────────

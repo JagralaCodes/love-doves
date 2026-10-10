@@ -1,6 +1,6 @@
 import { useId, useMemo } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import { particleScale } from '../../lib/device'
+import { decorScale, lowPower } from '../../lib/device'
 import { seeded } from '../../lib/seeded'
 
 type Props = {
@@ -14,17 +14,20 @@ type Props = {
 }
 
 const TONES = {
-  white: { fill: '#ffffff', glow: 'rgba(255,255,255,0.9)' },
-  gold: { fill: '#f5e1a4', glow: 'rgba(212,175,55,0.9)' },
-  rose: { fill: '#f9d9e1', glow: 'rgba(244,184,198,0.9)' },
+  white: { fill: '#ffffff', glow: '255,255,255' },
+  gold: { fill: '#f5e1a4', glow: '212,175,55' },
+  rose: { fill: '#f9d9e1', glow: '244,184,198' },
 } as const
 
 /**
  * Four-point star sparkles that pop in, twinkle and fade at random spots
- * across a section. Pure CSS animation on transform/opacity, so it costs
- * nothing per frame on the main thread.
+ * across a section. Pure CSS animation on transform/opacity.
  *
- * Decorative only — hidden from assistive tech.
+ * The glow is baked in — a soft radial gradient behind each star inside
+ * its own SVG — rather than a drop-shadow filter, which would have to be
+ * re-rasterised on every frame of the animation. On a phone the field is
+ * 40% as dense. Decorative only; none under reduced motion, where a star
+ * frozen at its first keyframe is invisible anyway.
  */
 export function SparkleField({
   count = 14,
@@ -33,11 +36,11 @@ export function SparkleField({
   className = '',
 }: Props) {
   const reduced = useReducedMotion()
-  const scale = particleScale()
-  const total = reduced ? 0 : Math.round(count * scale)
+  const total = reduced ? 0 : Math.min(lowPower() ? 5 : count, Math.round(count * decorScale()))
   const { fill, glow } = TONES[tone]
 
   const seed = useId()
+  const gid = `glow-${seed.replace(/:/g, '')}`
 
   const stars = useMemo(() => {
     const rnd = seeded(seed)
@@ -57,24 +60,33 @@ export function SparkleField({
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
     >
+      {/* One gradient, shared by every star in this field. */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <radialGradient id={gid}>
+            <stop offset="0" stopColor={`rgba(${glow},0.55)`} />
+            <stop offset="0.5" stopColor={`rgba(${glow},0.18)`} />
+            <stop offset="1" stopColor={`rgba(${glow},0)`} />
+          </radialGradient>
+        </defs>
+      </svg>
       {stars.map((s, i) => (
         <svg
           key={i}
-          viewBox="0 0 24 24"
+          viewBox="-8 -8 40 40"
           className="absolute"
           style={{
             left: s.left,
             top: s.top,
-            width: s.size,
-            height: s.size,
-            marginLeft: -s.size / 2,
-            marginTop: -s.size / 2,
+            width: s.size * 1.6,
+            height: s.size * 1.6,
+            marginLeft: -s.size * 0.8,
+            marginTop: -s.size * 0.8,
             opacity: 0,
-            filter: `drop-shadow(0 0 3px ${glow})`,
             animation: `sparkle-pop ${s.duration} var(--ease-in-out-slow) ${s.delay} infinite`,
-            willChange: 'transform, opacity',
           }}
         >
+          <circle cx="12" cy="12" r="19" fill={`url(#${gid})`} />
           {/* Classic 4-point sparkle: concave diamond. */}
           <path
             d="M12 0 C12.9 7.2 16.8 11.1 24 12 C16.8 12.9 12.9 16.8 12 24 C11.1 16.8 7.2 12.9 0 12 C7.2 11.1 11.1 7.2 12 0 Z"

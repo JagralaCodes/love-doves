@@ -12,7 +12,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/amiri-arabic-400-normal.woff2') format('woff2');
+  /* Subset to the bismillah, the ayah and the dua (32 KB, was 106). */
+  src: url('/fonts/amiri-subset.woff2') format('woff2');
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891,
     U+0898-08E1, U+08E3-08FF, U+FB50-FDFF, U+FE70-FEFF, U+102E0-102FB,
     U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EEBB, U+1EEF0-1EEF1;
@@ -25,7 +26,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/noto-nastaliq-urdu-arabic-400-normal.woff2') format('woff2');
+  /* Subset to the Urdu strings in the config (110 KB, was 156). */
+  src: url('/fonts/noto-nastaliq-subset.woff2') format('woff2');
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891,
     U+0898-08E1, U+08E3-08FF, U+FB50-FDFF, U+FE70-FEFF, U+102E0-102FB,
     U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EEBB, U+1EEF0-1EEF1;

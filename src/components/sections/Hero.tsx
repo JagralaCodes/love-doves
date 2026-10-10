@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { gsap, SplitText } from '../../lib/gsap'
+import { gsap } from '../../lib/gsap'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useFitText } from '../../hooks/useFitText'
 import { useParallax } from '../../hooks/useParallax'
@@ -35,7 +35,44 @@ type Props = {
 }
 
 /**
- * Makes split letters legible again after SplitText.
+ * Wraps every letter of the text inside `el` in its own span, so the
+ * letters can be animated one by one, and gives back a way to put the
+ * original text nodes back. Whitespace keeps its width. The h1 carries the
+ * accessible name, so the letter spans are hidden from assistive tech.
+ */
+function splitChars(el: HTMLElement) {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+  const nodes: Text[] = []
+  while (walker.nextNode()) {
+    const n = walker.currentNode as Text
+    if (n.nodeValue && n.nodeValue.trim()) nodes.push(n)
+  }
+  const chars: HTMLElement[] = []
+  const restores: { original: Text; wrapper: HTMLElement }[] = []
+  for (const node of nodes) {
+    const wrapper = document.createElement('span')
+    wrapper.setAttribute('aria-hidden', 'true')
+    for (const ch of node.nodeValue ?? '') {
+      const span = document.createElement('span')
+      span.textContent = ch
+      span.style.display = 'inline-block'
+      span.style.whiteSpace = 'pre'
+      wrapper.appendChild(span)
+      chars.push(span)
+    }
+    node.parentNode?.replaceChild(wrapper, node)
+    restores.push({ original: node, wrapper })
+  }
+  return {
+    chars,
+    revert() {
+      for (const { original, wrapper } of restores) wrapper.parentNode?.replaceChild(original, wrapper)
+    },
+  }
+}
+
+/**
+ * Makes split letters legible again after splitting.
  *
  * The names were losing their descenders: "Zauja" rendered as "Zauа" and
  * "Zaujj" as "Zauu". It was never clipping or a missing glyph — it was
@@ -108,7 +145,7 @@ export function Hero({ active }: Props) {
     const root = rootRef.current
     if (!root) return
 
-    const splits: SplitText[] = []
+    const splits: ReturnType<typeof splitChars>[] = []
 
     const ctx = gsap.context(() => {
       if (reduced) {
@@ -141,12 +178,9 @@ export function Hero({ active }: Props) {
 
       // Names, letter by letter.
       gsap.utils.toArray<HTMLElement>('[data-name]').forEach((el, i) => {
-        // aria: 'hidden' — the <h1> already carries "Huda and Mohammed" as
-        // its label. The default would put an aria-label on this <span>,
-        // which is not allowed on an element with no role.
-        const split = new SplitText(el, { type: 'chars', aria: 'hidden' })
+        const split = splitChars(el)
         splits.push(split)
-        solidifyChars(split.chars as HTMLElement[], 'var(--color-wine)')
+        solidifyChars(split.chars, 'var(--color-wine)')
         tl.fromTo(
           split.chars,
           { autoAlpha: 0, yPercent: 40, rotate: 3 },

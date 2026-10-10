@@ -6,6 +6,8 @@ type Props = {
   className?: string
   /** 0 is the front heart; higher sits further back in the stack. */
   depth?: number
+  /** A soft shadow painted under the wax — part of the picture, not a filter. */
+  shadow?: boolean
 }
 
 const HEART_PATH =
@@ -22,7 +24,7 @@ const HEART_PATH =
  * loose has to carry its own initials down with it, and the heart behind
  * has to be already stamped when it comes into view.
  */
-export function HeartSeal({ initials, className = '', depth = 0 }: Props) {
+export function HeartSeal({ initials, className = '', depth = 0, shadow = false }: Props) {
   // Depth can arrive negative once hearts ahead of this one have gone.
   const d = Math.max(0, depth)
   const front = d === 0
@@ -34,6 +36,7 @@ export function HeartSeal({ initials, className = '', depth = 0 }: Props) {
     <svg
       viewBox="0 0 100 100"
       className={className}
+      style={{ overflow: 'visible' }}
       role="presentation"
       aria-hidden="true"
     >
@@ -43,8 +46,16 @@ export function HeartSeal({ initials, className = '', depth = 0 }: Props) {
           <stop offset="55%" stopColor={front ? '#9b2c4a' : '#7d2039'} />
           <stop offset="100%" stopColor={front ? '#5e1227' : '#470d1d'} />
         </radialGradient>
+        {shadow && (
+          <radialGradient id={`${gid}s`}>
+            <stop offset="0%" stopColor="rgba(0,0,0,0.42)" />
+            <stop offset="60%" stopColor="rgba(0,0,0,0.16)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+          </radialGradient>
+        )}
       </defs>
 
+      {shadow && <ellipse cx="50" cy="58" rx="46" ry="38" fill={`url(#${gid}s)`} />}
       <path d={HEART_PATH} fill={`url(#${gid})`} />
       {/* pressed rim */}
       <path

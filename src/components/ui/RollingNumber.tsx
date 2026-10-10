@@ -45,7 +45,6 @@ export function RollingNumber({ value, className = '' }: Props) {
               className="absolute top-0 left-0 flex flex-col"
               animate={{ y: `-${d * 10}%` }}
               transition={reduced ? { duration: 0 } : ROLL}
-              style={{ willChange: 'transform' }}
             >
               {DIGITS.map((n) => (
                 <span key={n} style={{ height: '1em', lineHeight: 1 }}>

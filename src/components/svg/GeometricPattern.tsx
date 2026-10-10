@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import { useParallax } from '../../hooks/useParallax'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
+import { lowPower } from '../../lib/device'
 
 type Props = {
   /** Tile size in px. Smaller reads as texture, larger as ornament. */
@@ -70,11 +71,12 @@ export function GeometricPattern({
             width: '130%',
             height: `calc(130% + ${parallax * 2}px)`,
             opacity,
+            // The drift is one big layer per section; a phone keeps the
+            // lattice still and spends that on the content instead.
             animation:
-              drift && !reduced
+              drift && !reduced && !lowPower()
                 ? 'pattern-drift var(--dur-drift) linear infinite'
                 : undefined,
-            willChange: drift && !reduced ? 'transform' : undefined,
           }}
         >
           <defs>

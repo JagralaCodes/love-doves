@@ -108,7 +108,8 @@ export function ScrollThread({ visible }: Props) {
       aria-hidden="true"
       className="pointer-events-none fixed inset-y-0 left-1/2 z-[60] w-full max-w-[var(--app-max)] -translate-x-1/2"
     >
-      <div ref={rootRef} className="invisible absolute top-[16svh] bottom-[16svh] left-[10px] w-0.5 opacity-0">
+      {/* 6px in: clear of every section's 22px gutter, even at 360. */}
+      <div ref={rootRef} className="invisible absolute top-[16svh] bottom-[16svh] left-[6px] w-0.5 opacity-0">
         <div ref={trackRef} className="absolute inset-0 rounded-full bg-gold/15" />
         <div
           ref={fillRef}
@@ -136,11 +137,14 @@ export function ScrollThread({ visible }: Props) {
         ))}
 
         <div ref={beadRef} className="absolute top-0 left-1/2">
-          <span
-            className="block -translate-x-1/2 -translate-y-1/2"
-            style={{ filter: 'drop-shadow(0 0 4px rgba(245,225,164,0.9))' }}
-          >
-            <Heart className="w-2.5" />
+          <span className="relative block -translate-x-1/2 -translate-y-1/2">
+            {/* A soft gold halo behind the heart: a gradient, not a filter. */}
+            <span
+              aria-hidden="true"
+              className="absolute -inset-1.5 rounded-full"
+              style={{ background: 'radial-gradient(circle, rgba(245,225,164,0.9) 0%, rgba(245,225,164,0) 70%)' }}
+            />
+            <Heart className="relative w-2.5" />
           </span>
         </div>
       </div>

@@ -4,7 +4,7 @@ import type { Scene } from '../../lib/canvasScene'
 import { onSparkleBurst } from '../../lib/sparkleBus'
 import type { BurstOptions } from '../../lib/sparkleBus'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import { canRunPointerTrail, sparkleScale } from '../../lib/device'
+import { canRunPointerTrail, maxDpr, sparkleScale } from '../../lib/device'
 
 type Shape = 'star' | 'dot' | 'heart'
 
@@ -88,7 +88,7 @@ export function SparkleLayer() {
 
     const scale = sparkleScale()
     const trailEnabled = canRunPointerTrail()
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr())
 
     // ── sprites, made on demand and kept ──────────────────────────────
     const sprites = new Map<string, HTMLCanvasElement>()
@@ -125,9 +125,19 @@ export function SparkleLayer() {
     /** The pointer has moved since the trail last caught up with it. */
     let pointerMoved = false
 
+    // A fixed full-screen canvas is a full-screen compositor layer. It is
+    // only on screen while something is alive; the rest of the time it is
+    // hidden, which costs nothing.
+    let shown = false
+    const show = (on: boolean) => {
+      if (on === shown) return
+      shown = on
+      canvas.style.visibility = on ? '' : 'hidden'
+    }
     const add = (p: Particle) => {
       if (particles.length >= MAX_PARTICLES) particles.shift()
       particles.push(p)
+      show(true)
     }
 
     const spawnTrail = (x: number, y: number) => {
@@ -242,7 +252,11 @@ export function SparkleLayer() {
         /* full-viewport; nothing to recompute */
       },
 
-      idle: () => particles.length === 0 && !(trailEnabled && pointerMoved),
+      idle: () => {
+        const idle = particles.length === 0 && !(trailEnabled && pointerMoved)
+        if (idle) show(false)
+        return idle
+      },
 
       draw({ ctx, dt }) {
         // --- emit trail by distance travelled, not per frame ---
@@ -322,6 +336,7 @@ export function SparkleLayer() {
       ref={ref}
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-[70] size-full"
+      style={{ visibility: 'hidden' }}
     />
   )
 }

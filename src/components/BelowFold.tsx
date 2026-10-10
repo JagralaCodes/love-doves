@@ -1,10 +1,20 @@
 import { MotionConfig } from 'motion/react'
+import { useLang } from '../hooks/useLang'
+
+import { AudioToggle } from './ui/AudioToggle'
 
 import { SaveTheDate } from './sections/SaveTheDate'
 import { Venue } from './sections/Venue'
 import { Rsvp } from './sections/Rsvp'
 import { Closing } from './sections/Closing'
 import { Countdown } from './sections/Countdown'
+
+import { wedding } from '../config/wedding.config'
+
+type Props = {
+  /** True once the gate has opened. */
+  opened: boolean
+}
 
 
 /**
@@ -17,11 +27,19 @@ import { Countdown } from './sections/Countdown'
  * the app mounts — while the guest is still on the gate — so in practice
  * it is in place long before anyone scrolls to it.
  */
-export default function BelowFold() {
+export default function BelowFold({ opened }: Props) {
+  const lang = useLang()
+
   return (
     // Safety net: any Motion animation that forgets to check the preference
     // still drops its transforms for viewers who asked for reduced motion.
     <MotionConfig reducedMotion="user">
+      <AudioToggle
+        src={wedding.audio.src}
+        label={lang === 'ur' ? wedding.urdu.audioLabel : wedding.audio.label}
+        visible={opened}
+      />
+
       <SaveTheDate />
 
       <Venue />

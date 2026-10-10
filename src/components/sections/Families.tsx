@@ -38,7 +38,6 @@ function CardFrame({ w, h }: { w: number; h: number }) {
       height={h}
       viewBox={`0 0 ${w} ${h}`}
       className="absolute inset-0 overflow-visible"
-      style={{ filter: 'drop-shadow(0 8px 18px rgba(155,44,74,0.12))' }}
     >
       <defs>
         <linearGradient id={`${id}face`} x1="0" y1="0" x2="0" y2="1">
@@ -84,6 +83,13 @@ function FamilyCard({ cardRef, initial, name, relation, parents, side, rtl, lang
 
   return (
     <div ref={cardRef} data-family-card data-side={side} className="relative mx-auto w-[74%] max-w-[19rem]">
+      {/* The soft shadow under the card: a rounded box behind the arch, so
+          no SVG filter has to be rasterised while the card animates in. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-2 top-[22%] bottom-0 rounded-[1rem]"
+        style={{ boxShadow: '0 10px 22px -8px rgba(155,44,74,0.16)' }}
+      />
       {size && <CardFrame w={size.w} h={size.h} />}
 
       {/* Padding in % is of the card's width, so the star always sits

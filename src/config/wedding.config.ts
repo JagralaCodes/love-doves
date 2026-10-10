@@ -222,6 +222,7 @@ export const wedding = {
     rsvpThanksNo: 'آپ کی کمی محسوس ہوگی — ہمیں اپنی دعاؤں میں یاد رکھیں',
     rsvpAlready: 'جزاک اللہ خیراً — آپ کا جواب ہمیں پہلے ہی مل چکا ہے 💕',
     rsvpUpdate: 'جواب بدلیں',
+    audioLabel: 'ہلکی پس منظر کی آواز',
     rsvpError: 'جواب نہیں پہنچ سکا۔ دوبارہ کوشش کریں، یا ہمیں براہِ راست پیغام بھیجیں۔',
     rsvpDisabled: 'جوابات جلد کھلیں گے',
     required: 'لازمی',
@@ -260,6 +261,11 @@ export const wedding = {
       'With the blessings of Allah, we invite you to share in our Nikah and Walima.',
   },
 
+  /** A soft instrumental ambience, off until the guest taps the lantern. */
+  audio: {
+    src: '/audio/ambience.mp3',
+    label: 'Soft ambience',
+  },
 } as const
 
 export type Wedding = typeof wedding

@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react'
 import { useSmoothScroll } from './hooks/useSmoothScroll'
 import { useScrollLock } from './hooks/useScrollLock'
 import { useScrollRefresh } from './hooks/useScrollRefresh'
+import { useOffscreenSections } from './hooks/useOffscreenSections'
 
 import { SvgDefs } from './components/svg/SvgDefs'
 
@@ -27,6 +28,8 @@ export default function App() {
   // Re-measure scroll triggers when the page grows — including when the
   // lazy sections arrive.
   useScrollRefresh()
+  // CSS animations pause in sections nobody can see, and in a hidden tab.
+  useOffscreenSections()
 
   return (
     <>
@@ -46,7 +49,7 @@ export default function App() {
         {/* Holds a screen of space while the chunk lands, so the page never
             ends abruptly under a fast scroller. */}
         <Suspense fallback={<section className="min-h-svh bg-pearl-white" aria-busy="true" />}>
-          <BelowFold />
+          <BelowFold opened={opened} />
         </Suspense>
       </main>
     </>

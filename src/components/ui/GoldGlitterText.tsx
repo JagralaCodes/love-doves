@@ -1,7 +1,7 @@
 import { useId, useMemo } from 'react'
 import type { ElementType, ReactNode } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import { particleScale } from '../../lib/device'
+import { decorScale, lowPower } from '../../lib/device'
 import { seeded } from '../../lib/seeded'
 
 type Props = {
@@ -55,8 +55,8 @@ export function GoldGlitterText({
   dir,
 }: Props) {
   const reduced = useReducedMotion()
-  const scale = particleScale()
-  const speckCount = reduced ? 0 : Math.round(specks * (scale || 0.4))
+  // 40% on a phone, and never more than a handful: each speck is a layer.
+  const speckCount = reduced ? 0 : Math.min(lowPower() ? 5 : specks, Math.round(specks * decorScale()))
 
   // Positions are random per mount but stable across re-renders, so the
   // specks do not jump around while the text animates.
@@ -109,7 +109,6 @@ export function GoldGlitterText({
                 height: s.size,
                 boxShadow: '0 0 4px rgba(245,225,164,0.95), 0 0 9px rgba(212,175,55,0.65)',
                 animation: `speck-twinkle ${s.duration} var(--ease-in-out-slow) ${s.delay} infinite`,
-                willChange: 'transform, opacity',
               }}
             />
           ))}

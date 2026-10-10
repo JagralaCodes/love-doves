@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap, ScrollTrigger } from '../lib/gsap'
 import { prefersReducedMotion } from '../lib/motionPrefs'
-import { deviceTier } from '../lib/device'
 import { wordProgressAt } from '../lib/wordProgress'
 
 type Options = {
@@ -9,8 +8,6 @@ type Options = {
   overlap?: number
   start?: string
   end?: string
-  /** Soften un-revealed words with a blur. High-tier devices only. */
-  blur?: boolean
   disabled?: boolean
   /**
    * 'scroll' scrubs the reveal to the scroll position, so it sits wherever
@@ -44,7 +41,6 @@ export function useWordReveal<T extends HTMLElement = HTMLDivElement>(
     overlap = 0.25,
     start = 'top 85%',
     end = 'bottom 60%',
-    blur,
     disabled,
     mode = 'scroll',
     duration = 2.2,
@@ -60,11 +56,6 @@ export function useWordReveal<T extends HTMLElement = HTMLDivElement>(
       el.style.setProperty('--word-progress', '1')
       return
     }
-
-    // Blur is a filter, not a compositor-friendly property, and this runs on
-    // dozens of inline spans at once — so only where there is headroom.
-    const useBlur = blur ?? deviceTier() === 'high'
-    if (!useBlur) el.style.setProperty('--word-blur', '0px')
 
     // ── split ──────────────────────────────────────────────────────────
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
@@ -164,7 +155,7 @@ export function useWordReveal<T extends HTMLElement = HTMLDivElement>(
         }
       }
     }
-  }, [overlap, start, end, blur, disabled, mode, duration, delay])
+  }, [overlap, start, end, disabled, mode, duration, delay])
 
   return ref
 }

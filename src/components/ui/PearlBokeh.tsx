@@ -1,7 +1,7 @@
 import { useId, useMemo } from 'react'
 import { useParallax } from '../../hooks/useParallax'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import { deviceTier } from '../../lib/device'
+import { decorScale, lowPower } from '../../lib/device'
 import { seeded } from '../../lib/seeded'
 
 type Props = {
@@ -18,35 +18,25 @@ type Props = {
 }
 
 const TINTS = {
-  light: [
-    'rgba(244,184,198,0.26)',
-    'rgba(252,228,234,0.40)',
-    'rgba(248,210,220,0.30)',
-    'rgba(253,241,244,0.50)',
-    'rgba(244,184,198,0.20)',
-  ],
-  dark: [
-    'rgba(255,255,255,0.16)',
-    'rgba(252,228,234,0.14)',
-    'rgba(244,184,198,0.18)',
-    'rgba(255,255,255,0.10)',
-    'rgba(248,210,220,0.15)',
-  ],
+  light: ['244,184,198', '252,228,234', '248,210,220', '253,241,244', '244,184,198'],
+  dark: ['255,255,255', '252,228,234', '244,184,198', '255,255,255', '248,210,220'],
 } as const
+const ALPHA = { light: 0.3, dark: 0.15 } as const
 
 /**
- * Soft blurred white and pink circles drifting slowly behind the hero and
- * closing sections. Big, few, and heavily blurred — depth without noise.
+ * Soft white and pink circles drifting slowly behind the hero and closing
+ * sections. Big, few, and soft — depth without noise.
  *
- * Blur is expensive to animate, so each orb is blurred once and then only
- * its transform changes, which stays on the compositor.
+ * The softness is in the gradient itself (a long falloff to transparent),
+ * not a blur filter: a blurred element that also moves has to be
+ * re-blurred every frame, and these are the largest things on the page.
+ * Transform only once painted. Still under reduced motion; 40% as many on
+ * a phone.
  */
 export function PearlBokeh({ count = 7, className = '', tone = 'light', parallax = 80 }: Props) {
   const tints = TINTS[tone]
   const reduced = useReducedMotion()
-  const tier = deviceTier()
-  // Blur has a real fill-rate cost; keep it modest on weaker phones.
-  const total = reduced ? 0 : tier === 'low' ? 0 : tier === 'mid' ? Math.min(4, count) : count
+  const total = Math.min(lowPower() ? 3 : count, Math.round(count * decorScale()))
 
   const seed = useId()
   const layerRef = useParallax({ travel: parallax })
@@ -58,7 +48,6 @@ export function PearlBokeh({ count = 7, className = '', tone = 'light', parallax
       top: `${rnd() * 100}%`,
       size: rnd() * 190 + 90,
       tint: tints[i % tints.length],
-      blur: rnd() * 22 + 26,
       duration: `${26 + rnd() * 26}s`,
       delay: `${-rnd() * 30}s`,
     }))
@@ -83,10 +72,8 @@ export function PearlBokeh({ count = 7, className = '', tone = 'light', parallax
               height: o.size,
               marginLeft: -o.size / 2,
               marginTop: -o.size / 2,
-              background: `radial-gradient(circle at 34% 32%, ${o.tint}, transparent 68%)`,
-              filter: `blur(${o.blur}px)`,
-              animation: `bokeh-drift ${o.duration} ease-in-out ${o.delay} infinite`,
-              willChange: 'transform',
+              background: `radial-gradient(circle at 40% 38%, rgba(${o.tint},${ALPHA[tone]}) 0%, rgba(${o.tint},${ALPHA[tone] * 0.55}) 28%, rgba(${o.tint},${ALPHA[tone] * 0.18}) 52%, rgba(${o.tint},0) 70%)`,
+              animation: reduced ? undefined : `bokeh-drift ${o.duration} ease-in-out ${o.delay} infinite`,
             }}
           />
         ))}
