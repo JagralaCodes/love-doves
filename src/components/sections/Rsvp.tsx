@@ -101,24 +101,23 @@ export function Rsvp() {
     setStatus('sending')
     try {
       const who = `${name.trim()} ${family.trim()}`
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: wedding.rsvp.formAccessKey,
-          subject: `RSVP: ${who} - ${guests} guests`,
-          from_name: who,
-          // Copies to the other inboxes, on top of the key's own.
-          ccemail: wedding.rsvp.ccEmails.join(', '),
-          name: name.trim(),
-          family: family.trim(),
-          members: guests,
-          message: dua.trim(),
-          // The hidden honeypot: people never see it, bots tick it, and
-          // Web3Forms drops any submission where it is set.
-          botcheck: Boolean(formRef.current?.querySelector<HTMLInputElement>('[name="botcheck"]')?.checked),
-        }),
-      })
+      // Multipart, not JSON: a JSON body needs a CORS preflight, and
+      // Web3Forms answers that OPTIONS request with 403. A plain form post
+      // is a "simple" request — no preflight — and is what they document.
+      const body = new FormData()
+      body.set('access_key', wedding.rsvp.formAccessKey)
+      body.set('subject', `RSVP: ${who} - ${guests} guests`)
+      body.set('from_name', who)
+      // Copies to the other inboxes, on top of the key's own.
+      body.set('ccemail', wedding.rsvp.ccEmails.join(', '))
+      body.set('name', name.trim())
+      body.set('family', family.trim())
+      body.set('members', String(guests))
+      body.set('message', dua.trim())
+      // The hidden honeypot: people never see it, bots tick it, and
+      // Web3Forms drops any submission where it is set.
+      if (formRef.current?.querySelector<HTMLInputElement>('[name="botcheck"]')?.checked) body.set('botcheck', 'on')
+      const res = await fetch(ENDPOINT, { method: 'POST', headers: { Accept: 'application/json' }, body })
       const json = (await res.json()) as { success?: boolean }
       if (!res.ok || !json.success) throw new Error('rejected')
       saveReplied()
