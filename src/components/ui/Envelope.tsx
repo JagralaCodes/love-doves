@@ -19,13 +19,15 @@ type Props = {
 
 /* Everything is laid out for a 375px column and scaled by k = width/375. */
 const BASE = 375
-const STAGE_H = 660
-const ENV = { w: 311, h: 206, top: 238 }
+/* Everything sits 70px higher than the reference, so the reserved room for
+   the top panel to unfold into does not read as a gap under the heading. */
+const STAGE_H = 592
+const ENV = { w: 311, h: 206, top: 168 }
 const FLAP_H = 124
 /** The folded stack is the middle panel's height; top is smaller, bottom larger. */
-const LETTER = { w: 286, top: 236, panels: [150, 190, 230] as [number, number, number] }
-const SEAL = { w: 62, h: 58, y: 352 }
-const HINT_TOP = 455
+const LETTER = { w: 286, top: 166, panels: [150, 190, 230] as [number, number, number] }
+const SEAL = { w: 62, h: 58, y: 282 }
+const HINT_TOP = 385
 const HEARTS = 10
 /** Release further than this from where the drag began, and it opens. */
 const RELEASE = 50
@@ -374,7 +376,7 @@ export function Envelope({ initials, prompt, openLabel, lang, dir }: Props) {
           )}
 
           {/* Hearts that spray from the mouth as the letter comes out. */}
-          <div ref={heartsRef} className="pointer-events-none absolute" style={{ left: width / 2 - 6.5 * k, top: 250 * k, zIndex: 7 }} aria-hidden="true">
+          <div ref={heartsRef} className="pointer-events-none absolute" style={{ left: width / 2 - 6.5 * k, top: 180 * k, zIndex: 7 }} aria-hidden="true">
             {HEART_PATHS.map((_, i) => (
               <svg key={i} viewBox="-6 -6 12 12" className="absolute top-0 left-0" style={{ width: 13 * k, height: 13 * k, opacity: 0 }}>
                 <path
