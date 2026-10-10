@@ -34,7 +34,8 @@ Done headless (see above). What is left open needs a real phone in hand:
 touch feel, pacing, and the parts gated on the Web3Forms key.
 
 **Gate → Hero**
-- [x] Four hearts stacked concentric, no offset; monogram on every heart, stays on a falling one
+- [x] ~~Four hearts stacked~~ → **one heart** now; tap it and it falls, carrying its monogram; heart-counter dots removed
+- [x] Door frame's top edge moved down a step (1.75rem) below the springline, crossing behind the heart's tip
 - [x] Doors swing, gate fades, hero plays in — no oval flash, no finished-page flash, no stale scroll
 - [x] "Huda" / "Mohammed" fully legible in script; Bismillah tails not clipped; crescent + star correct
 

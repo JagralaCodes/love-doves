@@ -12,32 +12,29 @@ type Props = {
   onOpened: () => void
 }
 
-const HEART_COUNT = 4
-
 /**
- * The opening gate: carved doors closed over the invitation, held by a
- * stack of four wax hearts.
+ * The opening gate: carved doors closed over the invitation, held shut by
+ * a single wax heart.
  *
- * The hearts sit concentrically, largest at the front, each one behind a
- * step smaller so it is hidden until its turn. Each tap releases the front
- * heart, which falls away under gravity with a little spin and a sideways
- * kick, carrying its own stamped monogram with it. When the last one goes,
- * the doors swing open and the gate fades off the invitation.
+ * Tapping the heart releases it: it lifts for a beat, then falls away
+ * under gravity with a little spin and a sideways kick, carrying its
+ * stamped monogram with it. Then the doors swing open and the gate fades
+ * off the invitation.
  *
- * There is no separate button — the hearts are the control. They are real
- * <button>s, so the whole sequence works from the keyboard too.
+ * There is no separate button — the heart is the control. It is a real
+ * <button>, so the whole sequence works from the keyboard too.
  */
 export function Gate({ onOpened }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
   const leftRef = useRef<HTMLDivElement>(null)
   const rightRef = useRef<HTMLDivElement>(null)
-  const stackRef = useRef<HTMLDivElement>(null)
+  const heartRef = useRef<HTMLButtonElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
 
-  /** Refs, not state: taps can land faster than React re-renders. */
-  const droppedRef = useRef(0)
+  /** A ref, not state: a second tap can land before React re-renders. */
+  const releasedRef = useRef(false)
   const openingRef = useRef(false)
-  const [dropped, setDropped] = useState(0)
+  const [released, setReleased] = useState(false)
 
   const reduced = useReducedMotion()
   const lang = useLang()
@@ -68,83 +65,57 @@ export function Gate({ onOpened }: Props) {
       .to(root, { autoAlpha: 0, duration: 0.6, ease: 'power2.inOut' }, 'swing+=0.95')
   }, [reduced, onOpened])
 
-  const dropHeart = useCallback(() => {
-    const index = droppedRef.current
-    if (index >= HEART_COUNT || openingRef.current) return
-    droppedRef.current = index + 1
-    setDropped(index + 1)
+  const releaseHeart = useCallback(() => {
+    if (releasedRef.current || openingRef.current) return
+    releasedRef.current = true
+    setReleased(true)
 
-    const stack = stackRef.current
-    const heart = stack?.querySelector<HTMLElement>(`[data-heart="${index}"]`)
-    const last = index + 1 >= HEART_COUNT
-
+    const heart = heartRef.current
     if (!heart || reduced) {
       if (heart) gsap.set(heart, { autoAlpha: 0 })
-      if (last) openDoors()
+      openDoors()
       return
     }
 
     const rect = heart.getBoundingClientRect()
     sparkleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, {
-      count: 18,
+      count: 24,
       tone: 'rose',
-      power: 150,
+      power: 170,
     })
 
-    // Alternate which way each heart tips, so the pile does not fall as one.
-    const dir = index % 2 === 0 ? 1 : -1
-    const fallDistance = window.innerHeight * 0.8
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        if (last) openDoors()
-      },
-    })
+    const tl = gsap.timeline({ onComplete: openDoors })
 
     // A beat of release before gravity takes it...
     tl.to(heart, {
       scale: 1.07,
       yPercent: -12,
-      rotate: dir * -5,
+      rotate: -5,
       duration: 0.16,
       ease: 'power2.out',
     })
       // ...then it drops, accelerating, tumbling and drifting aside.
       .to(heart, {
-        y: fallDistance,
-        x: dir * gsap.utils.random(26, 54),
-        rotate: dir * gsap.utils.random(38, 70),
+        y: window.innerHeight * 0.8,
+        x: gsap.utils.random(26, 54),
+        rotate: gsap.utils.random(38, 70),
         scale: 0.86,
         duration: 0.95,
         ease: 'power2.in',
       })
       .to(heart, { autoAlpha: 0, duration: 0.35, ease: 'power1.in' }, '-=0.35')
-
-    // The heart now in front lifts as the weight comes off it.
-    const next = stack?.querySelector<HTMLElement>(`[data-heart="${index + 1}"]`)
-    if (next) {
-      // It grows to full size as it becomes the front of the stack.
-      gsap.to(next, {
-        scale: 1,
-        duration: 0.7,
-        ease: 'expo.out',
-        delay: 0.1,
-      })
-    }
   }, [reduced, openDoors])
 
-  // Settle the stack in once the gate appears.
+  // Settle the heart in once the gate appears.
   useEffect(() => {
-    const stack = stackRef.current
-    if (!stack) return
+    const heart = heartRef.current
+    if (!heart) return
     gsap.fromTo(
-      stack,
+      heart,
       { autoAlpha: 0, scale: 0.86 },
       { autoAlpha: 1, scale: 1, duration: reduced ? 0.3 : 1, ease: 'expo.out', delay: 0.15 },
     )
   }, [reduced])
-
-  const remaining = HEART_COUNT - dropped
 
   return (
     <div
@@ -179,59 +150,24 @@ export function Gate({ onOpened }: Props) {
         </div>
       </div>
 
-      {/* Hearts and invitation, sitting on the springline. */}
+      {/* Heart and invitation, sitting on the springline. */}
       <div
         className="pointer-events-none absolute inset-0 flex flex-col items-center px-8"
         style={{ paddingTop: 'calc(75% - 3.5rem)' }}
       >
-        <div ref={stackRef} className="relative size-28">
-          {Array.from({ length: HEART_COUNT }, (_, i) => {
-            // depth 0 is the front heart and the next one to be released.
-            const depth = HEART_COUNT - 1 - i
-            const isTop = depth === dropped
-            return (
-              <button
-                key={depth}
-                data-heart={depth}
-                type="button"
-                onClick={dropHeart}
-                disabled={!isTop}
-                aria-label={
-                  isTop
-                    ? `Release heart ${depth + 1} of ${HEART_COUNT} to open the invitation`
-                    : undefined
-                }
-                aria-hidden={isTop ? undefined : true}
-                tabIndex={isTop ? 0 : -1}
-                // No CSS transition on transform: GSAP drives the lift and
-                // the fall, and a transition would smear every frame of it.
-                className="absolute inset-0 origin-center disabled:cursor-default"
-                style={{
-                  // Dead centre, no offset: the stack reads as one heart
-                  // seen face-on. Each heart behind is a step smaller, so
-                  // it hides completely behind the one in front and the
-                  // pile is only revealed as the front hearts fall away.
-                  transform: `scale(${1 - depth * 0.085})`,
-                  zIndex: HEART_COUNT - depth,
-                  pointerEvents: isTop ? 'auto' : 'none',
-                  // One shadow for every heart. A depth-scaled shadow made
-                  // the hidden hearts cast a halo wider than the front one,
-                  // which showed as a smudge around an otherwise clean edge.
-                  filter: 'drop-shadow(0 6px 13px rgba(0,0,0,0.45))',
-                }}
-              >
-                <HeartSeal
-                  depth={depth - dropped}
-                  // Every heart is stamped, so the monogram is already
-                  // there on the one behind and a falling heart carries
-                  // its own away with it.
-                  initials={wedding.monogram}
-                  className="size-full"
-                />
-              </button>
-            )
-          })}
-        </div>
+        <button
+          ref={heartRef}
+          type="button"
+          onClick={releaseHeart}
+          disabled={released}
+          aria-label="Release the heart to open the invitation"
+          // No CSS transition on transform: GSAP drives the lift and the
+          // fall, and a transition would smear every frame of it.
+          className="pointer-events-auto relative size-28 origin-center disabled:cursor-default"
+          style={{ filter: 'drop-shadow(0 6px 13px rgba(0,0,0,0.45))' }}
+        >
+          <HeartSeal initials={wedding.monogram} className="size-full" />
+        </button>
 
         <div ref={copyRef} className="mt-9 text-center">
           <p
@@ -248,24 +184,8 @@ export function Gate({ onOpened }: Props) {
             <span className="h-px w-8 bg-gold/50" />
           </span>
 
-          {/* Hearts remaining, as dots rather than an instruction. */}
-          <div className="flex items-center justify-center gap-2" aria-hidden="true">
-            {Array.from({ length: HEART_COUNT }, (_, i) => (
-              <span
-                key={i}
-                className="size-1.5 rounded-full transition-all duration-500"
-                style={{
-                  background: i < remaining ? 'var(--color-gold)' : 'transparent',
-                  border: i < remaining ? 'none' : '1px solid rgba(212,175,55,0.35)',
-                }}
-              />
-            ))}
-          </div>
-
           <p className="sr-only" role="status" aria-live="polite">
-            {remaining > 0
-              ? `${remaining} of ${HEART_COUNT} hearts remaining`
-              : 'Opening the invitation'}
+            {released ? 'Opening the invitation' : ''}
           </p>
         </div>
       </div>

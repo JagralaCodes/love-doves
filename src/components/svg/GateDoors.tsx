@@ -64,18 +64,6 @@ function Leaf({ side, className = '' }: LeafProps) {
         >
           <rect x="0" y="0" width="100" height="200" fill="url(#doorFace)" />
 
-          {/* outer stile */}
-          <rect
-            x={isLeft ? 5 : 1}
-            y="0"
-            width="94"
-            height="196"
-            fill="none"
-            stroke="url(#goldFoil)"
-            strokeWidth="1.5"
-            vectorEffect="non-scaling-stroke"
-          />
-
           {/* One carved panel low on each leaf, leaving the upper half
               clear for the seal and the invitation copy. */}
           <g>
@@ -99,6 +87,26 @@ function Leaf({ side, className = '' }: LeafProps) {
               />
             </g>
           </g>
+        </svg>
+
+        {/* Outer stile. Its own SVG so its top edge can sit a fixed step
+            below the springline, clear of the seal, whatever the height. */}
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 top-7 h-[calc(98%-1.75rem)] w-full overflow-visible"
+          aria-hidden="true"
+        >
+          <rect
+            x={isLeft ? 5 : 1}
+            y="0"
+            width="94"
+            height="100"
+            fill="none"
+            stroke="url(#goldFoil)"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+          />
         </svg>
 
         {/* ring pull, on the meeting edge */}
