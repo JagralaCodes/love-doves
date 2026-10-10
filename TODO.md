@@ -132,19 +132,29 @@ panel on a real phone remain for you — see "Blocked on you").
 - [x] `npm run build` clean; tsc + eslint clean; axe: 0 violations; CLS 0.0000 while scrolling.
 - [ ] **Performance on a phone** — headless Chrome has no GPU, so its 4× CPU numbers overstate the cost: p50 frame 16.8ms, p95 ~34ms, max 150ms, 0–1 long task (52ms), at 390 and 360. Please do the DevTools 4× check on a real device; the likely heavy spots are the hero's blurred bokeh orbs and the drop-shadowed sparkle stars.
 
+## 6. v3 pass (10 Oct, from claude-code-prompt-v3.md) — done
+
+- [x] Bugs: live domain in og/canonical/twitter, caching headers + 404s for missing files (vercel.json), noindex + robots.txt, WhatsApp share removed. Audio kept at your request: synthesised Hijaz pad, volume 0.12, off until the lantern is tapped.
+- [x] Performance: off-screen sections drop their CSS animations; one low-power flag (40% particles, DPR 1.5); no animated filter (122 → 8, all static); no permanent will-change (177 → 0; transient promotion only while a layer moves); shimmer plays once; sparkle canvas hidden while idle; SplitText + DrawSVG dropped; fonts subset (Amiri 106 → 32 KB, Noto 156 → 110 KB); first bundle React + gate only (120 → 66 KB Brotli); Lighthouse mobile 81 → 90.
+- [x] Envelope rebuilt to envelope-reference.html: seal on the flap tip, tri-fold letter, 2.5 s timeline, no layout shift, fits one screen, reduced-motion shows it open.
+- [x] Rail at 6px, journey labels unclipped at 360, Rukhsati venue line, one date source, RSVP remembers a reply, countdown handles the date passing.
+- [ ] Amiri is 32 KB against the ~25 KB target — the Quranic text needs its diacritics and contextual forms; nothing left to cut.
+- [ ] Measured headless (no GPU): production scroll under 4× CPU is p95 ~67 ms with ~40–65 long tasks — better than the previous build under identical conditions (p95 83 ms, ~135 long tasks) but not 60 fps there. Please confirm on a real phone with DevTools.
+- [ ] Layers: 58–89 in headless; the DevTools Layers panel on a device is the real check.
+
 ## Blocked on you
 
 - [x] **Nikah time** — now "after **Asr** Namaz" (was Zuhr), shown as words (EN + UR)
 - [x] **Rukhsati** — "after Maghrib Namaz", same day as the Nikah (`followedBy` on the Nikah in the config)
 - [ ] Confirm the clock time behind it: the countdown assumes Nikah **4:45 PM** (Asr ≈ 4:25 in Mira Road mid-Nov) — set `time` / `countdownTarget` to the masjid's jamaat time if different
 - [ ] **Walima is now Sat 14 Nov** (moved from the 15th) — confirm 7–10 PM still holds
-- [ ] Rukhsati: confirm it is on 13 Nov, and whether it has its own venue (e.g. from the bride's home) — none is shown for it now
+- [ ] Rukhsati: confirm it leaves from Masjid e Abu Bakar (assumed, shown on the card) and is on 13 Nov
 - [x] **Web3Forms access key** — in; the RSVP form is live
 - [ ] **Where RSVPs land:** Web3Forms sends to the email the KEY was created for — not to anything in our config (`receiverEmail` is a note only). To use another inbox, create a new access key for that address and swap it into `rsvp.formAccessKey`
 - [ ] In the Web3Forms dashboard, restrict the key to the final domain once it exists
 - [x] Monogram — now `H & M` in the config
 - [x] Bride's parents' surname — Saliya → **Dhukka** (Fahad Dhukka & Memuna Fahad Dhukka)
 - [ ] Urdu proofread by a native speaker (all strings in `wedding.urdu`)
-- [ ] Final domain → `site.url` in the config; the OG image URL, canonical and `.ics` links all follow it
-- [ ] Music file → `public/audio/ambience.mp3` (optional; the top-right toggle appears once it exists)
+- [x] Final domain → love-doves.vercel.app in `site.url`
+- [x] Music file in place (`public/audio/ambience.mp3`, synthesised); replace with a licensed track if you prefer
 - [ ] **Something in your IDE keeps rewriting `Rsvp.tsx`** with `clsx(...)` wrappers (not a dependency) and an old form body — an open editor buffer auto-saving? Close that tab or reload it from disk, or it will clobber the committed version again
