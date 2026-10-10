@@ -123,6 +123,8 @@ export const wedding = {
     venueHeading: 'Where to find us',
     /** The letter's opening line, before the two venues. */
     honouredLine: 'We would be honoured by your presence at',
+    /** Under the monogram on the folded letter's cover. */
+    coverLine: 'With love',
     getDirections: 'Get directions',
     /** Accessible name of the heart seal on the venue envelope. */
     envelopePrompt: 'Peel off the heart seal to open the envelope',
@@ -188,6 +190,7 @@ export const wedding = {
     tapToReveal: 'یا چھو کر دیکھیں',
     venueHeading: 'مقام',
     honouredLine: 'آپ کی تشریف آوری ہمارے لیے باعثِ عزت ہوگی',
+    coverLine: 'محبت کے ساتھ',
     getDirections: 'راستہ دیکھیں',
     familiesHeading: 'ہمارے خاندانوں کے ساتھ',
     eventsHeading: 'تقریبات',

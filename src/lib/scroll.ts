@@ -21,3 +21,10 @@ export function jumpBy(delta: number) {
   if (lenis) lenis.scrollTo(target, { immediate: true, force: true, lock: false })
   else window.scrollTo(0, target)
 }
+
+/** Glide the page to `y`, through Lenis when it is running. */
+export function glideTo(y: number) {
+  const target = Math.max(0, y)
+  if (lenis) lenis.scrollTo(target, { duration: 0.9 })
+  else window.scrollTo({ top: target, behavior: 'smooth' })
+}

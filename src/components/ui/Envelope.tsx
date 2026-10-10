@@ -1,387 +1,399 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { KeyboardEvent, ReactNode } from 'react'
-import { motion, useAnimate, useMotionValue, useTransform } from 'motion/react'
-import type { PanInfo } from 'motion/react'
+import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { HeartSeal } from '../svg/HeartSeal'
+import { TriFoldLetter } from './TriFoldLetter'
 import { sparkleBurstFrom } from '../../lib/sparkleBus'
-import { jumpBy } from '../../lib/scroll'
+import { glideTo } from '../../lib/scroll'
 
 type Props = {
-  /** The letter — revealed once the envelope is opened. */
-  children: ReactNode
   /** The monogram pressed into the heart seal. */
   initials: string
-  /** Hint under the envelope, e.g. "Slide the heart away to open". */
+  /** Caption under the envelope, e.g. "Slide the heart away to open". */
   prompt: string
   /** Accessible name of the seal. */
   openLabel: string
-  onOpened?: () => void
-  /** Language of the prompt, so Urdu gets its own face and direction. */
   lang?: string
   dir?: 'rtl' | 'ltr'
-  className?: string
 }
 
-type Stage = 'sealed' | 'opening' | 'open'
+/* Everything is laid out for a 375px column and scaled by k = width/375. */
+const BASE = 375
+const STAGE_H = 640
+const ENV = { w: 311, h: 206, top: 238 }
+const FLAP_H = 124
+const LETTER = { w: 286, panel: 190, top: 236 }
+const SEAL = { w: 62, h: 58, y: 352 }
+const HINT_TOP = 455
+const HEARTS = 10
+/** Release further than this from where the drag began, and it opens. */
+const RELEASE = 50
+const TOTAL = 2600
 
-/** Drag the sticker this far (px), or flick it this fast (px/s), to peel it. */
-const PEEL_DISTANCE = 64
-const PEEL_VELOCITY = 600
-/** Envelope height as a share of its width. */
-const ENV_RATIO = 0.7
-/** How much of the pocket stays showing under the opened letter, px. */
-const PEEK = 40
-/** The sealed letter sits this far inside the envelope's edges, px. */
-const TUCK = 12
-/** Hearts that fall out as the letter rises. */
-const SPRINKLE = 10
-const SPRINKLE_TONES = ['var(--color-rose-pink)', 'var(--color-gold)', 'var(--color-blush-deep)', 'var(--color-gold-light)']
+const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v))
+const seg = (t: number, a: number, b: number) => clamp((t - a) / (b - a))
+const eOut = (x: number) => 1 - Math.pow(1 - x, 3)
+const eIO = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
+const eOutBack = (x: number) => {
+  const c = 1.4
+  return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2)
+}
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+type Heart = { dx: number; dy: number; r: number; d: number }
+const HEART_PATHS: Heart[] = Array.from({ length: HEARTS }, (_, i) => ({
+  dx: (i % 2 ? 1 : -1) * (120 + (i % 5) * 14),
+  dy: -40 - (i % 4) * 45,
+  r: (i % 2 ? 1 : -1) * (30 + i * 9),
+  d: i * 30,
+}))
 
 /**
- * A sealed envelope, held shut by a heart sticker in its centre, with the
- * letter folded small inside it.
+ * A sealed envelope with a tri-fold letter inside, opened by sliding the
+ * heart seal off its flap.
  *
- * The heart is a sticker, not a button: slide or flick it away and it
- * peels off, tilting with the drag and flying off along the swipe. A tap
- * only makes it wiggle. Keyboard users press Enter or Space.
+ * Built to the reference prototype's structure and timing: back panel,
+ * letter, front pocket (two side folds and a bottom fold), flap, seal.
+ * The section is sized for the OPENED letter from the start — the folded
+ * letter sits where its middle panel will end up, and the top and bottom
+ * panels unfold into space that is already reserved — so nothing on the
+ * page moves when it opens.
  *
- * Then, in about 1.4 seconds:
- *   1. the flap swings up and back in 3D;
- *   2. the letter slides up out of the envelope — behind the pocket's
- *      front at first, so it really comes out of it — while a sprinkle of
- *      small hearts falls from the mouth;
- *   3. clear of the pocket, it grows to full width and settles, and the
- *      envelope drops a little and stays behind it, its bottom showing.
+ * One rAF loop drives one `render(t)` from the moment of release, writing
+ * transforms and opacities only. The flap's z-index swaps at 90°, the
+ * letter's once its foot clears the pocket; the mid-fold darkening is an
+ * overlay's opacity, not a filter. About 2.5 seconds in all.
  *
- * The letter is far taller than the envelope, so the box has to grow when
- * it opens. That is one layout change, not an animation: the box takes
- * its final height and the page is jumped by the same amount in the same
- * frame, so the envelope the viewer is looking at does not move — the
- * room for the letter is made above it. Everything after is transform
- * and opacity. Under reduced motion the letter is simply shown open.
+ * Under reduced motion only the opened letter is shown.
  */
-export function Envelope({
-  children,
-  initials,
-  prompt,
-  openLabel,
-  onOpened,
-  lang,
-  dir,
-  className = '',
-}: Props) {
+export function Envelope({ initials, prompt, openLabel, lang, dir }: Props) {
   const reduced = useReducedMotion()
-  const [stage, setStage] = useState<Stage>(() => (reduced ? 'open' : 'sealed'))
-  const [scope, animate] = useAnimate<HTMLDivElement>()
   const stageRef = useRef<HTMLDivElement>(null)
-  const envRef = useRef<HTMLDivElement>(null)
+  const envBackRef = useRef<HTMLDivElement>(null)
+  const envFrontRef = useRef<HTMLDivElement>(null)
+  const flapWrapRef = useRef<HTMLDivElement>(null)
+  const flapRef = useRef<HTMLDivElement>(null)
+  const flapShadeRef = useRef<HTMLDivElement>(null)
   const letterRef = useRef<HTMLDivElement>(null)
-  const busy = useRef(false)
-  const onOpenedRef = useRef(onOpened)
-  useEffect(() => {
-    onOpenedRef.current = onOpened
-  }, [onOpened])
+  const sealRef = useRef<HTMLButtonElement>(null)
+  const hintRef = useRef<HTMLParagraphElement>(null)
+  const heartsRef = useRef<HTMLDivElement>(null)
 
-  // The sticker's own position, so the peel can continue from wherever the
-  // finger let go. It tilts as it is dragged, like a sticker lifting.
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const rotate = useTransform(x, [-160, 0, 160], [-28, 0, 28])
+  const [width, setWidth] = useState(BASE)
+  const k = width / BASE
+  const [open, setOpen] = useState(reduced)
 
-  // The letter's natural height and the envelope's, kept current.
-  const [dims, setDims] = useState({ letter: 0, env: 0 })
+  // Where the seal was let go, relative to its home: the fly-off continues
+  // along that line. The drag itself writes the seal's transform directly.
+  const sealFrom = useRef({ x: 0, y: 0 })
+  const drag = useRef<{ x: number; y: number; moved: boolean } | null>(null)
+  const playing = useRef(reduced)
+  const lastT = useRef(reduced ? TOTAL : 0)
+
   useLayoutEffect(() => {
-    const letter = letterRef.current
-    const box = stageRef.current
-    if (!letter || !box) return
-    const read = () => {
-      const env = Math.round(box.clientWidth * ENV_RATIO)
-      const h = letter.offsetHeight
-      setDims((d) => (d.letter === h && d.env === env ? d : { letter: h, env }))
-    }
+    const stage = stageRef.current
+    if (!stage) return
+    const read = () => setWidth(stage.clientWidth || BASE)
     read()
     const ro = new ResizeObserver(read)
-    ro.observe(letter)
-    ro.observe(box)
+    ro.observe(stage)
     return () => ro.disconnect()
   }, [])
 
-  const sealedScale = dims.letter ? Math.min(1, (dims.env - 2 * TUCK) / dims.letter) : 1
-
-  // Rest states, written directly: while sealed the letter is folded small
-  // inside the envelope; once open the box is the letter's height plus the
-  // pocket's peek, and the envelope sits at its bottom. Nothing is written
-  // mid-animation, so an in-flight transform is never overwritten.
-  useLayoutEffect(() => {
-    const box = stageRef.current
-    const env = envRef.current
-    const letter = letterRef.current
-    if (!box || !env || !letter || !dims.letter) return
-    if (stage === 'sealed') {
-      box.style.height = ''
-      // Written, not cleared: React set this same inline property, and
-      // clearing it would leave the box with no height at all.
-      box.style.aspectRatio = `1 / ${ENV_RATIO}`
-      env.style.transform = ''
-      letter.style.transform = `translateY(${TUCK}px) scale(${sealedScale})`
-    } else if (stage === 'open') {
-      const H = dims.letter + PEEK
-      // The ratio must go with the height, or CSS derives the WIDTH from it.
-      box.style.aspectRatio = 'auto'
-      box.style.height = `${H}px`
-      env.style.transform = `translateY(${H - dims.env}px)`
-      letter.style.transform = ''
-    }
-  }, [stage, dims, sealedScale])
-
-  useEffect(() => {
-    if (reduced) onOpenedRef.current?.()
-  }, [reduced])
-
-  const open = useCallback(
-    async (fling: { x: number; y: number }, viaKeyboard = false) => {
-      if (busy.current) return
-      busy.current = true
-      setStage('opening')
-      onOpenedRef.current?.()
-
-      const root = scope.current
-      const box = stageRef.current
-      const env = envRef.current
+  /** One frame of the opening, at t ms after release. Transforms only. */
+  const render = useCallback(
+    (t: number) => {
+      lastT.current = t
+      const px = (v: number) => v * k
+      const seal = sealRef.current
+      const hint = hintRef.current
+      const flap = flapRef.current
+      const flapWrap = flapWrapRef.current
+      const shade = flapShadeRef.current
       const letter = letterRef.current
-      const seal = root.querySelector<HTMLElement>('[data-seal]')
-      const flap = root.querySelector<HTMLElement>('[data-flap]')
-      if (!box || !env || !letter || !seal || !flap) return
-      sparkleBurstFrom(seal, { count: 30, tone: 'rose', power: 220 })
+      const back = envBackRef.current
+      const front = envFrontRef.current
+      if (!letter) return
 
-      // 1. The sticker comes away along the swipe and drifts off.
-      const len = Math.hypot(fling.x, fling.y) || 1
-      const ease = [0.25, 0.8, 0.4, 1] as const
-      animate(x, x.get() + (fling.x / len) * 240, { duration: 0.5, ease })
-      animate(y, y.get() + (fling.y / len) * 240 - 30, { duration: 0.5, ease })
-      animate(seal, { opacity: 0, scale: 0.75 }, { duration: 0.45, ease: 'easeIn' })
-      await sleep(220)
+      // Seal: on along its swipe, spinning and shrinking, then gone.
+      if (seal) {
+        const s = eOut(seg(t, 0, 380))
+        const from = sealFrom.current
+        const sx = from.x + (from.x >= 0 ? 1 : -1) * px(220) * s
+        const sy = from.y - px(140) * s
+        seal.style.transform = `translate(${sx}px, ${sy}px) rotate(${s * 40}deg) scale(${1 - 0.35 * s})`
+        seal.style.opacity = String(1 - seg(t, 150, 380))
+      }
+      if (hint) hint.style.opacity = String(1 - seg(t, 0, 250))
 
-      // 2. The flap swings open; past the vertical it is behind the letter.
-      animate(flap, { rotateX: -176 }, { duration: 0.5, ease: [0.4, 0, 0.2, 1] })
-      sleep(250).then(() => {
-        flap.style.zIndex = '1'
-      })
-      await sleep(260)
+      // Flap: folds open; past the vertical it is behind everything.
+      const f = eIO(seg(t, 350, 850))
+      const ang = f * 180
+      if (flap) flap.style.transform = `rotateX(${ang}deg)`
+      if (flapWrap) flapWrap.style.zIndex = ang > 90 ? '0' : '6'
+      if (shade) shade.style.opacity = String(0.12 * Math.sin(f * Math.PI))
 
-      // 3. Make room. One layout change and a matching scroll jump in the
-      //    same frame: the envelope does not move on screen.
-      const letterH = letter.offsetHeight
-      const envH = Math.round(box.clientWidth * ENV_RATIO)
-      const scale = Math.min(1, (envH - 2 * TUCK) / letterH)
-      const H = letterH + PEEK
-      const lift = H - envH - PEEK
-      box.style.aspectRatio = 'auto'
-      box.style.height = `${H}px`
-      env.style.transform = `translateY(${lift}px)`
-      letter.style.transform = `translateY(${lift + TUCK}px) scale(${scale})`
-      jumpBy(lift)
+      // Letter: up out of the pocket, then settles to the middle panel's
+      // place. Above the pocket once its foot has cleared it.
+      const up = eOut(seg(t, 800, 1350))
+      const settle = eIO(seg(t, 1250, 1700))
+      const ly = px(12) - px(170) * up + px(158) * settle
+      letter.style.transform = `translateY(${ly}px)`
+      letter.style.zIndex = t > 1150 ? '8' : '2'
 
-      // 4. The letter slides up out of the pocket; hearts fall from the
-      //    mouth; the envelope drops its forty pixels and stays.
-      const rise = animate(
-        letter,
-        { y: [lift + TUCK, 0] },
-        { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
-      )
-      const sprinkle = root.querySelectorAll<HTMLElement>('[data-sprinkle]')
-      sprinkle.forEach((h, i) => {
-        const dx = ((i % 2 ? 1 : -1) * (18 + ((i * 37) % 60))) | 0
-        animate(
-          h,
-          {
-            x: [0, dx],
-            y: [0, 70 + ((i * 53) % 70)],
-            rotate: [0, (i % 2 ? -1 : 1) * (40 + ((i * 29) % 80))],
-            opacity: [0, 1, 1, 0],
-            scale: [0.5, 1, 1, 0.7],
-          },
-          { duration: 0.9 + (i % 4) * 0.12, delay: 0.05 + i * 0.045, ease: 'easeOut' },
-        )
-      })
-      animate(env, { y: [lift, lift + PEEK] }, { duration: 0.5, delay: 0.4, ease: 'easeInOut' })
-      await sleep(380)
-      // Clear of the pocket: in front from here, and up to full width.
-      letter.style.zIndex = '10'
-      await rise
-      await animate(letter, { scale: [scale, 1] }, { duration: 0.45, ease: [0.22, 1, 0.36, 1] })
+      // Envelope: drops away under it.
+      const drop = eIO(seg(t, 1250, 1700))
+      for (const el of [back, front, flapWrap]) {
+        if (!el) continue
+        el.style.transform = `translateY(${drop * px(70)}px) scale(${1 - 0.06 * drop})`
+        el.style.opacity = String(1 - drop)
+      }
 
-      setStage('open')
-      // A keyboard user's focus was on the seal, which is now gone; hand it
-      // to the first thing on the letter rather than dropping it on <body>.
-      if (viaKeyboard) {
-        requestAnimationFrame(() => letter.querySelector<HTMLElement>('a, button')?.focus())
+      // Panels unfold: top first, then bottom.
+      const top = letter.querySelector<HTMLElement>('[data-panel="top"]')
+      const bottom = letter.querySelector<HTMLElement>('[data-panel="bottom"]')
+      const tA = eOutBack(seg(t, 1650, 2150))
+      const bA = eOutBack(seg(t, 1950, 2450))
+      if (top) top.style.transform = `translateZ(1px) rotateX(${-180 + 180 * tA}deg)`
+      if (bottom) {
+        bottom.style.transform = `translateZ(-1px) rotateX(${-180 + 180 * bA}deg)`
+        bottom.style.opacity = String(seg(t, 1950, 2050))
+      }
+
+      // Hearts spray from the mouth, each on its own sine of life.
+      const hearts = heartsRef.current?.children
+      if (hearts) {
+        for (let i = 0; i < hearts.length; i++) {
+          const h = hearts[i] as HTMLElement
+          const o = HEART_PATHS[i]
+          const kk = seg(t, 1000 + o.d, 2000 + o.d)
+          h.style.opacity = String(kk > 0 && kk < 1 ? Math.sin(kk * Math.PI) : 0)
+          h.style.transform = `translate(${px(o.dx) * eOut(kk)}px, ${px(o.dy) * eOut(kk)}px) rotate(${o.r * kk}deg) scale(${0.8 + 0.6 * Math.sin(kk * Math.PI)})`
+        }
       }
     },
-    [animate, scope, x, y],
+    [k],
   )
 
-  const onDragEnd = (_: unknown, info: PanInfo) => {
-    const far = Math.hypot(info.offset.x, info.offset.y) > PEEL_DISTANCE
-    const fast = Math.hypot(info.velocity.x, info.velocity.y) > PEEL_VELOCITY
-    if (far || fast) {
-      open(far ? info.offset : info.velocity)
+  // Hold the current frame when the column is resized, and draw the first.
+  useLayoutEffect(() => {
+    render(lastT.current)
+  }, [render])
+
+  const finish = useCallback(() => {
+    setOpen(true)
+    // If the opened letter is not wholly on screen, bring it there.
+    const letter = letterRef.current
+    if (!letter) return
+    const r = letter.getBoundingClientRect()
+    const top = r.top - LETTER.panel * k
+    const bottom = r.bottom + LETTER.panel * k
+    if (top < 0 || bottom > window.innerHeight) {
+      glideTo(window.scrollY + (top + bottom) / 2 - window.innerHeight / 2)
+    }
+  }, [k])
+
+  const play = useCallback(() => {
+    if (playing.current) return
+    playing.current = true
+    sparkleBurstFrom(sealRef.current, { count: 26, tone: 'rose', power: 200 })
+    const t0 = performance.now()
+    const step = (now: number) => {
+      const t = now - t0
+      render(Math.min(t, TOTAL))
+      if (t < TOTAL) requestAnimationFrame(step)
+      else finish()
+    }
+    requestAnimationFrame(step)
+  }, [render, finish])
+
+  // ── the seal: drag it off, or tap it ────────────────────────────────
+  const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (playing.current || e.button !== 0) return
+    drag.current = { x: e.clientX, y: e.clientY, moved: false }
+    e.currentTarget.setPointerCapture(e.pointerId)
+    e.currentTarget.style.transition = ''
+  }
+  const onPointerMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const d = drag.current
+    if (!d) return
+    const dx = e.clientX - d.x
+    const dy = e.clientY - d.y
+    if (Math.hypot(dx, dy) > 4) d.moved = true
+    sealFrom.current = { x: dx, y: dy }
+    e.currentTarget.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.15}deg)`
+  }
+  const onPointerUp = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const d = drag.current
+    if (!d) return
+    drag.current = null
+    const { x, y } = sealFrom.current
+    if (Math.hypot(x, y) > RELEASE || !d.moved) {
+      // Far enough, or a plain tap: it opens from here.
+      play()
       return
     }
-    // Not far enough: it presses back down.
-    animate(x, 0, { type: 'spring', stiffness: 520, damping: 26 })
-    animate(y, 0, { type: 'spring', stiffness: 520, damping: 26 })
+    // Not far enough: it springs back.
+    sealFrom.current = { x: 0, y: 0 }
+    e.currentTarget.style.transition = 'transform 0.45s cubic-bezier(0.22, 1.4, 0.36, 1)'
+    e.currentTarget.style.transform = ''
   }
-
-  // A tap is not a peel. It wiggles, to say "slide me".
-  const hint = () => {
-    if (busy.current) return
-    animate('[data-seal-art]', { rotate: [0, -14, 11, -7, 4, 0] }, { duration: 0.55, ease: 'easeOut' })
-  }
-
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      open({ x: 0.4, y: -1 }, true)
+      sealFrom.current = { x: 20, y: -30 }
+      play()
     }
   }
 
-  const sealed = stage === 'sealed'
+  // Keyboard users: once open, focus moves onto the letter.
+  useEffect(() => {
+    if (open && !reduced && document.activeElement === document.body) {
+      letterRef.current?.querySelector<HTMLElement>('a')?.focus({ preventScroll: true })
+    }
+  }, [open, reduced])
+
+  const envStyle = {
+    left: (width - ENV.w * k) / 2,
+    top: ENV.top * k,
+    width: ENV.w * k,
+    height: ENV.h * k,
+  }
 
   return (
-    <div ref={scope} className={`relative mx-auto w-full max-w-[20rem] ${className}`}>
-      {/* Envelope-shaped while sealed; the letter's height once open. */}
-      <div
-        ref={stageRef}
-        className="relative"
-        style={{ aspectRatio: `1 / ${ENV_RATIO}`, perspective: '1200px' }}
-      >
-        <div
-          ref={envRef}
-          data-env
-          className="absolute inset-x-0 top-0"
-          style={{ aspectRatio: `1 / ${ENV_RATIO}` }}
-          aria-hidden="true"
-        >
-          {/* Back panel — the inside of the envelope. */}
-          <div
-            className="absolute inset-0 rounded-[0.9rem]"
-            style={{
-              background: 'linear-gradient(180deg, var(--color-rose-pink) 0%, var(--color-blush-deep) 100%)',
-              boxShadow: '0 22px 48px -26px rgba(94,18,39,0.5), inset 0 0 0 1px rgba(212,175,55,0.35)',
-            }}
-          />
-
-          {/* Flap. Pivots on its top edge, in its own perspective: the
-              box's only reaches direct children. Reaches past the pocket's
-              V so the two overlap and nothing of the letter shows. */}
-          {!reduced && (
-            <motion.div
-              data-flap
-              className="absolute inset-x-0 top-0"
+    // Full-bleed across the column, so the picture is the reference's at 375.
+    <div
+      ref={stageRef}
+      className="relative mx-[calc(-1*var(--page-gutter))]"
+      style={{ height: STAGE_H * k }}
+    >
+      {!reduced && (
+        <>
+          {/* 1. Back panel. */}
+          <div ref={envBackRef} className="absolute" style={{ ...envStyle, zIndex: 1 }} aria-hidden="true">
+            <div
+              className="absolute inset-0 rounded-[10px]"
               style={{
-                height: '61%',
-                zIndex: 4,
-                transformOrigin: 'top center',
-                transformPerspective: 1200,
-                clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-                background: 'linear-gradient(180deg, var(--color-blush-deep) 0%, var(--color-rose-pink) 100%)',
+                background: 'linear-gradient(var(--color-rose-deep), var(--color-rose-pink))',
+                boxShadow: '0 18px 30px -14px rgba(155,44,74,0.35)',
               }}
             />
-          )}
+          </div>
+        </>
+      )}
 
-          {/* Front pocket: two wings meeting in a V. The letter is behind it. */}
-          <div
-            className="pointer-events-none absolute inset-0 rounded-b-[0.9rem]"
-            style={{
-              zIndex: 3,
-              clipPath: 'polygon(0 0, 50% 60%, 100% 0, 100% 100%, 0 100%)',
-              background: 'linear-gradient(180deg, var(--color-blush) 0%, var(--color-blush-deep) 100%)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
-            }}
-          />
-
-          {/* The hearts that spill out. Start invisible at the mouth. */}
-          {!reduced && (
-            <div className="pointer-events-none absolute inset-x-0 top-[12%] flex justify-center" style={{ zIndex: 6 }}>
-              {Array.from({ length: SPRINKLE }, (_, i) => (
-                <svg
-                  key={i}
-                  data-sprinkle
-                  viewBox="0 0 100 100"
-                  className="absolute"
-                  style={{
-                    width: 9 + (i % 3) * 3,
-                    left: `${44 + ((i * 17) % 14)}%`,
-                    opacity: 0,
-                    fill: SPRINKLE_TONES[i % SPRINKLE_TONES.length],
-                  }}
-                >
-                  <path d="M50 88 C18 64, 6 44, 6 30 C6 15, 18 6, 30 6 C39 6, 46 11, 50 19 C54 11, 61 6, 70 6 C82 6, 94 15, 94 30 C94 44, 82 64, 50 88 Z" />
-                </svg>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* The heart sticker, in the centre. Drag it off. */}
-        {stage !== 'open' && !reduced && (
-          <motion.button
-            data-seal
-            type="button"
-            aria-label={openLabel}
-            className="absolute left-1/2 z-[5] size-[4.5rem] -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing"
-            style={{ top: `${(ENV_RATIO * 100) / 2}%`, x, y, rotate, touchAction: 'none' }}
-            drag={sealed}
-            dragMomentum={false}
-            onDragEnd={onDragEnd}
-            onTap={hint}
-            onKeyDown={onKeyDown}
-            whileDrag={{ scale: 1.12 }}
-          >
-            <span
-              data-seal-art
-              className="block size-full"
-              style={{ filter: 'drop-shadow(0 6px 10px rgba(94,18,39,0.35))' }}
-            >
-              <HeartSeal initials={initials} className="size-full" />
-            </span>
-          </motion.button>
-        )}
-
-        {/* The letter. Absolute, so the box can be envelope-sized while it
-            is folded away; scaled from its top edge so it rises as it grows. */}
-        <motion.div
-          ref={letterRef}
-          data-card
-          className="absolute inset-x-0 top-0"
-          style={{ zIndex: stage === 'open' ? 10 : 2, transformOrigin: 'top center' }}
-          inert={stage !== 'open'}
-        >
-          {children}
-        </motion.div>
+      {/* 2. The letter, folded (or open, under reduced motion). */}
+      <div className="absolute inset-x-0" style={{ top: LETTER.top * k }}>
+        <TriFoldLetter ref={letterRef} width={LETTER.w * k} panel={LETTER.panel * k} />
       </div>
 
-      {/* Faded rather than removed once opened: removing it would pull the
-          page below up by its height. */}
       {!reduced && (
-        <motion.p
-          className={`text-2xs mt-4 text-center tracking-[0.3em] text-wine-soft ${
-            lang === 'ur' ? 'font-urdu' : 'uppercase'
-          }`}
-          lang={lang}
-          dir={dir}
-          initial={false}
-          animate={{ opacity: sealed ? 1 : 0 }}
-          transition={{ duration: 0.4 }}
-          aria-hidden={!sealed || undefined}
-          style={sealed ? { animation: 'float-soft 2.8s ease-in-out infinite' } : undefined}
-        >
-          {prompt}
-        </motion.p>
+        <>
+          {/* 3. Front pocket: two side folds meeting at 57%, a bottom fold
+                 with its apex at 47%, a darker crease along it. */}
+          <div ref={envFrontRef} className="pointer-events-none absolute" style={{ ...envStyle, zIndex: 5 }} aria-hidden="true">
+            <svg viewBox="0 0 311 206" preserveAspectRatio="none" className="absolute inset-0 size-full overflow-visible">
+              <defs>
+                <linearGradient id="envSide" x1="0" x2="1">
+                  <stop offset="0" stopColor="var(--color-blush-deep)" />
+                  <stop offset="1" stopColor="var(--color-rose-pink)" />
+                </linearGradient>
+                <linearGradient id="envBottom" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="var(--color-blush)" />
+                  <stop offset="1" stopColor="var(--color-blush-deep)" />
+                </linearGradient>
+              </defs>
+              <path d="M10 0 L160 118 L10 206 Q0 206 0 196 V10 Q0 0 10 0Z" fill="url(#envSide)" />
+              <path d="M301 0 L151 118 L301 206 Q311 206 311 196 V10 Q311 0 301 0Z" fill="url(#envSide)" />
+              <path d="M0 196 L155.5 96 L311 196 Q311 206 301 206 H10 Q0 206 0 196Z" fill="url(#envBottom)" />
+              <path d="M0 196 L155.5 96 L311 196" fill="none" stroke="var(--color-rose-deep)" strokeWidth="1" />
+            </svg>
+          </div>
+
+          {/* 4. The flap, in its own perspective, hinged on its top edge. */}
+          <div
+            ref={flapWrapRef}
+            className="pointer-events-none absolute"
+            style={{ ...envStyle, zIndex: 6, perspective: '900px' }}
+            aria-hidden="true"
+          >
+            <div
+              ref={flapRef}
+              className="absolute top-0 left-0 w-full"
+              style={{ height: FLAP_H * k, transformOrigin: '50% 0' }}
+            >
+              <svg viewBox="0 0 311 124" preserveAspectRatio="none" className="absolute inset-0 size-full overflow-visible">
+                <defs>
+                  <linearGradient id="envFlap" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="var(--color-rose-deep)" />
+                    <stop offset="1" stopColor="var(--color-rose-flap)" />
+                  </linearGradient>
+                </defs>
+                <path d="M0 10 Q0 0 10 0 H301 Q311 0 311 10 L163 120 Q155.5 126 148 120Z" fill="url(#envFlap)" stroke="var(--color-rose-flap)" strokeWidth="1" />
+              </svg>
+              {/* Mid-fold darkening: an overlay's opacity, never a filter. */}
+              <div
+                ref={flapShadeRef}
+                className="absolute inset-0"
+                style={{
+                  opacity: 0,
+                  background: 'var(--color-wine-deep)',
+                  clipPath: 'polygon(0 0, 100% 0, 52.4% 100%, 47.6% 100%)',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 5. The seal, on the flap's tip. */}
+          {!open && (
+            <button
+              ref={sealRef}
+              type="button"
+              aria-label={openLabel}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              onKeyDown={onKeyDown}
+              className="absolute cursor-grab active:cursor-grabbing"
+              style={{
+                left: width / 2 - (SEAL.w * k) / 2,
+                top: SEAL.y * k - (SEAL.h * k) / 2,
+                width: SEAL.w * k,
+                height: SEAL.h * k,
+                zIndex: 7,
+                touchAction: 'none',
+              }}
+            >
+              <HeartSeal initials={initials} className="size-full" shadow />
+            </button>
+          )}
+
+          {/* Hearts that spray from the mouth as the letter comes out. */}
+          <div ref={heartsRef} className="pointer-events-none absolute" style={{ left: width / 2 - 6.5 * k, top: 250 * k, zIndex: 7 }} aria-hidden="true">
+            {HEART_PATHS.map((_, i) => (
+              <svg key={i} viewBox="-6 -6 12 12" className="absolute top-0 left-0" style={{ width: 13 * k, height: 13 * k, opacity: 0 }}>
+                <path
+                  d="M0 3.6C-1.2 1.4-5.6.4-5.6-2.6-5.6-5.2-2.4-6.4 0-3.8 2.4-6.4 5.6-5.2 5.6-2.6 5.6.4 1.2 1.4 0 3.6Z"
+                  fill={i % 3 ? 'var(--color-wine-soft)' : 'var(--color-gold)'}
+                />
+              </svg>
+            ))}
+          </div>
+
+          {/* The caption. Fades in the first quarter second. */}
+          <p
+            ref={hintRef}
+            className={`text-2xs pointer-events-none absolute inset-x-0 text-center tracking-[0.28em] text-wine-soft ${
+              lang === 'ur' ? 'font-urdu' : 'font-body uppercase'
+            }`}
+            style={{ top: HINT_TOP * k, zIndex: 9 }}
+            lang={lang}
+            dir={dir}
+            aria-hidden={open || undefined}
+          >
+            {prompt}
+          </p>
+        </>
       )}
     </div>
   )

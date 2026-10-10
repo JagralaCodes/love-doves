@@ -114,6 +114,10 @@
   /* Letter paper: a warm cream, and the slightly deeper tone of its grain. */
   --color-cream: #fbf5e9;
   --color-cream-deep: #efe3cf;
+  /* The envelope's papers: its back, and the slightly deeper flap. */
+  --color-rose-deep: #efa9bc;
+  --color-rose-flap: #ec9fb4;
+  --color-paper: #fffaf1;
 
   /* Type scale — anchored to phones. Every size is tuned to read well at
      360-480px first; the clamp max is just the ceiling for wider screens. */
