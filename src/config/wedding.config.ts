@@ -246,8 +246,12 @@ export const wedding = {
      * change it on the Web3Forms side (see TODO.md).
      */
     receiverEmail: 'letsbegin81@gmail.com',
-    /** Every reply is also copied to these (Web3Forms `ccemail`). */
-    ccEmails: ['jagralashihab7786@gmail.com', 'jagralashihab786@gmail.com'],
+    /**
+     * Other people who should see every reply. NOT sent to Web3Forms:
+     * copying (`ccemail`) is a paid feature there and a free key rejects
+     * the whole submission with it. Forward from the key's inbox instead.
+     */
+    alsoNotify: ['jagralashihab7786@gmail.com', 'jagralashihab786@gmail.com'],
   },
 
   /** Used for <title> and the OG tags. */
