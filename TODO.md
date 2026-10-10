@@ -134,7 +134,7 @@ panel on a real phone remain for you — see "Blocked on you").
 
 ## 6. v3 pass (10 Oct, from claude-code-prompt-v3.md) — done
 
-- [x] Bugs: live domain in og/canonical/twitter, caching headers + 404s for missing files (vercel.json), noindex + robots.txt, WhatsApp share removed. Audio kept at your request: synthesised Hijaz pad, volume 0.12, off until the lantern is tapped.
+- [x] Bugs: live domain in og/canonical/twitter, caching headers + 404s for missing files (vercel.json), noindex + robots.txt, WhatsApp share removed. No audio.
 - [x] Performance: off-screen sections drop their CSS animations; one low-power flag (40% particles, DPR 1.5); no animated filter (122 → 8, all static); no permanent will-change (177 → 0; transient promotion only while a layer moves); shimmer plays once; sparkle canvas hidden while idle; SplitText + DrawSVG dropped; fonts subset (Amiri 106 → 32 KB, Noto 156 → 110 KB); first bundle React + gate only (120 → 66 KB Brotli); Lighthouse mobile 81 → 90.
 - [x] Envelope rebuilt to envelope-reference.html: seal on the flap tip, tri-fold letter, 2.5 s timeline, no layout shift, fits one screen, reduced-motion shows it open.
 - [x] Rail at 6px, journey labels unclipped at 360, Rukhsati venue line, one date source, RSVP remembers a reply, countdown handles the date passing.
@@ -156,5 +156,4 @@ panel on a real phone remain for you — see "Blocked on you").
 - [x] Bride's parents' surname — Saliya → **Dhukka** (Fahad Dhukka & Memuna Fahad Dhukka)
 - [ ] Urdu proofread by a native speaker (all strings in `wedding.urdu`)
 - [x] Final domain → love-doves.vercel.app in `site.url`
-- [x] Music file in place (`public/audio/ambience.mp3`, synthesised); replace with a licensed track if you prefer
 - [ ] **Something in your IDE keeps rewriting `Rsvp.tsx`** with `clsx(...)` wrappers (not a dependency) and an old form body — an open editor buffer auto-saving? Close that tab or reload it from disk, or it will clobber the committed version again

@@ -59,7 +59,7 @@ export default function AboveFold({ opened, gateGone }: Props) {
             of space while it lands, so the page never ends abruptly. */}
         {opened && (
           <Suspense fallback={<section className="min-h-svh bg-pearl-white" aria-busy="true" />}>
-            <BelowFold opened={opened} />
+            <BelowFold />
           </Suspense>
         )}
       </main>
