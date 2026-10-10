@@ -196,6 +196,7 @@ export function Families() {
   return (
     <section
       ref={sectionRef}
+      data-thread="Families"
       className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]"
       style={seam('var(--color-blush)', 'var(--color-pearl-white)')}
     >

@@ -41,21 +41,22 @@ export const wedding = {
       date: '2026-11-13',
       /**
        * HH:mm in 24h. The family's timing is "after Asr namaz", which is
-       * what the page shows (timeLabel). The countdown and the calendar
-       * file still need a clock time: 16:45 is an ASSUMPTION — Asr (Hanafi)
+       * what the page shows (timeLabel). The countdown still needs a
+       * clock time: 16:45 is an ASSUMPTION — Asr (Hanafi)
        * in Mira Road in mid-November begins around 4:25 PM, so jamaat is
        * usually 4:35–4:45. Set it to the masjid's actual time if it differs.
        */
       time: '16:45',
-      /**
-       * Optional end time, used for the .ics calendar file. Runs through
-       * the Rukhsati (Maghrib is about 6:00 PM), so one entry covers the day.
-       */
+      /** Optional end time (Maghrib is about 6:00 PM; this runs past it). */
       endTime: '19:30',
       /** Shown instead of the clock time. */
       timeLabel: 'After Asr Namaz',
+      /** The same, short, for a one-line "Friday, 13 Nov · After Asr". */
+      timeShort: 'After Asr',
+      /** Which line-art icon stands for the venue. */
+      icon: 'masjid',
       /** The same evening, after the Nikah. No venue of its own on the page. */
-      followedBy: { name: 'Rukhsati', timeLabel: 'After Maghrib Namaz' },
+      followedBy: { name: 'Rukhsati', timeLabel: 'After Maghrib Namaz', icon: 'doli' },
       venue: 'Masjid e Abu Bakar',
       /** Locality confirmed from the map pin below (19.2735, 72.8913). */
       address: 'Western Park, Mira Road (E), Thane',
@@ -69,6 +70,7 @@ export const wedding = {
       date: '2026-11-14',
       time: '19:00',
       endTime: '22:00',
+      icon: 'banquet',
       venue: 'Central Plaza Banquet',
       address:
         '1st Floor, Above Bank of India, Opp. HDFC Bank, Shanti Park, Mira Road (E), Thane 401107',
@@ -105,14 +107,14 @@ export const wedding = {
     countdownHeading: 'Counting the days',
     dayIsHere: 'Alhamdulillah, the day is here',
     venueHeading: 'Where to find us',
+    /** The letter's opening line, before the two venues. */
+    honouredLine: 'We would be honoured by your presence at',
+    getDirections: 'Get directions',
     /** Accessible name of the heart seal on the venue envelope. */
     envelopePrompt: 'Peel off the heart seal to open the envelope',
 
     familiesHeading: 'Together with our families',
     eventsHeading: 'The celebrations',
-    addToCalendar: 'Add to calendar',
-    calendarSaved: 'Saved',
-    viewOnMap: 'View on map',
     daughterOf: 'Daughter of',
     sonOf: 'Son of',
 
@@ -164,11 +166,10 @@ export const wedding = {
     scratchPrompt: 'ہمارا خاص دن دیکھنے کے لیے کھرچیں',
     tapToReveal: 'یا چھو کر دیکھیں',
     venueHeading: 'مقام',
+    honouredLine: 'آپ کی تشریف آوری ہمارے لیے باعثِ عزت ہوگی',
+    getDirections: 'راستہ دیکھیں',
     familiesHeading: 'ہمارے خاندانوں کے ساتھ',
     eventsHeading: 'تقریبات',
-    addToCalendar: 'کیلنڈر میں شامل کریں',
-    calendarSaved: 'محفوظ ہو گیا',
-    viewOnMap: 'نقشہ دیکھیں',
     daughterOf: 'دختر',
     sonOf: 'پسر',
 
@@ -227,7 +228,7 @@ export const wedding = {
     receiverEmail: 'letsbegin81@gmail.com',
   },
 
-  /** Used for <title>, OG tags and the .ics organiser field. */
+  /** Used for <title> and the OG tags. */
   site: {
     url: 'https://example.vercel.app',
     description:

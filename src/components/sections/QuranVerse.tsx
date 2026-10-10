@@ -96,6 +96,7 @@ export function QuranVerse() {
   return (
     <section
       ref={sectionRef}
+      data-thread="Verse"
       className="relative overflow-hidden bg-blush px-[var(--page-gutter)] py-[var(--section-gap)]"
       style={seam('var(--color-pearl-white)', 'var(--color-blush)')}
     >

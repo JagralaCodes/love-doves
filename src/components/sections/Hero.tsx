@@ -205,6 +205,7 @@ export function Hero({ active }: Props) {
   return (
     <section
       ref={rootRef}
+      data-thread="Invite"
       className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-12"
     >
       <GeometricPattern scale={104} opacity={0.055} />

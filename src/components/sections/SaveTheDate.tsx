@@ -31,7 +31,7 @@ export function SaveTheDate() {
   const main = splitDate(wedding.events[0].date)
 
   return (
-    <section className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]">
+    <section data-thread="Date" className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]">
       <GeometricPattern scale={104} opacity={0.05} />
       <SparkleField count={8} tone="gold" />
 

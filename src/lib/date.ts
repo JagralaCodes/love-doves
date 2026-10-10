@@ -83,6 +83,14 @@ export function formatShortDate(iso: string): string {
   return `${weekday}, ${d.getDate()} ${month}`
 }
 
+/** "Fri 13 Nov" — for a label beside an icon. */
+export function formatTinyDate(iso: string): string {
+  const d = parseDate(iso)
+  const weekday = d.toLocaleDateString(LOCALE, { weekday: 'short' })
+  const month = d.toLocaleDateString(LOCALE, { month: 'short' })
+  return `${weekday} ${d.getDate()} ${month}`
+}
+
 /** "7 – 10 PM", or "11 AM – 1 PM" when the two sides differ. */
 export function formatTimeRange(start: string, end: string): string {
   const compact = (hhmm: string) => {

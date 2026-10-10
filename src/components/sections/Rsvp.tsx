@@ -168,11 +168,11 @@ export function Rsvp() {
         >
           {s(wedding.texts.eventsHeading, wedding.urdu.eventsHeading)}
         </h2>
-        <div className="mt-5">
+        <div data-thread="Celebrations" className="mt-5">
           <Schedule />
         </div>
 
-        <span className="mt-9 flex items-center justify-center gap-3" aria-hidden="true">
+        <span data-thread="RSVP" className="mt-9 flex items-center justify-center gap-3" aria-hidden="true">
           <span className="h-px w-8 bg-gold/40" />
           <EightStar className="w-3" />
           <span className="h-px w-8 bg-gold/40" />

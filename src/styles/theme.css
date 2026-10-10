@@ -109,6 +109,9 @@
   --color-wine-soft: #a44a61;
   --color-wine-mist: #7a2038;
   --color-gold-mist: #faf0d4;
+  /* Letter paper: a warm cream, and the slightly deeper tone of its grain. */
+  --color-cream: #fbf5e9;
+  --color-cream-deep: #efe3cf;
 
   /* Type scale — anchored to phones. Every size is tuned to read well at
      360-480px first; the clamp max is just the ceiling for wider screens. */

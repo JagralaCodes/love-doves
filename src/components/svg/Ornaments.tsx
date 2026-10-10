@@ -113,14 +113,16 @@ export function FloralVine({ className = '', stroke = 'url(#goldFoil)' }: Base) 
 
 /* ──────────────────────────── Dome / masjid ──────────────────────────── */
 
-export function DomeIcon({
-  className = '',
-  stroke = 'url(#goldFoil)',
-  title = 'Venue',
-}: Base) {
+export function DomeIcon({ className = '', stroke = 'url(#goldFoil)', title }: Base) {
   return (
-    <svg viewBox="0 0 120 110" className={className} role="img" aria-label={title}>
-      <title>{title}</title>
+    <svg
+      viewBox="0 0 120 110"
+      className={className}
+      role={title ? 'img' : 'presentation'}
+      aria-hidden={title ? undefined : 'true'}
+      aria-label={title}
+    >
+      {title ? <title>{title}</title> : null}
       <g fill="none" stroke={stroke} strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round">
         {/* central onion dome */}
         <path d="M60 10 L60 20" />
@@ -139,6 +141,94 @@ export function DomeIcon({
       </g>
     </svg>
   )
+}
+
+/* ───────────────────────── Chandelier / banquet ─────────────────────── */
+
+/** A banquet hall's chandelier: a chain, two tiers of arms, candle flames. */
+export function ChandelierIcon({ className = '', stroke = 'url(#goldFoil)', title }: Base) {
+  return (
+    <svg
+      viewBox="0 0 120 110"
+      className={className}
+      role={title ? 'img' : 'presentation'}
+      aria-hidden={title ? undefined : 'true'}
+      aria-label={title}
+    >
+      {title ? <title>{title}</title> : null}
+      <g fill="none" stroke={stroke} strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round">
+        {/* chain and stem */}
+        <path d="M60 4 L60 12 M60 16 L60 24 M60 28 L60 42" />
+        <circle cx="60" cy="14" r="2.2" />
+        <circle cx="60" cy="26" r="2.2" />
+        {/* upper tier */}
+        <path d="M60 42 C44 42, 34 52, 30 66 M60 42 C76 42, 86 52, 90 66" />
+        <path d="M60 42 C52 48, 50 56, 50 64 M60 42 C68 48, 70 56, 70 64" />
+        {/* lower tier */}
+        <path d="M60 48 C36 54, 20 66, 14 84 M60 48 C84 54, 100 66, 106 84" />
+        {/* candle cups */}
+        <path d="M26 66 L34 66 M46 64 L54 64 M66 64 L74 64 M86 66 L94 66 M10 84 L18 84 M102 84 L110 84" />
+        {/* candles and flames */}
+        <path d="M30 66 L30 58 M50 64 L50 56 M70 64 L70 56 M90 66 L90 58 M14 84 L14 76 M106 84 L106 76" strokeWidth="2" />
+        <path
+          d="M30 55 C28 52, 30 49, 30 48 C30 49, 32 52, 30 55 Z M50 53 C48 50, 50 47, 50 46 C50 47, 52 50, 50 53 Z M70 53 C68 50, 70 47, 70 46 C70 47, 72 50, 70 53 Z M90 55 C88 52, 90 49, 90 48 C90 49, 92 52, 90 55 Z M14 73 C12 70, 14 67, 14 66 C14 67, 16 70, 14 73 Z M106 73 C104 70, 106 67, 106 66 C106 67, 108 70, 106 73 Z"
+          fill={stroke}
+          stroke="none"
+          opacity="0.9"
+        />
+        {/* bowl and drop */}
+        <path d="M44 70 C48 84, 72 84, 76 70" />
+        <path d="M60 84 L60 92" />
+        <path d="M60 92 L56 98 L60 104 L64 98 Z" strokeWidth="2" />
+      </g>
+    </svg>
+  )
+}
+
+/* ─────────────────────────── Doli / palanquin ───────────────────────── */
+
+/** The bride's doli: a curved canopy, an arched window, carrying poles. */
+export function DoliIcon({ className = '', stroke = 'url(#goldFoil)', title }: Base) {
+  return (
+    <svg
+      viewBox="0 0 120 110"
+      className={className}
+      role={title ? 'img' : 'presentation'}
+      aria-hidden={title ? undefined : 'true'}
+      aria-label={title}
+    >
+      {title ? <title>{title}</title> : null}
+      <g fill="none" stroke={stroke} strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round">
+        {/* finial and canopy */}
+        <path d="M60 8 L60 18" />
+        <circle cx="60" cy="6" r="2.4" fill={stroke} />
+        <path d="M28 40 C32 26, 46 18, 60 18 C74 18, 88 26, 92 40 Z" />
+        <path d="M24 40 L96 40" />
+        {/* body */}
+        <path d="M30 40 L30 78 L90 78 L90 40" />
+        <path d="M30 78 L26 84 L94 84 L90 78" />
+        {/* arched window with a drawn curtain */}
+        <path d="M48 78 L48 58 C48 50, 72 50, 72 58 L72 78" />
+        <path d="M60 52 C56 60, 56 70, 60 78" strokeWidth="1.6" />
+        {/* carrying poles */}
+        <path d="M4 70 L30 70 M90 70 L116 70" strokeWidth="2.8" />
+        <path d="M4 70 L4 66 M116 70 L116 66" strokeWidth="2" />
+        {/* tassels */}
+        <path d="M36 84 L36 94 M44 84 L44 96 M76 84 L76 96 M84 84 L84 94" strokeWidth="1.6" />
+        <circle cx="36" cy="96" r="1.6" fill={stroke} stroke="none" />
+        <circle cx="44" cy="98" r="1.6" fill={stroke} stroke="none" />
+        <circle cx="76" cy="98" r="1.6" fill={stroke} stroke="none" />
+        <circle cx="84" cy="96" r="1.6" fill={stroke} stroke="none" />
+      </g>
+    </svg>
+  )
+}
+
+/** The icon a config event names, so the letter and the schedule agree. */
+export function EventIcon({ kind, className = '' }: { kind?: string; className?: string }) {
+  if (kind === 'banquet') return <ChandelierIcon className={className} />
+  if (kind === 'doli') return <DoliIcon className={className} />
+  return <DomeIcon className={className} />
 }
 
 /* ────────────────────────── Hearts ──────────────────────────────────── */

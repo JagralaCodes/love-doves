@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import { gsap, ScrollTrigger } from '../lib/gsap'
 import { prefersReducedMotion } from '../lib/motionPrefs'
+import { registerLenis } from '../lib/scroll'
 
 /**
  * Lenis smooth scrolling, driven by GSAP's ticker and kept in lockstep
@@ -29,6 +30,7 @@ export function useSmoothScroll() {
       wheelMultiplier: 1,
     })
     lenisRef.current = lenis
+    registerLenis(lenis)
 
     // Lenis position changes must refresh ScrollTrigger's cache.
     lenis.on('scroll', ScrollTrigger.update)
@@ -41,6 +43,7 @@ export function useSmoothScroll() {
     return () => {
       gsap.ticker.remove(raf)
       lenis.destroy()
+      registerLenis(null)
       lenisRef.current = null
     }
   }, [])
