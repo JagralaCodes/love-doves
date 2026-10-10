@@ -53,8 +53,7 @@ const KEY_READY = !/^\[.*\]$/.test(wedding.rsvp.formAccessKey) && wedding.rsvp.f
  * optional dua. Inputs are 16px, so iOS does not zoom in on focus. On
  * send the button shrinks away and a heart springs up in its place with a
  * gold burst, then the thank-you. Failure shakes gently and says so. The
- * reply goes to the inbox the Web3Forms key belongs to (CC to other
- * addresses is a paid Web3Forms feature; see the config).
+ * reply goes to the inbox the Web3Forms key belongs to.
  */
 export function Rsvp() {
   const lang = useLang()

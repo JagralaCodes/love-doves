@@ -245,13 +245,7 @@ export const wedding = {
      * email address the access key belongs to; to change where RSVPs land,
      * change it on the Web3Forms side (see TODO.md).
      */
-    receiverEmail: 'letsbegin81@gmail.com',
-    /**
-     * Other people who should see every reply. NOT sent to Web3Forms:
-     * copying (`ccemail`) is a paid feature there and a free key rejects
-     * the whole submission with it. Forward from the key's inbox instead.
-     */
-    alsoNotify: ['jagralashihab7786@gmail.com', 'jagralashihab786@gmail.com'],
+    receiverEmail: 'jagralashihab7786@gmail.com',
   },
 
   /** Used for <title> and the OG tags. */
