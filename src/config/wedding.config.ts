@@ -31,8 +31,8 @@ export const wedding = {
    * The ONE main event the single site-wide countdown targets.
    * ISO 8601 with an explicit offset so it is correct in every timezone.
    */
-  // The Nikah is after Zuhr; 2:00 PM is an assumed clock time (see the event).
-  countdownTarget: '2026-11-13T14:00:00+05:30',
+  // The Nikah is after Asr; 4:45 PM is an assumed clock time (see the event).
+  countdownTarget: '2026-11-13T16:45:00+05:30',
 
   events: [
     {
@@ -40,17 +40,22 @@ export const wedding = {
       /** YYYY-MM-DD — formatted for display by lib/date.ts */
       date: '2026-11-13',
       /**
-       * HH:mm in 24h. The family's timing is "after Zuhr namaz", which is
-       * what the card shows (timeLabel). The countdown and the calendar
-       * file still need a clock time: 14:00 is an ASSUMPTION — Zuhr jamaat
-       * in Mira Road in November is usually around 1:30 PM. Set it to the
-       * masjid's actual jamaat time plus a little, if it differs.
+       * HH:mm in 24h. The family's timing is "after Asr namaz", which is
+       * what the page shows (timeLabel). The countdown and the calendar
+       * file still need a clock time: 16:45 is an ASSUMPTION — Asr (Hanafi)
+       * in Mira Road in mid-November begins around 4:25 PM, so jamaat is
+       * usually 4:35–4:45. Set it to the masjid's actual time if it differs.
        */
-      time: '14:00',
-      /** Optional end time, used for the .ics calendar file. */
-      endTime: '15:30',
-      /** Shown on the card instead of the clock time. */
-      timeLabel: 'After Zuhr Namaz',
+      time: '16:45',
+      /**
+       * Optional end time, used for the .ics calendar file. Runs through
+       * the Rukhsati (Maghrib is about 6:00 PM), so one entry covers the day.
+       */
+      endTime: '19:30',
+      /** Shown instead of the clock time. */
+      timeLabel: 'After Asr Namaz',
+      /** The same evening, after the Nikah. No venue of its own on the page. */
+      followedBy: { name: 'Rukhsati', timeLabel: 'After Maghrib Namaz' },
       venue: 'Masjid e Abu Bakar',
       /** Locality confirmed from the map pin below (19.2735, 72.8913). */
       address: 'Western Park, Mira Road (E), Thane',
@@ -107,9 +112,6 @@ export const wedding = {
     eventsHeading: 'The celebrations',
     addToCalendar: 'Add to calendar',
     calendarSaved: 'Saved',
-    swipeHint: 'Swipe',
-    previousEvent: 'Previous event',
-    nextEvent: 'Next event',
     viewOnMap: 'View on map',
     daughterOf: 'Daughter of',
     sonOf: 'Son of',
@@ -124,17 +126,19 @@ export const wedding = {
     /* Venue envelope */
     swipeUp: 'Slide the heart away to open',
 
-    /* RSVP */
-    rsvpBy: 'Please reply by',
+    /* Reply form */
+    rsvpHeading: 'Our joy is incomplete without you',
+    rsvpInvite: "Tell us you're coming, so we can keep a place for you and your family.",
+    rsvpBy: 'Kindly reply by',
     rsvpName: 'Your name',
     rsvpFamily: 'Family name',
     rsvpMembers: 'Number of guests',
     rsvpDua: 'A dua or a message (optional)',
-    rsvpSubmit: 'Send RSVP',
+    rsvpSubmit: 'Count us in',
     rsvpSending: 'Sending…',
-    rsvpThanks: 'Jazakallah Khair — we received your RSVP',
+    rsvpThanks: "Jazakallah Khair — we can't wait to welcome you",
     rsvpError: 'That did not go through. Please try again, or message us directly.',
-    rsvpDisabled: 'RSVP opens soon',
+    rsvpDisabled: 'Replies open soon',
     required: 'Required',
     /** Shown beneath the names on the closing page. */
     withLove: 'With love and duas',
@@ -164,9 +168,6 @@ export const wedding = {
     eventsHeading: 'تقریبات',
     addToCalendar: 'کیلنڈر میں شامل کریں',
     calendarSaved: 'محفوظ ہو گیا',
-    swipeHint: 'سوائپ کریں',
-    previousEvent: 'پچھلی تقریب',
-    nextEvent: 'اگلی تقریب',
     viewOnMap: 'نقشہ دیکھیں',
     daughterOf: 'دختر',
     sonOf: 'پسر',
@@ -182,27 +183,30 @@ export const wedding = {
     envelopePrompt: 'لفافہ کھولنے کے لیے دل کی مہر ہٹائیں',
     swipeUp: 'کھولنے کے لیے دل کو کھسکائیں',
 
-    rsvpHeading: 'کیا آپ شامل ہوں گے؟',
+    rsvpHeading: 'آپ کے بغیر ہماری خوشی ادھوری ہے',
+    rsvpInvite: 'ہمیں بتائیں کہ آپ تشریف لا رہے ہیں، تاکہ ہم آپ اور آپ کے گھر والوں کے لیے جگہ رکھ سکیں۔',
     rsvpBy: 'براہِ کرم جواب دیں',
     rsvpName: 'آپ کا نام',
     rsvpFamily: 'خاندان کا نام',
     rsvpMembers: 'مہمانوں کی تعداد',
     rsvpDua: 'دعا یا پیغام (اختیاری)',
-    rsvpSubmit: 'جواب بھیجیں',
+    rsvpSubmit: 'ہم ضرور آئیں گے',
     rsvpSending: 'بھیجا جا رہا ہے…',
-    rsvpThanks: 'جزاک اللہ خیر — آپ کا جواب موصول ہو گیا',
+    rsvpThanks: 'جزاک اللہ خیر — آپ کا انتظار رہے گا',
     rsvpError: 'جواب نہیں پہنچ سکا۔ دوبارہ کوشش کریں، یا ہمیں براہِ راست پیغام بھیجیں۔',
-    rsvpDisabled: 'جواب جلد کھلے گا',
+    rsvpDisabled: 'جوابات جلد کھلیں گے',
     required: 'لازمی',
     withLove: 'محبت اور دعاؤں کے ساتھ',
     audioLabel: 'ہلکی پس منظر کی آواز',
     events: {
       Nikah: 'نکاح',
+      Rukhsati: 'رخصتی',
       Walima: 'ولیمہ',
     } as Record<string, string>,
     /** Urdu for each event's timeLabel, keyed by event name. */
     timeLabels: {
-      Nikah: 'نمازِ ظہر کے بعد',
+      Nikah: 'نمازِ عصر کے بعد',
+      Rukhsati: 'نمازِ مغرب کے بعد',
     } as Record<string, string>,
   },
 
@@ -221,7 +225,6 @@ export const wedding = {
      * change it on the Web3Forms side (see TODO.md).
      */
     receiverEmail: 'letsbegin81@gmail.com',
-    heading: 'Will you join us?',
   },
 
   /** Used for <title>, OG tags and the .ics organiser field. */

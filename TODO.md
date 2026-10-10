@@ -51,10 +51,9 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 **Save the Date**
 - [x] Foil fills the whole ogee arch, spun-gold look; scratch threshold fires at ~55%; heart confetti bursts
 
-**Events**
-- [x] Swipe slides straight (no tilt); thrown card returns to the back; cards behind are filled in; loops forever
-- [x] "Add to calendar" downloads a valid `.ics` (intercepted and checked: escaping, folding, floating times, alarm)
-- [x] Card actions on one line, underlines aligned, 44px tap targets
+**Events** — *the card stack is gone* (`Events.tsx`, `EventDeck.tsx`, `deckThrow.ts` deleted). Venues + maps live on the envelope; the "when" moved above the reply form:
+- [x] **Schedule** (`ui/Schedule.tsx`), above the form: grouped by day, a gold thread with a bead per moment — Fri 13 Nov: Nikah *after Asr Namaz* (Masjid e Abu Bakar) → Rukhsati *after Maghrib Namaz*; Sun 15 Nov: Walima 7–10 PM (Central Plaza Banquet). EN + UR, RTL checked
+- [x] "Add to calendar" kept, per event; the Nikah entry runs through the Rukhsati and names it in the description
 - [ ] Press squeeze / hover underline — feel only; check on a real phone
 
 **Venue**
@@ -63,7 +62,7 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 - [x] Gold route draws toward the masjid on scroll; dome rises to meet it
 - [ ] Both map links open the right pins — links are correct in config; open them once on a phone
 
-**RSVP**
+**Reply form** — *no more "RSVP" on screen*: heading "Our joy is incomplete without you" (UR: آپ کے بغیر ہماری خوشی ادھوری ہے), a line asking them to tell us they're coming, button "Count us in" (UR: ہم ضرور آئیں گے), thanks "we can't wait to welcome you". The email subject still starts "RSVP:" so it sorts in the inbox
 - [x] Labels float (now transform-only, on the start side in RTL)
 - [x] Validation inline / empty submit shakes — verified, no request is sent on an empty submit
 - [x] Shows "RSVP opens soon" while the key is a placeholder (correct until the key is in)
@@ -113,8 +112,10 @@ touch feel, pacing, and the parts gated on the Web3Forms key.
 
 ## Blocked on you
 
-- [x] **Nikah time** — "after Zuhr Namaz", shown as words on the card (EN + UR)
-- [ ] Confirm the clock time behind it: the countdown and `.ics` assume **2:00 PM** (`time` / `countdownTarget` in the config) — set it to the masjid's Zuhr jamaat time + a little if different
+- [x] **Nikah time** — now "after **Asr** Namaz" (was Zuhr), shown as words (EN + UR)
+- [x] **Rukhsati** — "after Maghrib Namaz", same day as the Nikah (`followedBy` on the Nikah in the config)
+- [ ] Confirm the clock times behind them: countdown + `.ics` assume Nikah **4:45 PM**, entry running to **7:30 PM** to cover the Rukhsati (Asr ≈ 4:25, Maghrib ≈ 6:00 in Mira Road mid-Nov) — set `time` / `endTime` / `countdownTarget` to the masjid's jamaat time if different
+- [ ] Rukhsati: confirm it is on 13 Nov, and whether it has its own venue (e.g. from the bride's home) — none is shown for it now
 - [x] **Web3Forms access key** — in; the RSVP form is live
 - [ ] **Where RSVPs land:** Web3Forms sends to the email the KEY was created for — not to anything in our config (`receiverEmail` is a note only). To use another inbox, create a new access key for that address and swap it into `rsvp.formAccessKey`
 - [ ] In the Web3Forms dashboard, restrict the key to the final domain once it exists

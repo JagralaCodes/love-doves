@@ -30,8 +30,10 @@ export type CalendarEvent = {
   venue: string
   address: string
   note?: string
-  /** Timing in words ("After Zuhr Namaz"), put first in the description. */
+  /** Timing in words ("After Asr Namaz"), put first in the description. */
   timeLabel?: string
+  /** A second moment the same evening, e.g. the Rukhsati after Maghrib. */
+  followedBy?: { name: string; timeLabel: string }
 }
 
 type Options = {
@@ -104,7 +106,8 @@ export function buildEventIcs(event: CalendarEvent, options: Options = {}): stri
     : new Date(start.getTime() + DEFAULT_DURATION_H * 3600_000)
 
   const dtStart = floatingStamp(start)
-  const description = [event.timeLabel, event.note, options.url].filter(Boolean).join('\n\n')
+  const then = event.followedBy && `${event.followedBy.name}: ${event.followedBy.timeLabel}`
+  const description = [event.timeLabel, then, event.note, options.url].filter(Boolean).join('\n\n')
 
   const lines = [
     'BEGIN:VCALENDAR',

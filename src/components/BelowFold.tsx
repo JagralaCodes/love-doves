@@ -3,7 +3,6 @@ import { useLang } from '../hooks/useLang'
 
 import { AudioToggle } from './ui/AudioToggle'
 import { SaveTheDate } from './sections/SaveTheDate'
-import { Events } from './sections/Events'
 import { Venue } from './sections/Venue'
 import { Rsvp } from './sections/Rsvp'
 import { Closing } from './sections/Closing'
@@ -21,7 +20,7 @@ type Props = {
  *
  * The first screen a guest sees is the gate, then the hero; none of this
  * is needed to paint either. Splitting it off moves the whole of Motion
- * (only these sections use it) and the scratch card, deck, envelope, form
+ * (only these sections use it) and the scratch card, envelope, schedule, form
  * and confetti out of the critical path. The chunk is requested as soon as
  * the app mounts — while the guest is still on the gate — so in practice
  * it is in place long before anyone scrolls to it.
@@ -40,8 +39,6 @@ export default function BelowFold({ opened }: Props) {
       />
 
       <SaveTheDate />
-
-      <Events />
 
       <Venue />
 

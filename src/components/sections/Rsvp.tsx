@@ -10,6 +10,7 @@ import { EightStar } from '../svg/Ornaments'
 import { SparkleField } from '../ui/SparkleField'
 import { TapButton } from '../ui/Tappable'
 import { GoldGlitterText } from '../ui/GoldGlitterText'
+import { Schedule } from '../ui/Schedule'
 
 import { wedding } from '../../config/wedding.config'
 import { formatDate } from '../../lib/date'
@@ -26,8 +27,9 @@ const MAX_MEMBERS = 20
 const KEY_READY = !/^\[.*\]$/.test(wedding.rsvp.formAccessKey) && wedding.rsvp.formAccessKey.length > 10
 
 /**
- * Will you join us? — the one thing the invitation actually needs a guest
- * to do, so it is treated as a moment rather than a form.
+ * When it all happens, then the reply — the one thing the invitation
+ * actually needs a guest to do, so it is treated as a moment rather than
+ * a form, and asked warmly rather than as an "RSVP".
  *
  * Labels sit inside the field and lift when it is filled; the button has
  * real press physics; success draws a gold check and fires a burst;
@@ -159,7 +161,22 @@ export function Rsvp() {
       <SparkleField count={7} tone="rose" />
 
       <div ref={ref} className="relative z-10 mx-auto max-w-[20rem] text-center">
-        <EightStar className="mx-auto w-3" />
+        <h2
+          className={`text-2xs tracking-[0.35em] text-wine-soft ${ur ? 'font-urdu' : 'uppercase'}`}
+          lang={t.lang}
+          dir={t.dir}
+        >
+          {s(wedding.texts.eventsHeading, wedding.urdu.eventsHeading)}
+        </h2>
+        <div className="mt-5">
+          <Schedule />
+        </div>
+
+        <span className="mt-9 flex items-center justify-center gap-3" aria-hidden="true">
+          <span className="h-px w-8 bg-gold/40" />
+          <EightStar className="w-3" />
+          <span className="h-px w-8 bg-gold/40" />
+        </span>
         <GoldGlitterText
           block
           as="h2"
@@ -169,8 +186,15 @@ export function Rsvp() {
           lang={t.lang}
           dir={t.dir}
         >
-          {ur ? wedding.urdu.rsvpHeading : wedding.rsvp.heading}
+          {s(wedding.texts.rsvpHeading, wedding.urdu.rsvpHeading)}
         </GoldGlitterText>
+        <p
+          className={`text-fluid-sm mt-3 text-wine-soft ${ur ? 'font-urdu leading-[2.1]' : 'leading-relaxed'}`}
+          lang={t.lang}
+          dir={t.dir}
+        >
+          {s(wedding.texts.rsvpInvite, wedding.urdu.rsvpInvite)}
+        </p>
         <p
           className={`nums-lining text-2xs mt-3 tracking-[0.3em] text-wine-soft ${ur ? 'font-urdu' : 'uppercase'}`}
           lang={t.lang}

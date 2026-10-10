@@ -508,19 +508,6 @@
   will-change: transform;
 }
 
-/* The swipe hint on the event deck: chevrons drift the way the card goes. */
-@keyframes swipe-drift {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: translate3d(0, 0, 0);
-  }
-  45% {
-    opacity: 1;
-    transform: translate3d(-3px, 0, 0);
-  }
-}
-
 /* ─────────────────────────────────────────────────────────────
    REDUCED MOTION — content stays, movement goes
    ───────────────────────────────────────────────────────────── */
