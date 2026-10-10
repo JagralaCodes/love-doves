@@ -508,6 +508,13 @@ html.is-hidden * {
   animation-play-state: paused !important;
 }
 
+/* Scroll-parallax layers move on every scrolled frame, so while their
+   section is on screen they are promoted; off screen they are plain paint.
+   This is the only will-change on the page, and it comes and goes. */
+main > section:not(.is-offscreen) [data-parallax] {
+  will-change: transform;
+}
+
 /* ─────────────────────────────────────────────────────────────
    REDUCED MOTION — content stays, movement goes
    ───────────────────────────────────────────────────────────── */

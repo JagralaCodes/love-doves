@@ -288,7 +288,9 @@ export function Hero({ active }: Props) {
           </div>
         </div>
 
-        <span data-rule-exit className="mt-3 block">
+        {/* data-parallax: these two are scrubbed by the scroll while the
+            hero is on screen, and the stylesheet promotes them for that. */}
+        <span data-rule-exit data-parallax className="mt-3 block">
           <span
             data-hero-item
             data-rule
@@ -297,7 +299,7 @@ export function Hero({ active }: Props) {
           />
         </span>
 
-        <span data-crescent-exit className="mt-8 block">
+        <span data-crescent-exit data-parallax className="mt-8 block">
           <span data-hero-item data-crescent className="block">
             <Crescent className="mx-auto w-14" title="Crescent and star" />
           </span>

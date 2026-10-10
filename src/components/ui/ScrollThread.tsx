@@ -63,6 +63,13 @@ export function ScrollThread({ visible }: Props) {
       })
     }
 
+    // These two move on every scrolled frame for as long as the page is
+    // open, so they are promoted for exactly that long.
+    const fill = fillRef.current
+    const bead = beadRef.current
+    if (fill) fill.style.willChange = 'transform'
+    if (bead) bead.style.willChange = 'transform'
+
     const ctx = gsap.context(() => {
       gsap.to(root, { autoAlpha: 1, duration: reduced ? 0.2 : 1.2, delay: reduced ? 0 : 1.4 })
 
@@ -100,6 +107,8 @@ export function ScrollThread({ visible }: Props) {
     return () => {
       ScrollTrigger.removeEventListener('refresh', onRefresh)
       ctx.revert()
+      if (fill) fill.style.willChange = ''
+      if (bead) bead.style.willChange = ''
     }
   }, [visible, reduced])
 

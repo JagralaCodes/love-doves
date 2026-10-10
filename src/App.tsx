@@ -1,57 +1,38 @@
 import { lazy, Suspense, useState } from 'react'
-import { useSmoothScroll } from './hooks/useSmoothScroll'
 import { useScrollLock } from './hooks/useScrollLock'
-import { useScrollRefresh } from './hooks/useScrollRefresh'
-import { useOffscreenSections } from './hooks/useOffscreenSections'
 
 import { SvgDefs } from './components/svg/SvgDefs'
-
-import { SparkleLayer } from './components/ui/SparkleLayer'
-import { ScrollThread } from './components/ui/ScrollThread'
 import { Gate } from './components/sections/Gate'
-import { Hero } from './components/sections/Hero'
-import { QuranVerse } from './components/sections/QuranVerse'
-import { Families } from './components/sections/Families'
 
-// Save the Date onwards, in its own chunk — see BelowFold.
-const BelowFold = lazy(() => import('./components/BelowFold'))
+// Everything behind the gate, as its own chunk — see AboveFold.
+const AboveFold = lazy(() => import('./components/AboveFold'))
 
+/**
+ * The gate, and behind it the page.
+ *
+ * The first bundle holds only this and the gate: the doors paint and take
+ * a tap as early as possible. The page behind them is requested at once
+ * and lands while the viewer is still looking at the doors.
+ */
 export default function App() {
-  const lenisRef = useSmoothScroll()
   // `opened` flips as the doors begin to swing, so the hero plays in behind
   // them; `gateGone` once the gate has faded and can leave the tree.
   const [opened, setOpened] = useState(false)
   const [gateGone, setGateGone] = useState(false)
 
-  // Hold the viewer on the gate until it has gone.
-  useScrollLock(!gateGone, lenisRef)
-  // Re-measure scroll triggers when the page grows — including when the
-  // lazy sections arrive.
-  useScrollRefresh()
-  // CSS animations pause in sections nobody can see, and in a hidden tab.
-  useOffscreenSections()
+  // The lock here covers the moments before the page chunk (and its
+  // smooth scrolling) has arrived; AboveFold takes over with Lenis.
+  useScrollLock(!gateGone)
 
   return (
     <>
       <SvgDefs />
-      <SparkleLayer />
-      <ScrollThread visible={opened} />
 
       {!gateGone && <Gate onOpening={() => setOpened(true)} onOpened={() => setGateGone(true)} />}
 
-      <main>
-        <Hero active={opened} />
-
-        <QuranVerse />
-
-        <Families />
-
-        {/* Holds a screen of space while the chunk lands, so the page never
-            ends abruptly under a fast scroller. */}
-        <Suspense fallback={<section className="min-h-svh bg-pearl-white" aria-busy="true" />}>
-          <BelowFold opened={opened} />
-        </Suspense>
-      </main>
+      <Suspense fallback={null}>
+        <AboveFold opened={opened} gateGone={gateGone} />
+      </Suspense>
     </>
   )
 }

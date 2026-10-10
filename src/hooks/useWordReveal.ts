@@ -127,8 +127,19 @@ export function useWordReveal<T extends HTMLElement = HTMLDivElement>(
             start,
             once: true,
             onEnter: () => {
+              // Promoted for exactly the seconds they move, then released.
+              for (const w of words) w.style.willChange = 'opacity, transform'
               const p = { v: 0 }
-              tween = gsap.to(p, { v: 1, duration, delay, ease: 'none', onUpdate: () => apply(p.v) })
+              tween = gsap.to(p, {
+                v: 1,
+                duration,
+                delay,
+                ease: 'none',
+                onUpdate: () => apply(p.v),
+                onComplete: () => {
+                  for (const w of words) w.style.willChange = ''
+                },
+              })
             },
           })
         : ScrollTrigger.create({

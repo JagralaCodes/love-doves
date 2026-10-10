@@ -38,6 +38,7 @@ export function JourneyLine() {
       return
     }
     end.style.opacity = '0.45'
+    let lastGlow = ''
     const trigger = ScrollTrigger.create({
       trigger: el,
       start: 'top 88%',
@@ -45,8 +46,13 @@ export function JourneyLine() {
       scrub: 0.5,
       onUpdate: (self) => {
         drawTo(path, length, self.progress)
-        // The far icon lights up as the line reaches it.
-        end.style.opacity = String(0.45 + 0.55 * Math.max(0, (self.progress - 0.7) / 0.3))
+        // The far icon lights up as the line reaches it — written only
+        // when it changes, so the icon is not repainted on every frame.
+        const glow = (0.45 + 0.55 * Math.max(0, (self.progress - 0.7) / 0.3)).toFixed(2)
+        if (glow !== lastGlow) {
+          lastGlow = glow
+          end.style.opacity = glow
+        }
       },
     })
     return () => trigger.kill()

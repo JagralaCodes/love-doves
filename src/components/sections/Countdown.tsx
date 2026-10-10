@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { useCountdown } from '../../hooks/useCountdown'
 import { useReveal } from '../../hooks/useReveal'
 import { useLang, langAttrs } from '../../hooks/useLang'
@@ -24,6 +24,30 @@ import { sparkleBurstFrom } from '../../lib/sparkleBus'
  * duas — never a row of zeros, never a negative number (the arithmetic
  * floors at zero).
  */
+/**
+ * The night sky behind the clock, as one memoised piece: the clock ticks
+ * once a second, and nothing in here should be reconciled again for it.
+ */
+const Sky = memo(function Sky() {
+  return (
+    <>
+      <GeometricPattern scale={112} opacity={0.07} color="#d4af37" />
+      <SparkleField count={18} tone="white" />
+      <PearlBokeh count={3} tone="dark" />
+
+      {/* A soft dawn at the horizon, so the sky is not one flat colour. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(155,44,74,0.55) 0%, rgba(94,18,39,0) 70%)',
+        }}
+      />
+    </>
+  )
+})
+
 export function Countdown() {
   const lang = useLang()
   const t = langAttrs(lang)
@@ -55,19 +79,7 @@ export function Countdown() {
       // glow at the horizon.
       style={{ background: 'linear-gradient(180deg, #5e1227 0%, #45101f 48%, #330a17 100%)' }}
     >
-      <GeometricPattern scale={112} opacity={0.07} color="#d4af37" />
-      <SparkleField count={18} tone="white" />
-      <PearlBokeh count={3} tone="dark" />
-
-      {/* A soft dawn at the horizon, so the sky is not one flat colour. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(155,44,74,0.55) 0%, rgba(94,18,39,0) 70%)',
-        }}
-      />
+      <Sky />
 
       <div className="relative z-10 text-center">
         <Crescent className="mx-auto w-12" />

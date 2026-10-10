@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { gsap } from '../../lib/gsap'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { GateDoorLeaf, DoorDefs } from '../svg/GateDoors'
 import { HeartSeal } from '../svg/HeartSeal'
@@ -16,6 +15,19 @@ type Props = {
   onOpened: () => void
 }
 
+const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
+const EASE_IN = 'cubic-bezier(0.55, 0, 1, 0.45)'
+const EASE_IN_OUT = 'cubic-bezier(0.65, 0, 0.35, 1)'
+
+/** A finished `element.animate` keeps its last frame on the element. */
+function run(el: Element | null, keyframes: Keyframe[], options: KeyframeAnimationOptions) {
+  if (!el) return Promise.resolve()
+  const anim = el.animate(keyframes, { fill: 'forwards', ...options })
+  return anim.finished.catch(() => {})
+}
+
+const rnd = (a: number, b: number) => a + Math.random() * (b - a)
+
 /**
  * The opening gate: carved doors closed over the invitation, held shut by
  * a single wax heart.
@@ -30,6 +42,10 @@ type Props = {
  * delay or a stray drag, and a first tap that does nothing is the worst
  * thing this screen can do. Keyboard users still get a click (Enter /
  * Space), guarded so the two can never both fire.
+ *
+ * Animated with the Web Animations API rather than GSAP, so the first
+ * bundle — React and this gate — carries no animation library at all;
+ * GSAP arrives with the page behind the doors.
  */
 export function Gate({ onOpening, onOpened }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -53,7 +69,7 @@ export function Gate({ onOpening, onOpened }: Props) {
     onOpening()
 
     if (reduced) {
-      gsap.to(root, { autoAlpha: 0, duration: 0.45, ease: 'none', onComplete: onOpened })
+      run(root, [{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: 'linear' }).then(onOpened)
       return
     }
 
@@ -62,12 +78,10 @@ export function Gate({ onOpening, onOpened }: Props) {
     // swing, instead of after the whole gate has faded.
     root.style.backgroundColor = 'transparent'
 
-    gsap
-      .timeline({ onComplete: onOpened })
-      .to(copyRef.current, { autoAlpha: 0, y: -12, duration: 0.3 }, 0)
-      .to(leftRef.current, { rotateY: -104, duration: 1.2, ease: 'power3.inOut' }, 0.05)
-      .to(rightRef.current, { rotateY: 104, duration: 1.2, ease: 'power3.inOut' }, 0.05)
-      .to(root, { autoAlpha: 0, duration: 0.5, ease: 'power2.inOut' }, 0.75)
+    run(copyRef.current, [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-12px)' }], { duration: 300, easing: EASE_OUT })
+    run(leftRef.current, [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(-104deg)' }], { duration: 1200, delay: 50, easing: EASE_IN_OUT })
+    run(rightRef.current, [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(104deg)' }], { duration: 1200, delay: 50, easing: EASE_IN_OUT })
+    run(root, [{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 750, easing: EASE_IN_OUT }).then(onOpened)
   }, [reduced, onOpening, onOpened])
 
   const releaseHeart = useCallback(() => {
@@ -77,7 +91,7 @@ export function Gate({ onOpening, onOpened }: Props) {
 
     const heart = heartRef.current
     if (!heart || reduced) {
-      if (heart) gsap.set(heart, { autoAlpha: 0 })
+      if (heart) heart.style.visibility = 'hidden'
       openDoors()
       return
     }
@@ -89,22 +103,23 @@ export function Gate({ onOpening, onOpened }: Props) {
       power: 170,
     })
 
-    gsap
-      .timeline()
-      // A beat of release before gravity takes it...
-      .to(heart, { scale: 1.07, yPercent: -12, rotate: -5, duration: 0.14, ease: 'power2.out' })
-      // ...then it drops, accelerating, tumbling and drifting aside.
-      .to(heart, {
-        y: window.innerHeight * 0.8,
-        x: gsap.utils.random(26, 54),
-        rotate: gsap.utils.random(38, 70),
-        scale: 0.86,
-        duration: 0.8,
-        ease: 'power2.in',
-      })
-      .to(heart, { autoAlpha: 0, duration: 0.3, ease: 'power1.in' }, '-=0.3')
-      // The doors do not wait for it to land.
-      .add(openDoors, 0.4)
+    // A beat of release before gravity takes it, then it drops,
+    // accelerating, tumbling and drifting aside. The fall and the fade run
+    // as one keyframe track so neither can fight the other.
+    const fall = window.innerHeight * 0.8
+    const dx = rnd(26, 54)
+    const spin = rnd(38, 70)
+    heart.animate(
+      [
+        { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1, offset: 0 },
+        { transform: 'translate(0, -12%) rotate(-5deg) scale(1.07)', opacity: 1, offset: 0.13, easing: EASE_IN },
+        { transform: `translate(${dx * 0.6}px, ${fall * 0.62}px) rotate(${spin * 0.62}deg) scale(0.92)`, opacity: 1, offset: 0.72 },
+        { transform: `translate(${dx}px, ${fall}px) rotate(${spin}deg) scale(0.86)`, opacity: 0, offset: 1 },
+      ],
+      { duration: 1100, fill: 'forwards' },
+    )
+    // The doors do not wait for it to land.
+    window.setTimeout(openDoors, 400)
   }, [reduced, openDoors])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
@@ -112,17 +127,19 @@ export function Gate({ onOpening, onOpened }: Props) {
     releaseHeart()
   }
 
-  // Settle the heart in once the gate appears. Opacity only — `autoAlpha`
-  // would set `visibility: hidden`, and a hidden element cannot be tapped,
-  // so a quick first tap would have gone straight through to the door.
+  // Settle the heart in once the gate appears. Opacity only — never
+  // `visibility: hidden`, which cannot be tapped, so a quick first tap
+  // would have gone straight through to the door.
   useEffect(() => {
     const heart = heartRef.current
     if (!heart) return
-    gsap.fromTo(
-      heart,
-      { opacity: 0, scale: 0.86 },
-      { opacity: 1, scale: 1, duration: reduced ? 0.3 : 0.9, ease: 'expo.out' },
+    const anim = heart.animate(
+      [{ opacity: 0, transform: 'scale(0.86)' }, { opacity: 1, transform: 'scale(1)' }],
+      { duration: reduced ? 300 : 900, easing: EASE_OUT, fill: 'both' },
     )
+    // Let go of the element once it has landed, so the release can take it.
+    anim.finished.then(() => anim.commitStyles?.(), () => {}).finally(() => anim.cancel())
+    return () => anim.cancel()
   }, [reduced])
 
   return (
@@ -170,8 +187,6 @@ export function Gate({ onOpening, onOpened }: Props) {
           onClick={releaseHeart}
           disabled={released}
           aria-label="Release the heart to open the invitation"
-          // No CSS transition on transform: GSAP drives the lift and the
-          // fall, and a transition would smear every frame of it.
           className="pointer-events-auto relative size-28 origin-center disabled:cursor-default"
           // No double-tap-to-zoom delay on the one control that matters.
           style={{ touchAction: 'manipulation' }}

@@ -37,6 +37,10 @@ export function useParallax<T extends HTMLElement = HTMLDivElement>({
     const el = ref.current
     if (!el || !travel || reduced || deviceTier() === 'low') return
     const section = el.closest('section') ?? el.parentElement
+    // Marks the layer for the stylesheet: it gets will-change only while
+    // its section is on screen (see index.css), since a scrubbed transform
+    // on a big un-promoted layer repaints it on every scrolled frame.
+    el.dataset.parallax = ''
 
     const tween =
       mode === 'lag'
@@ -63,6 +67,7 @@ export function useParallax<T extends HTMLElement = HTMLDivElement>({
       tween.scrollTrigger?.kill()
       tween.kill()
       gsap.set(el, { clearProps: 'transform' })
+      delete el.dataset.parallax
     }
   }, [travel, mode, reduced])
 
