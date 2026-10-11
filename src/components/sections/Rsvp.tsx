@@ -104,17 +104,20 @@ export function Rsvp() {
       // Multipart, not JSON: a JSON body needs a CORS preflight, and
       // Web3Forms answers that OPTIONS request with 403. A plain form post
       // is a "simple" request — no preflight — and is what they document.
+      // Web3Forms prints every field as a labelled row in the email, in
+      // this order, so the labels are written for the family reading it.
+      const audience = getAudience()
+      const invitedTo = audience === 'all' ? 'Nikah & Walima' : audience === 'nikah' ? 'Nikah' : 'Walima'
       const body = new FormData()
       body.set('access_key', wedding.rsvp.formAccessKey)
-      const audience = getAudience()
-      const tag = audience === 'all' ? '' : ` [${audience === 'nikah' ? 'Nikah' : 'Walima'} guest]`
-      body.set('subject', `RSVP: ${who} - ${guests} guests${tag}`)
-      body.set('invited_to', audience === 'all' ? 'Nikah & Walima' : audience === 'nikah' ? 'Nikah' : 'Walima')
+      body.set('subject', `RSVP · ${invitedTo} · ${who} (${guests} ${guests === 1 ? 'guest' : 'guests'})`)
       body.set('from_name', who)
-      body.set('name', name.trim())
-      body.set('family', family.trim())
-      body.set('members', String(guests))
-      body.set('message', dua.trim())
+      body.set('Invited to', invitedTo)
+      body.set('Guest', who)
+      body.set('Number of guests', String(guests))
+      body.set('Dua / message', dua.trim() || '—')
+      body.set('Language', ur ? 'Urdu' : 'English')
+      body.set('Link used', window.location.pathname + window.location.hash)
       // The hidden honeypot: people never see it, bots tick it, and
       // Web3Forms drops any submission where it is set.
       if (formRef.current?.querySelector<HTMLInputElement>('[name="botcheck"]')?.checked) body.set('botcheck', 'on')
