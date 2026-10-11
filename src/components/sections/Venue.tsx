@@ -7,7 +7,6 @@ import { Envelope } from '../ui/Envelope'
 import { JourneyLine } from '../ui/JourneyLine'
 
 import { wedding } from '../../config/wedding.config'
-import { visibleEvents } from '../../lib/audience'
 
 /**
  * Where to find us: a tri-fold letter sealed in an envelope, and under it
@@ -49,11 +48,9 @@ export function Venue() {
         />
       </div>
 
-      {visibleEvents().length > 1 && (
-        <div className="relative z-10">
-          <JourneyLine />
-        </div>
-      )}
+      <div className="relative z-10">
+        <JourneyLine />
+      </div>
     </section>
   )
 }

@@ -22,25 +22,34 @@ function momentsOf(event: WeddingEvent): Moment[] {
   const label = 'timeLabel' in event ? event.timeLabel : undefined
   const end = 'endTime' in event ? event.endTime : undefined
   const clock = `${formatTime(event.time)}${end ? ` — ${formatTime(end)}` : ''}`
+  // Every day is listed on every link; the venue is only shown for the
+  // celebration this guest is invited to.
+  const invited = visibleEvents().includes(event)
   const first: Moment = {
     name: event.name,
     when: label ?? clock,
     whenUr: label ? wedding.urdu.timeLabels[event.name] : undefined,
-    venue: event.venue,
+    venue: invited ? event.venue : undefined,
     icon: 'icon' in event ? event.icon : undefined,
   }
   if (!('followedBy' in event) || !event.followedBy) return [first]
   const next = event.followedBy
   return [
     first,
-    { name: next.name, when: next.timeLabel, whenUr: wedding.urdu.timeLabels[next.name], icon: next.icon },
+    {
+      name: next.name,
+      when: next.timeLabel,
+      whenUr: wedding.urdu.timeLabels[next.name],
+      icon: next.icon,
+      venue: invited && 'venue' in next ? next.venue : undefined,
+    },
   ]
 }
 
 /** The events grouped by day, in config order. */
 function days() {
   const out: { date: string; moments: Moment[] }[] = []
-  for (const event of visibleEvents()) {
+  for (const event of wedding.events) {
     const day = out.find((d) => d.date === event.date)
     if (day) day.moments.push(...momentsOf(event))
     else out.push({ date: event.date, moments: momentsOf(event) })
