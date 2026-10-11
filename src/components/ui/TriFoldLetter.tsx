@@ -4,6 +4,7 @@ import { EventIcon } from '../svg/Ornaments'
 import { wedding } from '../../config/wedding.config'
 import type { WeddingEvent } from '../../config/wedding.config'
 import { formatShortDate, formatTimeRange } from '../../lib/date'
+import { getAudience, visibleEvents } from '../../lib/audience'
 
 /** Google Maps directions to a place, by its name and address. */
 function directionsUrl(event: WeddingEvent) {
@@ -115,7 +116,15 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
-  const [nikah, walima] = wedding.events
+  // One celebration on a /nikah or /walima link: no bottom panel at all.
+  const [first, second] = visibleEvents()
+  const audience = getAudience()
+  const opening =
+    audience === 'nikah'
+      ? ur ? wedding.urdu.invitedNikah : wedding.texts.invitedNikah
+      : audience === 'walima'
+        ? ur ? wedding.urdu.invitedWalima : wedding.texts.invitedWalima
+        : ur ? wedding.urdu.honouredLine : wedding.texts.honouredLine
 
   const face =
     'absolute inset-0 flex flex-col items-center justify-center px-[1.1em] text-center [backface-visibility:hidden]'
@@ -135,7 +144,8 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
         perspective: '1100px',
       }}
     >
-      {/* Bottom panel — the Walima, folded up behind the middle. */}
+      {/* Bottom panel — the second celebration, folded up behind the middle. */}
+      {second && (
       <div
         data-panel="bottom"
         className="absolute left-0 w-full [transform-style:preserve-3d]"
@@ -144,10 +154,11 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
         style={{ top: panel - 1, height: bottomH + 1, transformOrigin: '50% 0', zIndex: 1, background: 'var(--color-paper)' }}
       >
         <div className={face} style={{ background: 'var(--color-paper)' }}>
-          <VenueFace event={walima} />
+          <VenueFace event={second} />
         </div>
         <span className={`${border} border-t-0`} style={{ top: -1 }} />
       </div>
+      )}
 
       {/* Middle panel — the Nikah. */}
       <div
@@ -156,9 +167,9 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
         style={{ height: panel, zIndex: 2, background: 'var(--color-paper)' }}
       >
         <div className={face} style={{ background: 'var(--color-paper)' }}>
-          <VenueFace event={nikah} />
+          <VenueFace event={first} />
         </div>
-        <span className={`${border} border-t-0 border-b-0`} style={{ top: -1, bottom: -1 }} />
+        <span className={`${border} border-t-0 ${second ? 'border-b-0' : ''}`} style={{ top: -1, bottom: second ? -1 : undefined }} />
       </div>
 
       {/* Top panel — hinged on the middle's top edge, folded down over it. */}
@@ -175,7 +186,7 @@ export const TriFoldLetter = forwardRef<HTMLDivElement, Props>(function TriFoldL
             lang={t.lang}
             dir={t.dir}
           >
-            {ur ? wedding.urdu.honouredLine : wedding.texts.honouredLine}
+            {opening}
           </p>
           <span className="mt-[0.75em]">
             <Rule />

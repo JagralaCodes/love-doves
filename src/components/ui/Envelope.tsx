@@ -5,6 +5,7 @@ import { HeartSeal } from '../svg/HeartSeal'
 import { TriFoldLetter } from './TriFoldLetter'
 import { sparkleBurstFrom } from '../../lib/sparkleBus'
 import { glideTo } from '../../lib/scroll'
+import { visibleEvents } from '../../lib/audience'
 
 type Props = {
   /** The monogram pressed into the heart seal. */
@@ -21,11 +22,12 @@ type Props = {
 const BASE = 375
 /* Everything sits 70px higher than the reference, so the reserved room for
    the top panel to unfold into does not read as a gap under the heading. */
-const STAGE_H = 592
+const SINGLE = visibleEvents().length < 2
+const STAGE_H = SINGLE ? 440 : 592
 const ENV = { w: 311, h: 206, top: 168 }
 const FLAP_H = 124
 /** The folded stack is the middle panel's height; top is smaller, bottom larger. */
-const LETTER = { w: 286, top: 166, panels: [150, 190, 230] as [number, number, number] }
+const LETTER = { w: 286, top: 166, panels: (SINGLE ? [150, 190, 0] : [150, 190, 230]) as [number, number, number] }
 const SEAL = { w: 62, h: 58, y: 282 }
 const HINT_TOP = 385
 const HEARTS = 10

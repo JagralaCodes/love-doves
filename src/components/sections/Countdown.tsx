@@ -13,6 +13,7 @@ import { GoldGlitterText } from '../ui/GoldGlitterText'
 import { wedding } from '../../config/wedding.config'
 import { cell } from '../../lib/countdown'
 import { sparkleBurstFrom } from '../../lib/sparkleBus'
+import { getAudience, mainEventStart } from '../../lib/audience'
 
 /**
  * The ONE countdown on the site, and the last thing on the page — so the
@@ -52,7 +53,8 @@ export function Countdown() {
   const lang = useLang()
   const t = langAttrs(lang)
   const ur = lang === 'ur'
-  const left = useCountdown(wedding.countdownTarget)
+  const left = useCountdown(mainEventStart())
+  const toWalima = getAudience() === 'walima'
   const ref = useReveal<HTMLDivElement>({ variant: 'stagger-up', children: '[data-unit]', stagger: 0.12 })
   const doneRef = useRef<HTMLDivElement>(null)
   const firedRef = useRef(false)
@@ -148,7 +150,9 @@ export function Countdown() {
               lang={t.lang}
               dir={t.dir}
             >
-              {ur ? wedding.urdu.countdownTo : wedding.texts.countdownTo}
+              {toWalima
+                ? ur ? wedding.urdu.countdownToWalima : wedding.texts.countdownToWalima
+                : ur ? wedding.urdu.countdownTo : wedding.texts.countdownTo}
             </p>
           </>
         )}

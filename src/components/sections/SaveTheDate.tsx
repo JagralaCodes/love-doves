@@ -10,6 +10,7 @@ import { GoldGlitterText } from '../ui/GoldGlitterText'
 
 import { wedding } from '../../config/wedding.config'
 import { splitDate } from '../../lib/date'
+import { mainEvent } from '../../lib/audience'
 
 /** The foil's silhouette, in the arch's own 200 x 260 coordinate space. */
 const ARCH = { d: archClosedPath('ogee'), width: 200, height: 260 }
@@ -28,7 +29,7 @@ export function SaveTheDate() {
   const ur = lang === 'ur'
 
   const ref = useReveal<HTMLDivElement>({ variant: 'scale-in' })
-  const main = splitDate(wedding.events[0].date)
+  const main = splitDate(mainEvent().date)
 
   return (
     <section data-thread="Date" className="relative overflow-hidden bg-pearl-white px-[var(--page-gutter)] py-[var(--section-gap)]">

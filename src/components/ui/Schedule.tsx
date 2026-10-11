@@ -4,6 +4,7 @@ import { EventIcon } from '../svg/Ornaments'
 import { wedding } from '../../config/wedding.config'
 import type { WeddingEvent } from '../../config/wedding.config'
 import { formatFullDate, formatTime } from '../../lib/date'
+import { visibleEvents } from '../../lib/audience'
 
 /** One line of the day: an event, or a moment that follows one. */
 type Moment = {
@@ -39,7 +40,7 @@ function momentsOf(event: WeddingEvent): Moment[] {
 /** The events grouped by day, in config order. */
 function days() {
   const out: { date: string; moments: Moment[] }[] = []
-  for (const event of wedding.events) {
+  for (const event of visibleEvents()) {
     const day = out.find((d) => d.date === event.date)
     if (day) day.moments.push(...momentsOf(event))
     else out.push({ date: event.date, moments: momentsOf(event) })

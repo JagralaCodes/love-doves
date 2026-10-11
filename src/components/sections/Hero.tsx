@@ -18,6 +18,7 @@ import { ScrollHint } from '../ui/ScrollHint'
 
 import { wedding } from '../../config/wedding.config'
 import { formatDotDate } from '../../lib/date'
+import { mainEvent, visibleEvents } from '../../lib/audience'
 
 /**
  * Spelled out rather than the U+FDFD ligature.
@@ -120,7 +121,7 @@ export function Hero({ active }: Props) {
 
   // Read off the events rather than hardcoded, so adding a third
   // celebration to the config puts it here too.
-  const eventNames = wedding.events
+  const eventNames = visibleEvents()
     .map((e) => (ur ? (wedding.urdu.events[e.name] ?? e.name) : e.name))
     .join(ur ? ' اور ' : ' & ')
 
@@ -362,7 +363,7 @@ export function Hero({ active }: Props) {
           lang="en"
           dir="ltr"
         >
-          {formatDotDate(wedding.events[0].date)}
+          {formatDotDate(mainEvent().date)}
         </p>
 
         <p

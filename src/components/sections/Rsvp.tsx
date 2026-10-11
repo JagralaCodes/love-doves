@@ -15,6 +15,7 @@ import { Schedule } from '../ui/Schedule'
 import { wedding } from '../../config/wedding.config'
 import { sparkleBurstFrom } from '../../lib/sparkleBus'
 import { seam } from '../../lib/seam'
+import { getAudience } from '../../lib/audience'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 type Errors = Partial<Record<'name' | 'family', string>>
@@ -105,7 +106,10 @@ export function Rsvp() {
       // is a "simple" request — no preflight — and is what they document.
       const body = new FormData()
       body.set('access_key', wedding.rsvp.formAccessKey)
-      body.set('subject', `RSVP: ${who} - ${guests} guests`)
+      const audience = getAudience()
+      const tag = audience === 'all' ? '' : ` [${audience === 'nikah' ? 'Nikah' : 'Walima'} guest]`
+      body.set('subject', `RSVP: ${who} - ${guests} guests${tag}`)
+      body.set('invited_to', audience === 'all' ? 'Nikah & Walima' : audience === 'nikah' ? 'Nikah' : 'Walima')
       body.set('from_name', who)
       body.set('name', name.trim())
       body.set('family', family.trim())

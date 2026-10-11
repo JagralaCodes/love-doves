@@ -123,6 +123,9 @@ export const wedding = {
     venueHeading: 'Where to find us',
     /** The letter's opening line, before the two venues. */
     honouredLine: 'We would be honoured by your presence at',
+    /** The letter's opening line on a single-celebration link. */
+    invitedNikah: 'You are warmly invited to the Nikah',
+    invitedWalima: 'You are warmly invited to the Walima',
     /** Under the monogram on the folded letter's cover. */
     coverLine: 'With love',
     getDirections: 'Get directions',
@@ -136,6 +139,7 @@ export const wedding = {
 
     /* Countdown */
     countdownTo: 'until the Nikah',
+    countdownToWalima: 'until the Walima',
     days: 'Days',
     hours: 'Hours',
     minutes: 'Minutes',
@@ -186,6 +190,8 @@ export const wedding = {
     tapToReveal: 'یا چھو کر دیکھیں',
     venueHeading: 'مقام',
     honouredLine: 'آپ کی تشریف آوری ہمارے لیے باعثِ عزت ہوگی',
+    invitedNikah: 'آپ کو نکاح میں شرکت کی پُرخلوص دعوت ہے',
+    invitedWalima: 'آپ کو ولیمہ میں شرکت کی پُرخلوص دعوت ہے',
     coverLine: 'محبت کے ساتھ',
     getDirections: 'راستہ دیکھیں',
     familiesHeading: 'ہمارے خاندانوں کے ساتھ',
@@ -195,6 +201,7 @@ export const wedding = {
 
     countdownHeading: 'دن گن رہے ہیں',
     countdownTo: 'نکاح تک',
+    countdownToWalima: 'ولیمہ تک',
     dayIsHere: 'الحمدللہ — نکاح ہو چکا ہے۔ براہِ کرم جوڑے کو اپنی دعاؤں میں یاد رکھیں۔',
     days: 'دن',
     hours: 'گھنٹے',
