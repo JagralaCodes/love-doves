@@ -12,7 +12,15 @@ export type BurstOptions = {
   count?: number
   /** Initial speed spread, px/s. */
   power?: number
-  tone?: 'white' | 'gold' | 'rose' | 'mixed'
+  tone?: 'white' | 'gold' | 'rose' | 'wine' | 'mixed'
+  /** Extra upward speed, px/s — a fountain rather than a ring. */
+  lift?: number
+  /** Share of the particles that are hearts, 0–1. Defaults by tone. */
+  hearts?: number
+  /** Particle size range, px. */
+  size?: [number, number]
+  /** Life range, seconds. */
+  life?: [number, number]
 }
 
 type Listener = (x: number, y: number, options: BurstOptions) => void

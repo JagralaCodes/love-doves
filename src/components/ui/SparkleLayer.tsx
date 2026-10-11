@@ -25,6 +25,8 @@ const TONES = {
   white: ['255,255,255', '255,255,255', '253,241,244'],
   gold: ['245,225,164', '212,175,55', '255,250,234'],
   rose: ['244,184,198', '252,228,234', '255,255,255'],
+  /** Deep pinks and wine with gold between: reads on a white page. */
+  wine: ['155,44,74', '197,106,133', '227,164,180', '244,184,198', '212,175,55', '245,225,164'],
   mixed: ['255,255,255', '245,225,164', '244,184,198'],
 } as const
 
@@ -164,27 +166,25 @@ export function SparkleLayer() {
       const tone = TONES[o.tone ?? 'mixed']
       const power = o.power ?? 180
       const count = Math.round((o.count ?? 26) * scale)
+      const lift = o.lift ?? 30
+      const heartShare = o.hearts ?? (o.tone === 'rose' || o.tone === 'wine' ? 0.6 : 0)
+      const [sMin, sMax] = o.size ?? [2.2, 5.4]
+      const [lMin, lMax] = o.life ?? [0.6, 1.2]
       for (let i = 0; i < count; i++) {
         // Even angular spread with jitter, so it reads as a burst
         // rather than a random cloud.
         const a = (i / count) * Math.PI * 2 + rand(-0.25, 0.25)
         const speed = power * rand(0.35, 1)
         const shape: Shape =
-          o.tone === 'rose'
-            ? Math.random() < 0.6
-              ? 'heart'
-              : 'star'
-            : Math.random() < 0.62
-              ? 'star'
-              : 'dot'
+          Math.random() < heartShare ? 'heart' : Math.random() < 0.62 ? 'star' : 'dot'
         add({
           x,
           y,
           vx: Math.cos(a) * speed,
-          vy: Math.sin(a) * speed - rand(10, 50),
+          vy: Math.sin(a) * speed - lift * rand(0.4, 1),
           life: 0,
-          maxLife: rand(0.6, 1.2),
-          size: rand(2.2, 5.4),
+          maxLife: rand(lMin, lMax),
+          size: rand(sMin, sMax),
           spin: rand(0, Math.PI),
           spinSpeed: rand(-5, 5),
           sprite: spriteFor(shape, tone[Math.floor(Math.random() * tone.length)]),

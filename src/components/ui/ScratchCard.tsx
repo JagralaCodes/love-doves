@@ -224,14 +224,19 @@ export function ScratchCard({
     setRevealed(true)
     setProgress(1)
 
-    // One short gold burst as the last of the foil clears.
+    // A fountain of hearts as the last of the foil clears: many, big,
+    // thrown well above the card, with gold sparkles between them.
     const el = wrapRef.current
     if (el) {
       const r = el.getBoundingClientRect()
-      sparkleBurst(r.left + r.width / 2, r.top + r.height / 2, {
-        count: 40,
-        tone: 'gold',
-        power: 240,
+      sparkleBurst(r.left + r.width / 2, r.top + r.height * 0.55, {
+        count: 110,
+        tone: 'wine',
+        power: 320,
+        lift: 520,
+        hearts: 0.8,
+        size: [4, 10],
+        life: [1.2, 2.2],
       })
     }
     onRevealed?.()

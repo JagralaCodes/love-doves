@@ -120,7 +120,7 @@ export const wedding = {
     countdownHeading: 'Counting the days',
     /** Shown in place of the clock once the Nikah time has passed. */
     dayIsHere: 'Alhamdulillah — the Nikah has taken place. Please keep the couple in your duas.',
-    venueHeading: 'Where to find us',
+    venueHeading: 'We Invite You',
     /** The letter's opening line, before the two venues. */
     honouredLine: 'We would be honoured by your presence at',
     /** The letter's opening line on a single-celebration link. */
@@ -196,8 +196,9 @@ export const wedding = {
     getDirections: 'راستہ دیکھیں',
     familiesHeading: 'ہمارے خاندانوں کے ساتھ',
     eventsHeading: 'تقریبات',
-    daughterOf: 'دختر',
-    sonOf: 'پسر',
+    /* The Urdu card idiom, not the Persian دختر / پسر. */
+    daughterOf: 'صاحبزادی',
+    sonOf: 'صاحبزادہ',
 
     countdownHeading: 'دن گن رہے ہیں',
     countdownTo: 'نکاح تک',

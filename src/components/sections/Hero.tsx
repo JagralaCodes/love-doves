@@ -17,8 +17,7 @@ import { FallingPetals } from '../ui/FallingPetals'
 import { ScrollHint } from '../ui/ScrollHint'
 
 import { wedding } from '../../config/wedding.config'
-import { formatDotDate } from '../../lib/date'
-import { mainEvent, visibleEvents } from '../../lib/audience'
+import { visibleEvents } from '../../lib/audience'
 
 /**
  * Spelled out rather than the U+FDFD ligature.
@@ -199,8 +198,7 @@ export function Hero({ active }: Props) {
 
       tl.fromTo('[data-amp]', { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 1, scale: 1, duration: 0.5 }, '-=0.6')
         .fromTo('[data-vine]', { autoAlpha: 0, scaleX: 0.6 }, { autoAlpha: 1, scaleX: 1, duration: 0.7 }, '-=0.4')
-        .fromTo('[data-date]', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.6 }, '-=0.5')
-        .fromTo('[data-events]', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.6 }, '-=0.45')
+        .fromTo('[data-events]', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.6 }, '-=0.5')
         .fromTo('[data-hint]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, '-=0.3')
     }, root)
 
@@ -355,21 +353,11 @@ export function Hero({ active }: Props) {
           <FloralVine className="mx-auto w-52" />
         </span>
 
-        {/* The date, small under the names; English digits either way. */}
-        <p
-          data-hero-item
-          data-date
-          className="nums-lining mt-5 font-body text-2xs tracking-[0.4em] text-wine-soft"
-          lang="en"
-          dir="ltr"
-        >
-          {formatDotDate(mainEvent().date)}
-        </p>
-
+        {/* No date here: the date is what the scratch card reveals. */}
         <p
           data-hero-item
           data-events
-          className={`mt-2 text-wine ${
+          className={`mt-5 text-wine ${
             ur
               ? 'font-urdu text-fluid-xl leading-[2]'
               : 'font-display text-fluid-lg tracking-[0.18em] uppercase'

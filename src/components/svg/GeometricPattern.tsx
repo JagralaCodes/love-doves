@@ -57,6 +57,14 @@ export function GeometricPattern({
     <div
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+      // The lattice fades out toward both side edges. A phone column is
+      // never a whole number of tiles wide, so without this the last star
+      // in every row is sliced by the edge. A static mask on the outer,
+      // non-moving box: the parallax layer inside keeps its own transform.
+      style={{
+        WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent)',
+        maskImage: 'linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent)',
+      }}
     >
       {/* The parallax wrapper. Kept separate from the svg because the svg's
           CSS drift animation would override any transform written here. */}
